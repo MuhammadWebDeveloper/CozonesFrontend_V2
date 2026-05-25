@@ -1,0 +1,309 @@
+/* ProfileSidebar.css */
+
+/* main card container - exactly as per design inspiration */
+.ProfileSidebar_profileCard {
+    width: 100%;
+    background-color: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+    display: flex;
+    height: 80vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.ProfileSidebar_profileCard:hover {
+    transform: translateY(-2px);
+}
+
+/* inner padding */
+.ProfileSidebar_profileInner {
+    height: 450px;
+    width: 600px;
+    padding: 50px;
+    border-radius: 32px;
+    box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* header area: name + view profile link style (inline) */
+.ProfileSidebar_profileHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #eef2f6;
+    padding-bottom: 16px;
+}
+
+.ProfileSidebar_nameSection h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #1a2c3e;
+    margin-bottom: 4px;
+}
+
+.ProfileSidebar_viewProfileLink {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #3b82f6;
+    background: #eff6ff;
+    padding: 6px 12px;
+    border-radius: 40px;
+    transition: 0.2s;
+    cursor: default;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.ProfileSidebar_viewProfileLink:hover {
+    background: #e0eefe;
+}
+
+/* menu list styling — exactly as the image: clean, spaced */
+.ProfileSidebar_profileMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.ProfileSidebar_menuItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f2f3e;
+    transition: all 0.2s ease;
+    cursor: default;
+    background-color: transparent;
+}
+
+/* icon placeholders */
+.ProfileSidebar_menuIcon {
+    font-size: 1.4rem;
+    width: 28px;
+    text-align: center;
+    color: #4b6584;
+    font-weight: 400;
+}
+
+.ProfileSidebar_menuText {
+    flex: 1;
+    letter-spacing: -0.2px;
+}
+
+/* specific style for Logout item slightly different but consistent with image */
+.ProfileSidebar_logoutItem {
+    margin-top: 12px;
+    border-top: 1px solid #edf2f7;
+    border-radius: 0;
+    padding-top: 20px;
+    color: #e53e3e;
+}
+
+.ProfileSidebar_logoutItem .ProfileSidebar_menuIcon {
+    color: #e53e3e;
+}
+
+/* hover effect: modern subtle lift */
+.ProfileSidebar_menuItem:not(.ProfileSidebar_logoutItem):hover {
+    background: #f8fafd;
+    transform: translateX(2px);
+}
+
+.ProfileSidebar_logoutItem:hover {
+    background: #fff5f5;
+}
+
+/* responsiveness */
+@media (max-width: 480px) {
+    .ProfileSidebar_profileInner {
+        padding: 20px 18px 28px;
+    }
+
+    .ProfileSidebar_menuItem {
+        padding: 10px 12px;
+    }
+
+    .ProfileSidebar_nameSection h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Avatar Section */
+.ProfileSidebar_avatarSection {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.ProfileSidebar_avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.ProfileSidebar_avatarInitials {
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+}
+
+.ProfileSidebar_avatarLoader {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Name and Email */
+.ProfileSidebar_nameSection {
+    flex: 1;
+}
+
+.ProfileSidebar_nameSection h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.ProfileSidebar_email {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 4px 0;
+    word-break: break-all;
+}
+
+.ProfileSidebar_phone {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.ProfileSidebar_roleBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-top: 6px;
+}
+
+/* Skeleton Loaders */
+.ProfileSidebar_skeletonName {
+    width: 120px;
+    height: 20px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.ProfileSidebar_skeletonEmail {
+    width: 150px;
+    height: 14px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Error State */
+.ProfileSidebar_error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.ProfileSidebar_error p {
+    color: #dc2626;
+    font-size: 13px;
+    margin: 0 0 10px 0;
+}
+
+.ProfileSidebar_retryBtn {
+    padding: 6px 12px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ProfileSidebar_retryBtn:hover {
+    background: #b91c1c;
+}
+
+/* View Profile Link */
+.ProfileSidebar_viewProfileLink {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.ProfileSidebar_viewProfileLink:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ProfileSidebar_avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .ProfileSidebar_avatarInitials {
+        font-size: 20px;
+    }
+
+    .ProfileSidebar_nameSection h2 {
+        font-size: 16px;
+    }
+
+    .ProfileSidebar_email {
+        font-size: 12px;
+    }
+}

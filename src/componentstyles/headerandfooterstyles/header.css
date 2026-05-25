@@ -1,0 +1,973 @@
+/* Premium Navbar Styles with #011CCD Color Scheme */
+
+.Navbar-container {
+    width: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 20px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(0px);
+}
+
+.Navbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 100px;
+}
+
+/* Left Section */
+.Navbar-leftSection {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+/* Logo styling with image */
+.Navbar-logo {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 250px;
+    height: 80px;
+    border-radius: 3px;
+}
+
+.Navbar-logo img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* Search Pill */
+.Navbar-searchPill {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e4e4e4;
+    border-radius: 48px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    height: 56px;
+    width: 100%;
+    max-width: 520px;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.Navbar-searchPill:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: #d0d0d0;
+}
+
+.Navbar-searchField {
+    flex: 1;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: transparent;
+    border-radius: 48px;
+}
+
+.Navbar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+    letter-spacing: 0.3px;
+}
+
+.Navbar-input {
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-weight: 400;
+    color: #717171;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+}
+
+.Navbar-input::placeholder {
+    color: #b0b0b0;
+    font-weight: 400;
+}
+
+.Navbar-divider {
+    width: 1px;
+    height: 32px;
+    background: #e8e8e8;
+}
+
+/* Updated Search Button with new brand color */
+.Navbar-searchSubmit {
+    background: #011CCD;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.Navbar-searchSubmit:hover {
+    background: #000e8a;
+    transform: scale(1.02);
+}
+
+.Navbar-searchIcon {
+    width: 18px;
+    height: 18px;
+}
+
+/* User Actions */
+.Navbar-userActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+/* Updated Host Button */
+.Navbar-hostBtn {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 18px;
+    border-radius: 32px;
+    cursor: pointer;
+    color: #1a1a1a;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.Navbar-hostBtn:hover {
+    background: rgba(1, 28, 205, 0.05);
+    color: #011CCD;
+}
+
+/* Language Button */
+.Navbar-langBtn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    position: relative;
+}
+
+.Navbar-langBtn:hover {
+    background: rgba(1, 28, 205, 0.05);
+    color: #011CCD;
+}
+
+.Navbar-globeIcon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Menu Button */
+.Navbar-menuBtn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e4e4e4;
+    padding: 6px 8px 6px 16px;
+    border-radius: 32px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: #ffffff;
+}
+
+.Navbar-menuBtn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: #011CCD;
+}
+
+.Navbar-menuIcon {
+    width: 18px;
+    height: 18px;
+}
+
+.Navbar-avatar {
+    width: 32px;
+    height: 32px;
+    background: rgba(1, 28, 205, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Navbar-avatar svg {
+    width: 18px;
+    height: 18px;
+    color: #011CCD;
+}
+
+.Navbar-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Dropdown Styles */
+.Navbar-dropdown {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    min-width: 200px;
+    padding: 8px 0;
+    z-index: 1001;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Navbar-menuDropdown {
+    min-width: 240px;
+}
+
+.Navbar-dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-size: 14px;
+    font-weight: 450;
+    color: #1a1a1a;
+}
+
+.Navbar-dropdownItem svg {
+    flex-shrink: 0;
+    color: #011CCD;
+}
+
+.Navbar-dropdownItem:hover {
+    background: rgba(1, 28, 205, 0.05);
+    color: #011CCD;
+}
+
+.Navbar-dropdownItem:hover svg {
+    color: #011CCD;
+}
+
+.Navbar-dropdownDivider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 8px 0;
+}
+
+/* Profile Modal Styles */
+.Navbar-profileModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+.Navbar-profileModalContent {
+    background: white;
+    border-radius: 32px;
+    width: 90%;
+    max-width: 500px;
+    padding: 32px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Navbar-profileModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e8eaf0;
+}
+
+.Navbar-profileModalHeader h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #011CCD;
+    margin: 0;
+}
+
+.Navbar-profileModalHeader button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Navbar-profileModalHeader button:hover {
+    background: #f5f5f5;
+}
+
+.Navbar-profileFormGroup {
+    margin-bottom: 20px;
+}
+
+.Navbar-profileFormGroup label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a4a6a;
+    margin-bottom: 8px;
+}
+
+.Navbar-profileFormGroup input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e8eaf0;
+    border-radius: 16px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.Navbar-profileFormGroup input:focus {
+    outline: none;
+    border-color: #011CCD;
+    box-shadow: 0 0 0 3px rgba(1, 28, 205, 0.1);
+}
+
+.Navbar-profileUpdateBtn {
+    width: 100%;
+    padding: 14px;
+    background: #011CCD;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.Navbar-profileUpdateBtn:hover {
+    background: #000e8a;
+    transform: translateY(-2px);
+}
+
+.Navbar-profileUpdateBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Search Modal Updates */
+.Navbar-searchWrapper {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+}
+
+.Navbar-searchField {
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.Navbar-searchField.Navbar-active {
+    background: rgba(1, 28, 205, 0.05);
+    border-radius: 32px;
+}
+
+.Navbar-inputWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Navbar-fieldIcon {
+    color: #011CCD;
+    font-size: 16px;
+}
+
+.Navbar-searchModal {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 32px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+    z-index: 1002;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Navbar-searchModalContent {
+    padding: 24px;
+}
+
+.Navbar-searchModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.Navbar-searchModalHeader h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.Navbar-searchModalClose {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #717171;
+    transition: color 0.2s ease;
+}
+
+.Navbar-searchModalClose:hover {
+    color: #011CCD;
+}
+
+.Navbar-searchModalInput {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.Navbar-searchModalInput:focus {
+    border-color: #011CCD;
+}
+
+.Navbar-popularDestinations h4,
+.Navbar-dateSuggestions h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.Navbar-destinationList,
+.Navbar-dateList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.Navbar-destinationItem,
+.Navbar-dateItem {
+    padding: 8px 16px;
+    background: #f5f5f5;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.Navbar-destinationItem:hover,
+.Navbar-dateItem:hover {
+    background: rgba(1, 28, 205, 0.1);
+    color: #011CCD;
+    transform: translateY(-1px);
+}
+
+.Navbar-guestsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.Navbar-guestType {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.Navbar-guestType h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.Navbar-guestType p {
+    margin: 0;
+    font-size: 12px;
+    color: #717171;
+}
+
+.Navbar-counter {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.Navbar-counter button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d0d0d0;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.Navbar-counter button:hover {
+    border-color: #011CCD;
+    color: #011CCD;
+}
+
+.Navbar-counter span {
+    font-size: 16px;
+    font-weight: 500;
+    min-width: 24px;
+    text-align: center;
+}
+
+.Navbar-searchConfirmBtn {
+    width: 100%;
+    padding: 14px;
+    background: #011CCD;
+    color: white;
+    border: none;
+    border-radius: 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+}
+
+.Navbar-searchConfirmBtn:hover {
+    background: #000e8a;
+    transform: translateY(-1px);
+}
+
+/* Results Modal */
+.Navbar-resultsOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.Navbar-resultsModal {
+    background: white;
+    border-radius: 32px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.Navbar-resultsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.Navbar-resultsHeader h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #011CCD;
+}
+
+.Navbar-resultsClose {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #717171;
+    transition: color 0.2s ease;
+}
+
+.Navbar-resultsClose:hover {
+    color: #011CCD;
+}
+
+.Navbar-resultsBody {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.Navbar-resultsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.Navbar-resultItem {
+    display: flex;
+    gap: 20px;
+    padding: 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.Navbar-resultItem:hover {
+    box-shadow: 0 4px 12px rgba(1, 28, 205, 0.15);
+    transform: translateY(-2px);
+    border-color: #011CCD;
+}
+
+.Navbar-resultImage {
+    font-size: 80px;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(1, 28, 205, 0.05);
+    border-radius: 16px;
+}
+
+.Navbar-resultInfo {
+    flex: 1;
+}
+
+.Navbar-resultInfo h4 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.Navbar-resultLocation {
+    color: #717171;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+}
+
+.Navbar-resultDetails {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.Navbar-resultRating {
+    background: rgba(1, 28, 205, 0.1);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #011CCD;
+}
+
+.Navbar-resultPrice {
+    font-weight: 600;
+    color: #011CCD;
+}
+
+.Navbar-resultGuests {
+    font-size: 13px;
+    color: #717171;
+    margin: 0 0 12px 0;
+}
+
+.Navbar-resultViewBtn {
+    background: #011CCD;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.Navbar-resultViewBtn:hover {
+    background: #000e8a;
+    transform: scale(1.02);
+}
+
+.Navbar-loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.Navbar-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #011CCD;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.Navbar-noResults {
+    text-align: center;
+    padding: 40px;
+    color: #717171;
+}
+
+.Navbar-noResultsHint {
+    font-size: 14px;
+    margin-top: 8px;
+    color: #011CCD;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .Navbar-container {
+        padding: 16px 40px;
+    }
+
+    .Navbar-searchPill {
+        max-width: 440px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .Navbar-container {
+        padding: 16px 32px;
+    }
+
+    .Navbar-searchPill {
+        max-width: 380px;
+    }
+
+    .Navbar-searchField {
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 900px) {
+    .Navbar-searchPill {
+        max-width: 320px;
+    }
+
+    .Navbar-hostBtn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 820px) {
+    .Navbar-searchPill {
+        max-width: 280px;
+    }
+
+    .Navbar-label {
+        font-size: 10px;
+    }
+
+    .Navbar-input {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Navbar-container {
+        padding: 12px 20px;
+    }
+
+    .Navbar-row {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 0 20px;
+    }
+
+    .Navbar-searchPill {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .Navbar-hostBtn {
+        display: none;
+    }
+
+    .Navbar-langBtn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .Navbar-menuBtn {
+        padding: 4px 6px 4px 12px;
+    }
+
+    .Navbar-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .Navbar-logo img {
+        width: 100px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Navbar-container {
+        padding: 12px 16px;
+    }
+
+    .Navbar-row {
+        padding: 0 12px;
+    }
+
+    .Navbar-logo img {
+        width: 80px;
+        height: 35px;
+    }
+
+    .Navbar-searchModal {
+        position: fixed;
+        top: 80px;
+        left: 16px;
+        right: 16px;
+        border-radius: 24px;
+    }
+
+    .Navbar-resultsModal {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .Navbar-resultItem {
+        flex-direction: column;
+    }
+
+    .Navbar-resultImage {
+        width: 100%;
+        height: 150px;
+    }
+
+    .Navbar-profileModalContent {
+        padding: 24px;
+        margin: 16px;
+    }
+
+    .Navbar-profileModalHeader h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Link Styles */
+.Navbar-logo a {
+    display: block;
+    text-decoration: none;
+}
+
+/* Scrollbar Styling */
+.Navbar-resultsBody::-webkit-scrollbar {
+    width: 6px;
+}
+
+.Navbar-resultsBody::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.Navbar-resultsBody::-webkit-scrollbar-thumb {
+    background: #011CCD;
+    border-radius: 10px;
+}
+
+.Navbar-resultsBody::-webkit-scrollbar-thumb:hover {
+    background: #000e8a;
+}

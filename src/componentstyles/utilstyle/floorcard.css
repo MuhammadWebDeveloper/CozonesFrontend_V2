@@ -1,0 +1,200 @@
+/* FloorCard Main Wrapper */
+.FloorCard_main {
+    width: 100%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 0px;
+}
+
+/* IMAGE CONTAINER (IMPORTANT FIX) */
+.FloorCard_imageContainer {
+    position: relative;
+    width: 240px;
+    height: 210px;
+    /* FIXED HEIGHT (IMPORTANT) */
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+/* IMAGE (for single image fallback) */
+.FloorCard_image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* SWIPER FIX */
+.FloorCard_swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.FloorCard_swiper .swiper-wrapper,
+.FloorCard_swiper .swiper-slide {
+    width: 100%;
+    height: 100%;
+}
+
+.FloorCard_swiper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Favorite Button */
+.FloorCard_favBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+/* INFO SECTION */
+.FloorCard_info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* TITLE ROW */
+.FloorCard_titleRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+/* TITLE */
+.FloorCard_title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222222;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* RATING */
+.FloorCard_rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: #222222;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* META */
+.FloorCard_meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #5e5e5e;
+    font-size: 13px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.FloorCard_divider {
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+/* PRICE ROW */
+.FloorCard_priceRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #5e5e5e;
+    font-size: 13px;
+    margin: 0;
+}
+
+.FloorCard_priceAmount {
+    color: #222222;
+    font-weight: 600;
+}
+
+.FloorCard_priceNights {
+    font-weight: 400;
+    color: #5e5e5e;
+}
+
+/* HOVER EFFECT */
+.FloorCard_main:hover .FloorCard_image,
+.FloorCard_main:hover .FloorCard_swiper img {
+    filter: brightness(0.9);
+}
+
+/* ===== SWIPER ARROWS CUSTOM DESIGN ===== */
+
+.FloorCard_swiper .swiper-button-prev,
+.FloorCard_swiper .swiper-button-next {
+    width: 28px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    color: #222;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    padding: 10px 0;
+}
+
+/* remove default big arrow icon */
+.FloorCard_swiper .swiper-button-prev::after,
+.FloorCard_swiper .swiper-button-next::after {
+    font-size: 10px;
+    /* SMALL ICON */
+    font-weight: bold;
+}
+
+/* hover effect */
+.FloorCard_swiper .swiper-button-prev:hover,
+.FloorCard_swiper .swiper-button-next:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+/* positioning refinement */
+.FloorCard_swiper .swiper-button-prev {
+    left: 8px;
+}
+
+.FloorCard_swiper .swiper-button-next {
+    right: 8px;
+}
+
+.FloorCard_swiper .swiper-button-prev,
+.FloorCard_swiper .swiper-button-next {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.FloorCard_imageContainer:hover .swiper-button-prev,
+.FloorCard_imageContainer:hover .swiper-button-next {
+    opacity: 1;
+    pointer-events: auto;
+}

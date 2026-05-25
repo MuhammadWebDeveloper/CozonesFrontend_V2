@@ -1,0 +1,992 @@
+/* dedicatedDesksDetailed.css - Premium Redesign with #01095A Theme */
+
+/* ===== CSS Variables ===== */
+:root {
+    --primary: #01095A;
+    --primary-dark: #000740;
+    --primary-light: #2a3180;
+    --primary-bg: rgba(1, 9, 90, 0.05);
+    --primary-glow: rgba(1, 9, 90, 0.15);
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --text-muted: #7a7a9a;
+    --border-light: #e8eaf0;
+    --bg-card: #ffffff;
+    --bg-gradient: linear-gradient(135deg, #f8f9fc 0%, #f1f3f8 100%);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 24px 64px rgba(1, 9, 90, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Container ===== */
+.DedicatedDeskDetail_page {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    position: relative;
+}
+
+.DedicatedDeskDetail_page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 400px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    opacity: 0.03;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ===== Loading State ===== */
+.DedicatedDeskDetail_loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    gap: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--primary);
+    background: var(--bg-gradient);
+}
+
+.DedicatedDeskDetail_spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid var(--border-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: DedicatedDeskDetail_spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    box-shadow: var(--shadow-sm);
+}
+
+@keyframes DedicatedDeskDetail_spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Back Button ===== */
+.DedicatedDeskDetail_back-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 1;
+}
+
+.DedicatedDeskDetail_back-btn:hover {
+    transform: translateX(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.DedicatedDeskDetail_back-btn::before {
+    content: '←';
+    font-size: 18px;
+    transition: var(--transition);
+}
+
+.DedicatedDeskDetail_back-btn:hover::before {
+    transform: translateX(-4px);
+}
+
+/* ===== Page Title ===== */
+.DedicatedDeskDetail_page-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== Unit Type Badge ===== */
+.DedicatedDeskDetail_badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== Top Grid Layout ===== */
+.DedicatedDeskDetail_top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== Left Section - Booking ===== */
+.DedicatedDeskDetail_left {
+    background: var(--bg-card);
+    border-radius: 32px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    animation: fadeInUp 0.6s ease;
+}
+
+.DedicatedDeskDetail_left:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.DedicatedDeskDetail_title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.DedicatedDeskDetail_meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    padding: 6px 0;
+}
+
+.DedicatedDeskDetail_available {
+    color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Rate Selector */
+.DedicatedDeskDetail_rate_selector {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--primary-bg);
+    border-radius: 24px;
+}
+
+.DedicatedDeskDetail_rate_selector label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+}
+
+.DedicatedDeskDetail_rate_options {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.DedicatedDeskDetail_rate_option {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 16px;
+    background: white;
+    border: 2px solid var(--border-light);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.DedicatedDeskDetail_rate_option.active {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    color: var(--primary);
+}
+
+.DedicatedDeskDetail_rate_option:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.DedicatedDeskDetail_rate_amount {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+/* Pricing Section */
+.DedicatedDeskDetail_pricing {
+    background: var(--primary-bg);
+    border-radius: 24px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.DedicatedDeskDetail_price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+}
+
+/* Tabs */
+.DedicatedDeskDetail_tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--primary-bg);
+    padding: 0.5rem;
+    border-radius: 60px;
+}
+
+.DedicatedDeskDetail_tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+}
+
+.DedicatedDeskDetail_tab.active {
+    background: var(--bg-card);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Date Input */
+.DedicatedDeskDetail_date-input-wrap {
+    margin-bottom: 2rem;
+}
+
+.DedicatedDeskDetail_date-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid var(--border-light);
+    border-radius: 20px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background: var(--bg-card);
+    font-family: inherit;
+}
+
+.DedicatedDeskDetail_date-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Summary Card */
+.DedicatedDeskDetail_summary {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    border-radius: 28px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.DedicatedDeskDetail_summary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.DedicatedDeskDetail_summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.DedicatedDeskDetail_summary-row span:first-child {
+    font-weight: 500;
+}
+
+.DedicatedDeskDetail_summary-row span:last-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.DedicatedDeskDetail_summary-total {
+    border-top: 2px solid rgba(1, 9, 90, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: 1.1rem;
+}
+
+.DedicatedDeskDetail_summary-total span:last-child {
+    color: var(--primary);
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+/* Continue Button */
+.DedicatedDeskDetail_continue-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 60px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.DedicatedDeskDetail_continue-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.DedicatedDeskDetail_continue-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.DedicatedDeskDetail_continue-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.DedicatedDeskDetail_continue-btn:active {
+    transform: translateY(0);
+}
+
+.DedicatedDeskDetail_continue-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== Right Section - Gallery ===== */
+.DedicatedDeskDetail_right {
+    animation: fadeInUp 0.6s ease 0.2s backwards;
+}
+
+.DedicatedDeskDetail_gallery {
+    position: relative;
+    border-radius: 32px;
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+}
+
+.DedicatedDeskDetail_gallery:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.DedicatedDeskDetail_main-img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.DedicatedDeskDetail_main-img.visible {
+    opacity: 1;
+}
+
+.DedicatedDeskDetail_main-img.hidden {
+    opacity: 0;
+}
+
+.DedicatedDeskDetail_gallery:hover .DedicatedDeskDetail_main-img {
+    transform: scale(1.02);
+}
+
+.DedicatedDeskDetail_no-img {
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+    background: var(--primary-bg);
+}
+
+/* Image Navigation */
+.DedicatedDeskDetail_img-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    color: var(--primary);
+    backdrop-filter: blur(4px);
+}
+
+.DedicatedDeskDetail_img-nav:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.DedicatedDeskDetail_img-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.DedicatedDeskDetail_prev {
+    left: 20px;
+}
+
+.DedicatedDeskDetail_next {
+    right: 20px;
+}
+
+.DedicatedDeskDetail_img-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Image Loader */
+.DedicatedDeskDetail_image_loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.DedicatedDeskDetail_spinner_small {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Thumbnails */
+.DedicatedDeskDetail_thumbnails {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 12px 0;
+    margin-top: 1rem;
+}
+
+.DedicatedDeskDetail_thumbnails::-webkit-scrollbar {
+    height: 6px;
+}
+
+.DedicatedDeskDetail_thumbnails::-webkit-scrollbar-track {
+    background: var(--border-light);
+    border-radius: 10px;
+}
+
+.DedicatedDeskDetail_thumbnails::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.DedicatedDeskDetail_thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 3px solid transparent;
+}
+
+.DedicatedDeskDetail_thumb:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+.DedicatedDeskDetail_thumb.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* ===== Bottom Section ===== */
+.DedicatedDeskDetail_bottom {
+    background: var(--bg-card);
+    border-radius: 32px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.6s ease 0.4s backwards;
+    position: relative;
+    z-index: 1;
+}
+
+.DedicatedDeskDetail_section {
+    margin-bottom: 2.5rem;
+}
+
+.DedicatedDeskDetail_section:last-child {
+    margin-bottom: 0;
+}
+
+.DedicatedDeskDetail_section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    display: inline-block;
+    position: relative;
+}
+
+.DedicatedDeskDetail_section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 2px;
+}
+
+.DedicatedDeskDetail_description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+/* Features Grid */
+.DedicatedDeskDetail_features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.DedicatedDeskDetail_feature-tag {
+    padding: 8px 18px;
+    background: var(--primary-bg);
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--primary);
+    transition: var(--transition);
+    cursor: default;
+}
+
+.DedicatedDeskDetail_feature-tag:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1200px) {
+    .DedicatedDeskDetail_top-grid {
+        gap: 2rem;
+    }
+
+    .DedicatedDeskDetail_title {
+        font-size: 1.8rem;
+    }
+
+    .DedicatedDeskDetail_main-img,
+    .DedicatedDeskDetail_no-img {
+        height: 420px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .DedicatedDeskDetail_page {
+        padding: 1.5rem;
+    }
+
+    .DedicatedDeskDetail_top-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .DedicatedDeskDetail_left,
+    .DedicatedDeskDetail_bottom {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .DedicatedDeskDetail_page {
+        padding: 1rem;
+    }
+
+    .DedicatedDeskDetail_title {
+        font-size: 1.5rem;
+    }
+
+    .DedicatedDeskDetail_main-img,
+    .DedicatedDeskDetail_no-img {
+        height: 320px;
+    }
+
+    .DedicatedDeskDetail_thumb {
+        width: 70px;
+        height: 70px;
+    }
+
+    .DedicatedDeskDetail_price {
+        font-size: 1.5rem;
+    }
+
+    .DedicatedDeskDetail_tab {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .DedicatedDeskDetail_section-title {
+        font-size: 1.25rem;
+    }
+
+    .DedicatedDeskDetail_bottom {
+        padding: 1.25rem;
+    }
+
+    .DedicatedDeskDetail_summary-total span:last-child {
+        font-size: 1.1rem;
+    }
+
+    .DedicatedDeskDetail_rate_options {
+        flex-direction: column;
+    }
+
+    .DedicatedDeskDetail_rate_option {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .DedicatedDeskDetail_page {
+        padding: 0.75rem;
+    }
+
+    .DedicatedDeskDetail_back-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .DedicatedDeskDetail_title {
+        font-size: 1.25rem;
+    }
+
+    .DedicatedDeskDetail_main-img,
+    .DedicatedDeskDetail_no-img {
+        height: 250px;
+    }
+
+    .DedicatedDeskDetail_thumb {
+        width: 60px;
+        height: 60px;
+    }
+
+    .DedicatedDeskDetail_left {
+        padding: 1rem;
+    }
+
+    .DedicatedDeskDetail_pricing {
+        padding: 1rem;
+    }
+
+    .DedicatedDeskDetail_price {
+        font-size: 1.25rem;
+    }
+
+    .DedicatedDeskDetail_tab {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .DedicatedDeskDetail_date-input {
+        padding: 12px 16px;
+    }
+
+    .DedicatedDeskDetail_continue-btn {
+        padding: 14px;
+        font-size: 0.9rem;
+    }
+
+    .DedicatedDeskDetail_section-title {
+        font-size: 1.1rem;
+    }
+
+    .DedicatedDeskDetail_section-title::after {
+        width: 40px;
+        height: 2px;
+    }
+
+    .DedicatedDeskDetail_img-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .DedicatedDeskDetail_prev {
+        left: 12px;
+    }
+
+    .DedicatedDeskDetail_next {
+        right: 12px;
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+
+    .DedicatedDeskDetail_back-btn,
+    .DedicatedDeskDetail_continue-btn,
+    .DedicatedDeskDetail_img-nav,
+    .DedicatedDeskDetail_tabs,
+    .DedicatedDeskDetail_badge,
+    .DedicatedDeskDetail_rate_selector {
+        display: none;
+    }
+
+    .DedicatedDeskDetail_page {
+        background: white;
+        padding: 0;
+    }
+
+    .DedicatedDeskDetail_top-grid {
+        display: block;
+    }
+
+    .DedicatedDeskDetail_left,
+    .DedicatedDeskDetail_bottom {
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .DedicatedDeskDetail_title {
+        color: black;
+    }
+
+    .DedicatedDeskDetail_price {
+        color: black;
+    }
+}
+
+/* ===== Hover Effects & Polish ===== */
+.DedicatedDeskDetail_summary,
+.DedicatedDeskDetail_pricing {
+    transition: var(--transition);
+}
+
+.DedicatedDeskDetail_feature-tag,
+.DedicatedDeskDetail_thumb,
+.DedicatedDeskDetail_img-nav,
+.DedicatedDeskDetail_back-btn {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Note Styles */
+.DedicatedDeskDetail_note {
+    font-size: 0.8rem;
+    color: #f59e0b;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+}
+
+/* Space Info Section */
+.DedicatedDeskDetail_space_info {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(1, 9, 90, 0.1);
+}
+
+.DedicatedDeskDetail_space_info p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.DedicatedDeskDetail_space_info p strong {
+    color: var(--primary);
+    min-width: 120px;
+    display: inline-block;
+}
+
+.DedicatedDeskDetail_space_info .verified {
+    color: #10b981;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(1, 9, 90, 0.1);
+}
+
+.verified::before {
+    content: '✓ ';
+    font-weight: bold;
+}
+
+/* Working Hours */
+.DedicatedDeskDetail_working_hours {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0.5rem 0;
+}
+
+.DedicatedDeskDetail_working_days {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Policies Section */
+.DedicatedDeskDetail_policies {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.DedicatedDeskDetail_policies p {
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.DedicatedDeskDetail_policies p strong {
+    color: var(--primary);
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* Image Loading States */
+.DedicatedDeskDetail_main-img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.DedicatedDeskDetail_main-img.visible {
+    opacity: 1;
+}
+
+.DedicatedDeskDetail_main-img.hidden {
+    opacity: 0;
+}
+
+.DedicatedDeskDetail_image_loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.DedicatedDeskDetail_spinner_small {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Disabled button styles */
+.DedicatedDeskDetail_img-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

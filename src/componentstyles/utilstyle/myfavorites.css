@@ -1,0 +1,283 @@
+/* MyFavorites.css */
+
+.MF_container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    min-height: 100vh;
+}
+
+.MF_header {
+    margin-bottom: 40px;
+}
+
+.MF_backBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+}
+
+.MF_backBtn:hover {
+    color: #222;
+}
+
+.MF_titleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.MF_heartIcon {
+    color: #e53e3e;
+    fill: #e53e3e;
+}
+
+.MF_title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+}
+
+.MF_count {
+    background: #f0f0f0;
+    color: #555;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* Grid */
+.MF_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* Card */
+.MF_card {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.MF_card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.MF_imageWrap {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.MF_image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.MF_card:hover .MF_image {
+    transform: scale(1.04);
+}
+
+.MF_badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
+.MF_verified {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: #38a169;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.MF_removeBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #e53e3e;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.MF_removeBtn:hover {
+    background: #c53030;
+    transform: scale(1.1);
+}
+
+.MF_info {
+    padding: 16px;
+}
+
+.MF_spaceName {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.MF_location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.MF_price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 8px;
+}
+
+.MF_savedDate {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #999;
+    font-size: 12px;
+}
+
+/* Empty state */
+.MF_empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.MF_emptyIcon {
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.MF_empty h2 {
+    font-size: 24px;
+    color: #333;
+    margin: 0 0 8px;
+}
+
+.MF_empty p {
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 24px;
+}
+
+.MF_exploreBtn {
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.MF_exploreBtn:hover {
+    background: #444;
+}
+
+/* Loading */
+.MF_loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    gap: 16px;
+    color: #888;
+}
+
+.MF_spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #222;
+    border-radius: 50%;
+    animation: MF_spin 0.8s linear infinite;
+}
+
+@keyframes MF_spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.MF_error {
+    text-align: center;
+    padding: 60px;
+    color: #e53e3e;
+}
+
+.MF_error button {
+    margin-top: 12px;
+    padding: 8px 20px;
+    background: #222;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .MF_container {
+        padding: 20px 16px;
+    }
+
+    .MF_title {
+        font-size: 24px;
+    }
+
+    .MF_grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,39 @@
+/* PopularHomes.css - Updated for 7 cards in a row */
+
+.Cozonessec_1_popular-homes-section {
+    width: 100%;
+    background: #ffffff;
+    padding: 0px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    overflow-x: auto;
+    /* Allow horizontal scroll on smaller screens */
+}
+
+.Cozonessec_1_popular-homes-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Header Styles */
+.Cozonessec_1_popular-homes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.Cozonessec_1_popular-homes-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.Cozonessec_1_popular-homes-subtitle {
+    font-size: 16px;
+    color: #717171;
+    margin: 0;
+}

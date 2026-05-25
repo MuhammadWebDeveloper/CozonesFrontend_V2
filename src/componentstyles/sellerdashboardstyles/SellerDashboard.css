@@ -1,0 +1,70 @@
+.sd__shell {
+  display: flex;
+  height: 100vh;
+  background: #f4f5f9;
+}
+
+.sd__sidebar {
+  width: 180px;
+  min-width: 180px;
+  background: #0d1a5e;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.sd__logo {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 20px 24px;
+  letter-spacing: 0.02em;
+}
+
+.sd__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sd__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  font-size: 13.5px;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sd__nav-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+}
+
+.sd__nav-item--active {
+  background: rgba(255,255,255,0.15) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.sd__nav-icon { width: 20px; text-align: center; }
+
+.sd__content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sd__coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 14px;
+}

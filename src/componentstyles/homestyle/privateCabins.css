@@ -1,0 +1,534 @@
+/* =========================
+   Private_Cabins Styles
+========================= */
+
+.Private_Cabins_section {
+    padding: 20px 60px;
+    background: #ffffff;
+}
+
+.Private_Cabins_container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.Private_Cabins_title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #01095A;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* =========================
+   Header
+========================= */
+
+.Private_Cabins_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    gap: 20px;
+}
+
+.Private_Cabins_viewAll {
+    background: transparent;
+    border: 1px solid #e4e4e4;
+    padding: 10px 24px;
+    border-radius: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #01095A;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.Private_Cabins_viewAll:hover {
+    background: rgba(1, 9, 90, 0.05);
+    border-color: #01095A;
+    transform: translateX(4px);
+}
+
+/* =========================
+   Grid Layout
+========================= */
+
+.Private_Cabins_grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    padding-bottom: 0 10px;
+}
+
+@media (max-width: 1600px) {
+    .Private_Cabins_grid {
+        grid-template-columns: repeat(7, minmax(280px, 1fr));
+        overflow-x: auto;
+    }
+
+    .Private_Cabins_grid::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .Private_Cabins_grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .Private_Cabins_grid::-webkit-scrollbar-thumb {
+        background: #01095A;
+        border-radius: 10px;
+    }
+}
+
+/* =========================
+   Card
+========================= */
+
+.Private_Cabins_card {
+    background: #ffffff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+    min-width: 0;
+    animation: Private_Cabins_fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.Private_Cabins_card:hover .Private_Cabins_image {
+    transform: scale(1.05);
+}
+
+/* Rate Badge Styles */
+.Private_Cabins_rate_badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+}
+
+.Private_Cabins_rate_badge.rate_hourly {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.Private_Cabins_rate_badge.rate_daily {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.Private_Cabins_rate_badge.rate_monthly {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Other Rates Info */
+.Private_Cabins_other_rates {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-top: 1px solid #e8e8e8;
+    font-size: 11px;
+}
+
+.Private_Cabins_other_rates_label {
+    color: #666;
+    margin-right: 8px;
+}
+
+.Private_Cabins_other_rate {
+    display: inline-block;
+    background: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 0 4px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #01095A;
+    border: 1px solid #e0e0e0;
+}
+
+/* Capacity Info */
+.Private_Cabins_capacity {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+/* =========================
+   Image
+========================= */
+
+.Private_Cabins_imageWrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 75%;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.Private_Cabins_image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* =========================
+   Badge
+========================= */
+
+.Private_Cabins_type {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    z-index: 2;
+}
+
+/* =========================
+   Favorite Button
+========================= */
+
+.Private_Cabins_favorite {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+.Private_Cabins_favorite:hover {
+    transform: scale(1.1);
+}
+
+.Private_Cabins_favorite.active svg {
+    fill: #ff385c;
+    stroke: #ff385c;
+}
+
+/* =========================
+   Content
+========================= */
+
+.Private_Cabins_content {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Private_Cabins_cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.Private_Cabins_cardTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.Private_Cabins_rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    background: #f5f5f5;
+    padding: 3px 6px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.Private_Cabins_location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #717171;
+    font-size: 11px;
+}
+
+.Private_Cabins_price {
+    margin-top: 2px;
+}
+
+.Private_Cabins_priceAmount {
+    font-size: 15px;
+    font-weight: 700;
+    color: #01095A;
+}
+
+.Private_Cabins_pricePeriod {
+    font-size: 11px;
+    color: #717171;
+}
+
+.Private_Cabins_reviews {
+    font-size: 11px;
+    color: #717171;
+}
+
+.Private_Cabins_bookBtn {
+    background: #01095A;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 6px;
+    width: 100%;
+}
+
+.Private_Cabins_bookBtn:hover {
+    background: #000e8a;
+    transform: scale(1.02);
+}
+
+/* =========================
+   Loading
+========================= */
+
+.Private_Cabins_loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.Private_Cabins_loading::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #01095A;
+    border-radius: 50%;
+    animation: Private_Cabins_spin 1s linear infinite;
+}
+
+.Private_Cabins_loadingText {
+    text-align: center;
+    margin-top: 20px;
+    color: #717171;
+    font-size: 14px;
+}
+
+/* =========================
+   Empty State
+========================= */
+
+.Private_Cabins_empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #717171;
+}
+
+.Private_Cabins_empty p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* =========================
+   Error State
+========================= */
+
+.Private_Cabins_error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #e74c3c;
+}
+
+.Private_Cabins_retryBtn {
+    background: #01095A;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.Private_Cabins_retryBtn:hover {
+    background: #000e8a;
+    transform: scale(1.02);
+}
+
+/* =========================
+   Animations
+========================= */
+
+@keyframes Private_Cabins_spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes Private_Cabins_fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Private_Cabins_card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.Private_Cabins_card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.Private_Cabins_card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.Private_Cabins_card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.Private_Cabins_card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.Private_Cabins_card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.Private_Cabins_card:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1600px) {
+    .Private_Cabins_section {
+        padding: 48px 40px;
+    }
+
+    .Private_Cabins_grid {
+        grid-template-columns: repeat(7, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 1400px) {
+    .Private_Cabins_grid {
+        grid-template-columns: repeat(7, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .Private_Cabins_section {
+        padding: 40px 30px;
+    }
+
+    .Private_Cabins_title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Private_Cabins_section {
+        padding: 32px 20px;
+    }
+
+    .Private_Cabins_title {
+        font-size: 24px;
+    }
+
+    .Private_Cabins_grid {
+        grid-template-columns: repeat(7, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .Private_Cabins_header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .Private_Cabins_cardTitle {
+        font-size: 12px;
+    }
+
+    .Private_Cabins_priceAmount {
+        font-size: 13px;
+    }
+
+    .Private_Cabins_bookBtn {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Private_Cabins_section {
+        padding: 24px 16px;
+    }
+
+    .Private_Cabins_title {
+        font-size: 20px;
+    }
+
+    .Private_Cabins_grid {
+        grid-template-columns: repeat(7, minmax(200px, 1fr));
+        gap: 12px;
+    }
+}

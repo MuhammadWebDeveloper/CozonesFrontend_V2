@@ -1,0 +1,237 @@
+/* SellerHome.css */
+.sh__main {
+  padding: 24px 28px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.sh__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+}
+
+/* Loading State */
+.sh__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}
+
+.sh__spinner-icon {
+  font-size: 40px;
+  color: #011CCD;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.sh__error {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  margin: 40px auto;
+  max-width: 500px;
+}
+
+.sh__error-icon {
+  font-size: 48px;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+/* Stats Grid */
+.sh__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* Stat Cards */
+.sh__stat-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.sh__stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #011CCD;
+}
+
+.sh__stat-icon {
+  font-size: 32px;
+  color: #011CCD;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 28, 205, 0.1);
+  border-radius: 12px;
+}
+
+.sh__stat-content {
+  flex: 1;
+}
+
+.sh__stat-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.sh__stat-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* Section Title */
+.sh__section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sh__section-title svg {
+  color: #011CCD;
+  font-size: 20px;
+}
+
+/* Chart Container */
+.sh__chart-wrap {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  height: 320px;
+}
+
+.sh__chart {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Retry Button */
+.sh__retry-btn {
+  margin-top: 20px;
+  padding: 10px 24px;
+  background: #011CCD;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.sh__retry-btn:hover {
+  background: #0020cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(1, 28, 205, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .sh__stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sh__main {
+    padding: 16px;
+  }
+
+  .sh__title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .sh__stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .sh__stat-card {
+    padding: 16px;
+  }
+
+  .sh__stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .sh__stat-val {
+    font-size: 20px;
+  }
+
+  .sh__chart-wrap {
+    height: 250px;
+    padding: 12px;
+  }
+
+  .sh__section-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sh__stats {
+    gap: 10px;
+  }
+
+  .sh__stat-card {
+    padding: 12px;
+  }
+
+  .sh__stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .sh__stat-val {
+    font-size: 18px;
+  }
+
+  .sh__chart-wrap {
+    height: 200px;
+  }
+}

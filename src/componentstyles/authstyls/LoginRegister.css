@@ -1,0 +1,379 @@
+/* LoginRegister.css - Modern Authentication Styles */
+
+/* ===== CSS Variables ===== */
+:root {
+    --primary: #011CCD;
+    --primary-dark: #0015a3;
+    --primary-light: #2a42e8;
+    --primary-glow: rgba(1, 28, 205, 0.15);
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --text-muted: #7a7a9a;
+    --border-light: #e8eaf0;
+    --bg-card: #ffffff;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 24px 64px rgba(1, 28, 205, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Container ===== */
+.Auth-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #011CCD 0%, #0015a3 50%, #2a42e8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.Auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.08)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+    background-size: cover;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.Auth-container::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* ===== Card ===== */
+.Auth-card {
+    background: var(--bg-card);
+    border-radius: 32px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.6s ease;
+}
+
+.Auth-card h2 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.Auth-card>p:first-of-type {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* ===== Error Message ===== */
+.Auth-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid var(--error);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--error);
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* ===== Form Styles ===== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.Auth-card input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    transition: var(--transition);
+    font-family: inherit;
+    background: var(--bg-card);
+    box-sizing: border-box;
+    color: var(--text-primary);
+}
+
+.Auth-card input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.Auth-card input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.Auth-card input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+/* ===== Auth Button ===== */
+.Auth-card button {
+    background: var(--primary);
+    color: white;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.Auth-card button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.Auth-card button:hover:not(:disabled)::before {
+    width: 300px;
+    height: 300px;
+}
+
+.Auth-card button:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.Auth-card button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.Auth-card button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== Footer Link ===== */
+.Auth-card>p:last-of-type {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.Auth-card a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.Auth-card a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 640px) {
+    .Auth-container {
+        padding: 1rem;
+    }
+
+    .Auth-card {
+        padding: 2rem;
+        max-width: 100%;
+    }
+
+    .Auth-card h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .Auth-card {
+        padding: 1.5rem;
+    }
+
+    .Auth-card input {
+        padding: 0.75rem 1rem;
+    }
+
+    .Auth-card button {
+        padding: 0.875rem;
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    .Auth-container {
+        background: white;
+        padding: 0;
+    }
+
+    .Auth-container::before,
+    .Auth-container::after {
+        display: none;
+    }
+
+    .Auth-card {
+        box-shadow: none;
+        padding: 0;
+    }
+}
+
+/* ===== Dark Mode Support ===== */
+@media (prefers-color-scheme: dark) {
+    .Auth-card {
+        background: #1a1a2e;
+    }
+
+    .Auth-card h2 {
+        color: #e0e0e0;
+    }
+
+    .Auth-card>p:first-of-type {
+        color: #a0a0a0;
+    }
+
+    .Auth-card input {
+        background: #2a2a3e;
+        border-color: #3a3a4e;
+        color: #e0e0e0;
+    }
+
+    .Auth-card input::placeholder {
+        color: #7a7a9a;
+    }
+
+    .Auth-card>p:last-of-type {
+        color: #a0a0a0;
+    }
+}
+
+/* ===== Additional Helper Classes ===== */
+
+/* For password fields with toggle (if you add that feature later) */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 2.5rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    color: var(--text-secondary);
+    padding: 0;
+    margin: 0;
+}
+
+.password-toggle:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+/* For loading state within buttons */
+.button-loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success message style if needed */
+.Auth-success {
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid var(--success);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--success);
+}

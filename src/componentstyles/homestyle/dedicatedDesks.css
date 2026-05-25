@@ -1,0 +1,238 @@
+ /* =========================
+   Dedicated_Desks Styles
+========================= */
+
+.Dedicated_Desks_section {
+    padding: 20px 60px;
+    background: #ffffff;
+}
+
+.Dedicated_Desks_container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* =========================
+   Header
+========================= */
+
+.Dedicated_Desks_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    gap: 20px;
+}
+
+.Dedicated_Desks_title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #01095A;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.Dedicated_Desks_viewAll {
+    background: transparent;
+    border: 1px solid #e4e4e4;
+    padding: 10px 24px;
+    border-radius: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #01095A;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.Dedicated_Desks_viewAll:hover {
+    background: rgba(1, 9, 90, 0.05);
+    border-color: #01095A;
+    transform: translateX(4px);
+}
+
+/* =========================
+   Grid Layout
+========================= */
+
+.Dedicated_Desks_grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    padding-bottom: 0 10px;
+}
+
+@media (max-width: 1600px) {
+    .Dedicated_Desks_grid {
+        grid-template-columns: repeat(7, minmax(280px, 1fr));
+        overflow-x: auto;
+    }
+
+    .Dedicated_Desks_grid::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .Dedicated_Desks_grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .Dedicated_Desks_grid::-webkit-scrollbar-thumb {
+        background: #01095A;
+        border-radius: 10px;
+    }
+}
+
+/* =========================
+   Card
+========================= */
+
+.Dedicated_Desks_card {
+    background: #ffffff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+    min-width: 0;
+    animation: Dedicated_Desks_fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.Dedicated_Desks_card:hover .Dedicated_Desks_image {
+    transform: scale(1.05);
+}
+
+/* =========================
+   Loading
+========================= */
+
+.Dedicated_Desks_loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.Dedicated_Desks_loading::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #01095A;
+    border-radius: 50%;
+    animation: Dedicated_Desks_spin 1s linear infinite;
+}
+
+/* =========================
+   Empty State
+========================= */
+
+.Dedicated_Desks_empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #717171;
+}
+
+.Dedicated_Desks_empty p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* =========================
+   Animations
+========================= */
+
+@keyframes Dedicated_Desks_spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes Dedicated_Desks_fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Dedicated_Desks_card:nth-child(1) { animation-delay: 0.05s; }
+.Dedicated_Desks_card:nth-child(2) { animation-delay: 0.1s; }
+.Dedicated_Desks_card:nth-child(3) { animation-delay: 0.15s; }
+.Dedicated_Desks_card:nth-child(4) { animation-delay: 0.2s; }
+.Dedicated_Desks_card:nth-child(5) { animation-delay: 0.25s; }
+.Dedicated_Desks_card:nth-child(6) { animation-delay: 0.3s; }
+.Dedicated_Desks_card:nth-child(7) { animation-delay: 0.35s; }
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1600px) {
+    .Dedicated_Desks_section {
+        padding: 48px 40px;
+    }
+
+    .Dedicated_Desks_grid {
+        grid-template-columns: repeat(7, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 1400px) {
+    .Dedicated_Desks_grid {
+        grid-template-columns: repeat(7, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .Dedicated_Desks_section {
+        padding: 40px 30px;
+    }
+
+    .Dedicated_Desks_title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 768px) {
+    .Dedicated_Desks_section {
+        padding: 32px 20px;
+    }
+
+    .Dedicated_Desks_title {
+        font-size: 24px;
+    }
+
+    .Dedicated_Desks_grid {
+        grid-template-columns: repeat(7, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .Dedicated_Desks_header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .Dedicated_Desks_section {
+        padding: 24px 16px;
+    }
+
+    .Dedicated_Desks_title {
+        font-size: 20px;
+    }
+
+    .Dedicated_Desks_grid {
+        grid-template-columns: repeat(7, minmax(200px, 1fr));
+        gap: 12px;
+    }
+}

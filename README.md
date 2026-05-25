@@ -57,7 +57,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cozones.git
+git clone https://github.com/MuhammadWebDeveloper/CozonesBackend_V2.git
 cd cozones
 
 # Install dependencies

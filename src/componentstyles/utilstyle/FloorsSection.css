@@ -1,0 +1,127 @@
+/* FloorsSection.css */
+
+.FloorsSection_section {
+    padding: 20px 60px;
+    background: #ffffff;
+}
+
+.FloorsSection_container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.FloorsSection_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    gap: 20px;
+}
+
+.FloorsSection_title {
+    font-size: 25px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.FloorsSection_viewAll {
+    background: transparent;
+    border: 1px solid #e4e4e4;
+    padding: 10px 24px;
+    border-radius: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.FloorsSection_viewAll:hover {
+    background: rgba(1, 28, 205, 0.05);
+    border-color: #000000;
+}
+
+.FloorsSection_grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.FloorsSection_grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.FloorsSection_grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.FloorsSection_grid::-webkit-scrollbar-thumb {
+    background: #011CCD;
+    border-radius: 10px;
+}
+
+.FloorsSection_card {
+    flex: 0 0 300px;
+    opacity: 1;
+    cursor: pointer;
+    position: relative;
+    min-width: 0;
+}
+
+.FloorsSection_loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.FloorsSection_loading::after {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #011CCD;
+    border-radius: 50%;
+    animation: FloorsSection_spin 1s linear infinite;
+}
+
+@keyframes FloorsSection_spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .FloorsSection_section {
+        padding: 32px 20px;
+    }
+
+    .FloorsSection_card {
+        flex: 0 0 260px;
+    }
+}
+
+@media (max-width: 480px) {
+    .FloorsSection_section {
+        padding: 24px 16px;
+    }
+
+    .FloorsSection_card {
+        flex: 0 0 240px;
+    }
+}

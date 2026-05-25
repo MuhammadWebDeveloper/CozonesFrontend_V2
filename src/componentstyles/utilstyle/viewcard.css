@@ -1,0 +1,181 @@
+    /* Cozones_Spaces Main Wrapper */
+.Cozones_Spaces_main {
+    width: 100%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 0px;
+}
+
+/* IMAGE CONTAINER (IMPORTANT FIX) */
+.Cozones_Spaces_imageContainer {
+    position: relative;
+    width: 240px;
+    height: 210px;
+    /* FIXED HEIGHT (IMPORTANT) */
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+/* IMAGE (for single image fallback) */
+.Cozones_Spaces_image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* SWIPER FIX */
+.Cozones_Spaces_swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.Cozones_Spaces_swiper .swiper-wrapper,
+.Cozones_Spaces_swiper .swiper-slide {
+    width: 100%;
+    height: 100%;
+}
+
+.Cozones_Spaces_swiper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Badge */
+.Cozones_Spaces_badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #222222;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+}
+
+/* Favorite Button */
+.Cozones_Spaces_favBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+/* INFO SECTION */
+.Cozones_Spaces_info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* TITLE */
+.Cozones_Spaces_title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222222;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* META */
+.Cozones_Spaces_meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #5e5e5e;
+    font-size: 13px;
+}
+
+.Cozones_Spaces_divider {
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+.Cozones_Spaces_price {
+    color: #222222;
+    font-weight: 600;
+}
+
+.Cozones_Spaces_ratingRow {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: #222222;
+}
+
+/* HOVER EFFECT */
+.Cozones_Spaces_main:hover .Cozones_Spaces_image,
+.Cozones_Spaces_main:hover .Cozones_Spaces_swiper img {
+    filter: brightness(0.9);
+}
+
+/* ===== SWIPER ARROWS CUSTOM DESIGN ===== */
+
+.Cozones_Spaces_swiper .swiper-button-prev,
+.Cozones_Spaces_swiper .swiper-button-next {
+    width: 28px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    color: #222;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    padding: 10px 0;
+}
+
+/* remove default big arrow icon */
+.Cozones_Spaces_swiper .swiper-button-prev::after,
+.Cozones_Spaces_swiper .swiper-button-next::after {
+    font-size: 10px;
+    /* SMALL ICON */
+    font-weight: bold;
+}
+
+/* hover effect */
+.Cozones_Spaces_swiper .swiper-button-prev:hover,
+.Cozones_Spaces_swiper .swiper-button-next:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+/* positioning refinement */
+.Cozones_Spaces_swiper .swiper-button-prev {
+    left: 8px;
+}
+
+.Cozones_Spaces_swiper .swiper-button-next {
+    right: 8px;
+}
+
+.Cozones_Spaces_swiper .swiper-button-prev,
+.Cozones_Spaces_swiper .swiper-button-next {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.Cozones_Spaces_imageContainer:hover .swiper-button-prev,
+.Cozones_Spaces_imageContainer:hover .swiper-button-next {
+    opacity: 1;
+    pointer-events: auto;
+}

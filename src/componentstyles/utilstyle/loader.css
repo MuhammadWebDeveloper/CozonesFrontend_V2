@@ -1,0 +1,93 @@
+/* components/common/Loader.css */
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Add to App.css */
+.loader-fullpage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #011CCD;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Sizes */
+.loader-small .loader-spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+.loader-medium .loader-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+}
+
+.loader-large .loader-spinner {
+    width: 60px;
+    height: 60px;
+    border-width: 4px;
+}
+
+/* Full page loader */
+.loader-fullpage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-text {
+    color: #666;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Button loader */
+.btn-loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
