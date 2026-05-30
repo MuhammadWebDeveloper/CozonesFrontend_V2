@@ -595,7 +595,7 @@
     box-shadow: var(--shadow-lg);
     animation: fadeInUp 0.6s ease 0.4s backwards;
     position: relative;
-    z-index: 1;
+    /* z-index: 1; */
 }
 
 .MeetingRoomsDetail_section {
@@ -934,4 +934,129 @@
 /* Smooth scrolling */
 html {
     scroll-behavior: smooth;
+}
+
+/* Add these new styles to your existing meetingRoomsDetail.css */
+
+/* Retry Button */
+.MeetingRoomsDetail_retry-btn {
+    background: var(--primary, #01095A);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.MeetingRoomsDetail_retry-btn:hover {
+    background: var(--primary-dark, #000740);
+    transform: translateY(-2px);
+}
+
+/* Unit Badge - matching SpaceDetail */
+.MeetingRoomsDetail_unit_badge {
+    display: inline-block;
+    background: var(--primary, #01095A);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Owner and Login Warnings */
+.MeetingRoomsDetail_owner_warning,
+.MeetingRoomsDetail_login_warning {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.MeetingRoomsDetail_owner_warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.MeetingRoomsDetail_login_warning {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.login-link {
+    background: none;
+    border: none;
+    color: #011CCD;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Date & Time Section */
+.MeetingRoomsDetail_datetime_section {
+    margin: 24px 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.MeetingRoomsDetail_section_title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary, #1a1a2e);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.MeetingRoomsDetail_section_title::before {
+    content: '📅';
+    font-size: 1.2rem;
+}
+
+.MeetingRoomsDetail_datetime_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+/* Ensure DateTimePicker component fits properly */
+.MeetingRoomsDetail_datetime_grid>div {
+    width: 100%;
+}
+
+/* Spinner */
+.spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .MeetingRoomsDetail_datetime_grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }

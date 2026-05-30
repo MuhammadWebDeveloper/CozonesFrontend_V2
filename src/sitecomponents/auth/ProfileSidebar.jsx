@@ -7,6 +7,7 @@ import { FiLogOut } from 'react-icons/fi';
 import { BsCurrencyDollar } from 'react-icons/bs';
 import '../../componentstyles/authstyls/ProfileSidebar.css';
 import { logout, getCurrentUser, getAuthToken } from '../auth/auth.service.js';
+import BaseUrl from '../../utils/AppConstants.jsx';
 
 const ProfileSidebar = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ProfileSidebar = () => {
             setLoading(true);
             const token = getAuthToken(); // Get token from localStorage
             
-            const response = await fetch('http://localhost:4343/api/auth/profile', {
+            const response = await fetch(`${BaseUrl}api/auth/profile`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

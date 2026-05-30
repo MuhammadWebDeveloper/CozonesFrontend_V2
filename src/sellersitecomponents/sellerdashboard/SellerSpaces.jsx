@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../componentstyles/sellerdashboardstyles/SellerSpaces.css';
 import axios from 'axios';
+import BaseUrl from '../../utils/AppConstants';
 
 export default function SellerSpaces() {
   const [spaces, setSpaces] = useState([]);
@@ -16,7 +17,7 @@ export default function SellerSpaces() {
     setError(null);
     try {
       const token = getAuthToken();
-      const res = await axios.get('http://localhost:4343/api/spaces/owner/my-spaces', {
+      const res = await axios.get(`${BaseUrl}api/spaces/owner/my-spaces`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -41,14 +42,24 @@ export default function SellerSpaces() {
 
   const handleGetStarted = () => navigate('/create-space');
   const handleRefresh = () => fetchSpaces();
-  const handleEditSpace = (spaceId) => navigate(`/space/${spaceId}`);
+
+  // Function for card click - view detailed space
+  const handleViewSpace = (spaceId) => {
+    navigate(`/space/${spaceId}`);
+  };
+
+  // Function for edit button click - update space
+  const handleEditSpace = (spaceId, event) => {
+    event.stopPropagation(); // Prevent triggering the card click
+    navigate(`/space/update/${spaceId}`); // Different route for editing
+  };
 
   const handleDeleteSpace = async (spaceId, event) => {
     event.stopPropagation(); // Prevent card click when clicking delete button
     if (window.confirm('Are you sure you want to delete this space? This action cannot be undone.')) {
       try {
         const token = getAuthToken();
-        await axios.delete(`/api/owner/spaces/${spaceId}`, {
+        await axios.delete(`${BaseUrl}api/owner/spaces/${spaceId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         fetchSpaces();
@@ -57,11 +68,6 @@ export default function SellerSpaces() {
         setError(err.response?.data?.message || 'Failed to delete space. Please try again.');
       }
     }
-  };
-
-  const handleEditClick = (spaceId, event) => {
-    event.stopPropagation(); // Prevent card click when clicking edit button
-    handleEditSpace(spaceId);
   };
 
   const getSpaceIcon = (name) => {
@@ -145,20 +151,20 @@ export default function SellerSpaces() {
           </div>
         )}
 
-        {/* Spaces Grid - Card is now clickable */}
+        {/* Spaces Grid */}
         {!loading && !error && spaces.length > 0 && (
           <div className="ss__grid">
             {spaces.map((space) => (
               <div
                 key={space.id || space._id}
                 className="ss__card"
-                onClick={() => handleEditSpace(space.id)}
+                onClick={() => handleViewSpace(space.id)}
                 role="button"
                 tabIndex={0}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleEditSpace(space.id);
+                    handleViewSpace(space.id);
                   }
                 }}
               >
@@ -202,7 +208,7 @@ export default function SellerSpaces() {
 
                 <div className="ss__card-actions">
                   <button
-                    onClick={(e) => handleEditClick(space.id, e)}
+                    onClick={(e) => handleEditSpace(space.id, e)}
                     className="ss__edit-btn"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

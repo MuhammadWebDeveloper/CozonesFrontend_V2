@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './../../componentstyles/sellerdashboardstyles/createspace.css';
+import BaseUrl from '../../utils/AppConstants';
 
 // Load Google Maps API
 const loadGoogleMapsScript = (callback) => {
@@ -240,7 +241,7 @@ function CreateSpace() {
             const token = localStorage.getItem('token');
 
             // ✅ CORRECT ENDPOINT
-            const response = await fetch('http://localhost:4343/api/spaces/creation', {
+            const response = await fetch(  `${BaseUrl}api/spaces/creation`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,53 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../componentstyles/utilstyle/SpaceDetail.css';
+import { useToast } from './UseTost';
+import ToastContainer from './Tostercontainer';
+import DateTimePicker from './DateTimePicker';
+import BaseUrl from './AppConstants';
 
 const SpaceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation(); // Add this
+    const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
-    const [activeTab, setActiveTab] = useState('start');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedRateType, setSelectedRateType] = useState('daily');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [user, setUser] = useState(null);
 
     // Axios instance
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
-        timeout: 10000,
+        baseURL: BaseUrl,
+        timeout: 30000,
         headers: {
             'Content-Type': 'application/json',
         }
     });
 
+    // Add token to requests
+    apiClient.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+    // Get current user info
+    useEffect(() => {
+        const getUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await apiClient.get('api/auth/profile');
+                    setUser(response.data.user);
+                    success('Welcome back! 👋');
+                } catch (err) {
+                    console.error('Error fetching user:', err);
+                    // Don't show error for this as it's not critical
+                }
+            }
+        };
+        getUser();
+    }, []);
+
+
+
+    useEffect(() => {
+        // Check if we have pre-filled dates from navigation state
+        const { state } = location;
+        if (state?.prefillStartDate && state?.prefillEndDate) {
+            setStartDate(state.prefillStartDate);
+            setEndDate(state.prefillEndDate);
+            if (state.fromBookAgain) {
+                info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
+            }
+        }
+    }, [location]);
+
+
+
+
+
     useEffect(() => {
         const fetchSpace = async () => {
             try {
                 setLoading(true);
+                console.log('Fetching space with ID:', id);
+
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
+                console.log('API Response:', response.data);
 
                 if (response.data?.success && response.data?.unit) {
                     const unitData = response.data.unit;
+                    console.log('Unit Data:', unitData);
 
-                    // Determine which rate type is available
+                    // Determine rate type
                     let rateType = 'daily';
-                    let rateValue = 0;
-
                     if (unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0) {
                         rateType = 'hourly';
-                        rateValue = parseFloat(unitData.hourly_rate);
                     } else if (unitData.daily_rate && parseFloat(unitData.daily_rate) > 0) {
                         rateType = 'daily';
-                        rateValue = parseFloat(unitData.daily_rate);
                     } else if (unitData.monthly_rate && parseFloat(unitData.monthly_rate) > 0) {
                         rateType = 'monthly';
-                        rateValue = parseFloat(unitData.monthly_rate);
                     }
 
-                    // Handle images - they are already Base64 strings
+                    // Handle images
                     let imagesArray = [];
                     if (unitData.images) {
                         if (Array.isArray(unitData.images)) {
@@ -62,7 +113,6 @@ const SpaceDetail = () => {
                         }
                     }
 
-                    // Transform the unit data
                     const transformedSpace = {
                         id: unitData.id,
                         title: unitData.name || unitData.unit_type?.replace('_', ' ') || "Workspace",
@@ -71,60 +121,79 @@ const SpaceDetail = () => {
                         area: unitData.space?.area,
                         address: unitData.space?.address,
                         city: unitData.space?.city,
-                        // Rate information
                         rateType: rateType,
-                        rateValue: rateValue,
                         hourly_rate: unitData.hourly_rate ? parseFloat(unitData.hourly_rate) : null,
                         daily_rate: unitData.daily_rate ? parseFloat(unitData.daily_rate) : null,
                         monthly_rate: unitData.monthly_rate ? parseFloat(unitData.monthly_rate) : null,
                         total_capacity: unitData.total_capacity,
                         unit_type: unitData.unit_type,
-                        images: imagesArray, // Store Base64 images directly
+                        images: imagesArray,
                         space: unitData.space,
                         space_amenities: unitData.space_amenities,
                         policies: unitData.policies,
                         is_active: unitData.is_active,
-                        created_at: unitData.created_at,
-                        updated_at: unitData.updated_at
+                        owner_id: unitData.space?.owner_id
                     };
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
+                    success('Space details loaded successfully! 🎉');
                 } else {
-                    setError('Space not found');
+                    console.error('Invalid response structure:', response.data);
+                    error('Space not found or invalid data structure');
                 }
             } catch (err) {
                 console.error('Error fetching space:', err);
+                console.error('Error details:', {
+                    message: err.message,
+                    response: err.response?.data,
+                    status: err.response?.status,
+                    config: err.config
+                });
+
+                let errorMessage = 'Failed to load space details. Please try again.';
+                if (err.response?.status === 404) {
+                    errorMessage = 'Space not found. It may have been removed.';
+                } else if (err.response?.status === 500) {
+                    errorMessage = 'Server error. Please try again later.';
+                } else if (err.code === 'ECONNABORTED') {
+                    errorMessage = 'Request timeout. Please check your connection.';
+                } else if (err.message === 'Network Error') {
+                    errorMessage = 'Network error. Please check if the server is running.';
+                }
+
+                error(errorMessage);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchSpace();
+        if (id) {
+            fetchSpace();
+        } else {
+            error('No space ID provided');
+            setLoading(false);
+        }
     }, [id]);
 
-    // Get images array - handles Base64 strings directly
+    const isOwnSpace = () => {
+        if (!user || !space) return false;
+        return user.id === space.owner_id;
+    };
+
     const getImages = () => {
         if (space?.images && space.images.length > 0) {
-            // Return Base64 strings directly - they are ready to use
             return space.images;
         }
 
-        // Fallback images if no images available
-        if (space?.unit_type === 'open_desk') {
-            return ['https://images.unsplash.com/photo-1497366216548-37526070297c'];
-        }
-        if (space?.unit_type === 'dedicated_desk') {
-            return ['https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c'];
-        }
-        if (space?.unit_type === 'private_cabin') {
-            return ['https://images.unsplash.com/photo-1497366216548-37526070297c'];
-        }
-        if (space?.unit_type === 'meeting_room') {
-            return ['https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c'];
-        }
+        const fallbackImages = {
+            'open_desk': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'dedicated_desk': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'private_cabin': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'meeting_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
+        };
 
-        return ['https://images.unsplash.com/photo-1497366216548-37526070297c'];
+        return [fallbackImages[space?.unit_type] || fallbackImages.open_desk];
     };
 
     const images = getImages();
@@ -132,7 +201,6 @@ const SpaceDetail = () => {
     const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
     const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
 
-    // Calculate based on rate type
     const calcHours = () => {
         if (!startDate || !endDate) return 0;
         const diff = new Date(endDate) - new Date(startDate);
@@ -153,13 +221,6 @@ const SpaceDetail = () => {
         return Math.max(0, monthDiff);
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-    };
-
-    // Get current rate display
     const getRateDisplay = () => {
         if (!space) return { rate: 0, unit: 'day', value: 0 };
 
@@ -175,7 +236,6 @@ const SpaceDetail = () => {
         }
     };
 
-    // Calculate total based on selected rate type
     const calculateTotal = () => {
         if (!startDate || !endDate) return 0;
 
@@ -220,11 +280,106 @@ const SpaceDetail = () => {
         }
     };
 
+    const handleBooking = async () => {
+        if (!user) {
+            warning('Please login to book this space');
+            setTimeout(() => {
+                navigate('/login', { state: { from: `/space/${id}` } });
+            }, 1500);
+            return;
+        }
+
+        if (isOwnSpace()) {
+            error('You cannot book your own space!');
+            return;
+        }
+
+        if (!startDate || !endDate) {
+            warning('Please select both start and end dates');
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start >= end) {
+            error('End time must be after start time');
+            return;
+        }
+
+        const totalPrice = calculateTotal();
+        if (totalPrice <= 0) {
+            error('Invalid booking duration or price');
+            return;
+        }
+
+        setBookingLoading(true);
+
+        try {
+            const bookingData = {
+                space_unit_id: id,
+                start_time: new Date(startDate).toISOString(),
+                end_time: new Date(endDate).toISOString(),
+                total_price: totalPrice
+            };
+
+            console.log(bookingData);
+
+
+            const response = await apiClient.post('api/bookings/createbooking', bookingData);
+
+            if (response.data.success) {
+                success(`Booking successful! Reference: ${response.data.booking.booking_ref}`, 5000);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 2000);
+            } else {
+                throw new Error(response.data.message || 'Booking failed');
+            }
+
+        } catch (err) {
+            console.error('Booking error:', err);
+            let errorMessage = 'Failed to create booking. Please try again.';
+
+            if (err.response) {
+                if (err.response.status === 401) {
+                    errorMessage = 'Session expired. Please login again';
+                    setTimeout(() => navigate('/login'), 2000);
+                } else if (err.response.data?.message) {
+                    errorMessage = err.response.data.message;
+                }
+            }
+
+            error(errorMessage);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+
+        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
+            warning('End date should be after start date');
+            setEndDate('');
+        }
+    };
+
+    const handleEndDateChange = (e) => {
+        const newEndDate = e.target.value;
+        setEndDate(newEndDate);
+
+        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
+            warning('End date must be after start date');
+            setEndDate('');
+        }
+    };
+
     const rateDisplay = getRateDisplay();
     const quantity = getQuantity();
     const total = calculateTotal();
 
-    // Helper to render amenities
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
@@ -240,12 +395,14 @@ const SpaceDetail = () => {
         return amenityList;
     };
 
-    // Get available rate types
     const getAvailableRateTypes = () => {
         const types = [];
-        if (space?.hourly_rate && space.hourly_rate > 0 && space.hourly_rate !== -999) types.push({ key: 'hourly', label: 'Hourly', rate: space.hourly_rate });
-        if (space?.daily_rate && space.daily_rate > 0 && space.daily_rate !== -999) types.push({ key: 'daily', label: 'Daily', rate: space.daily_rate });
-        if (space?.monthly_rate && space.monthly_rate > 0 && space.monthly_rate !== -999) types.push({ key: 'monthly', label: 'Monthly', rate: space.monthly_rate });
+        if (space?.hourly_rate && space.hourly_rate > 0 && space.hourly_rate !== -999)
+            types.push({ key: 'hourly', label: 'Hourly', rate: space.hourly_rate });
+        if (space?.daily_rate && space.daily_rate > 0 && space.daily_rate !== -999)
+            types.push({ key: 'daily', label: 'Daily', rate: space.daily_rate });
+        if (space?.monthly_rate && space.monthly_rate > 0 && space.monthly_rate !== -999)
+            types.push({ key: 'monthly', label: 'Monthly', rate: space.monthly_rate });
         return types;
     };
 
@@ -258,253 +415,252 @@ const SpaceDetail = () => {
 
     if (!space) return (
         <div className="SpaceDetail_loading">
-            <p>Space not found.</p>
+            <p>Unable to load space details.</p>
             <button onClick={() => navigate(-1)} className="SpaceDetail_back-btn">Go Back</button>
+            <button onClick={() => window.location.reload()} className="SpaceDetail_retry-btn">Retry</button>
         </div>
     );
 
     return (
-        <div className="SpaceDetail_page">
-            <button className="SpaceDetail_back-btn" onClick={() => navigate(-1)}>
-                Back to spaces
-            </button>
+        <>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+            <div className="SpaceDetail_page">
+                <button className="SpaceDetail_back-btn" onClick={() => navigate(-1)}>
+                    Back to spaces
+                </button>
 
-            <h2 className="SpaceDetail_page-title">Space Details</h2>
+                <h2 className="SpaceDetail_page-title">Space Details</h2>
 
-            {/* Unit Type Badge */}
-            {space.unit_type && (
-                <div className="SpaceDetail_unit_badge">
-                    {space.unit_type.replace('_', ' ').toUpperCase()}
-                </div>
-            )}
+                {isOwnSpace() && (
+                    <div className="SpaceDetail_owner_warning">
+                        ⚠️ This is your own space. You cannot book it.
+                    </div>
+                )}
 
-            <div className="SpaceDetail_top-grid">
-                {/* LEFT — Booking */}
-                <div className="SpaceDetail_left">
-                    <h1 className="SpaceDetail_title">{space.title}</h1>
+                {!user && (
+                    <div className="SpaceDetail_login_warning">
+                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    </div>
+                )}
 
-                    {/* Location Info */}
-                    <p className="SpaceDetail_meta">
-                        📍 {space.city}, {space.area}
-                        {space.address && <span> - {space.address}</span>}
-                    </p>
+                {space.unit_type && (
+                    <div className="SpaceDetail_unit_badge">
+                        {space.unit_type.replace('_', ' ').toUpperCase()}
+                    </div>
+                )}
 
-                    {/* Capacity Info */}
-                    {space.total_capacity && (
+                <div className="SpaceDetail_top-grid">
+                    <div className="SpaceDetail_left">
+                        <h1 className="SpaceDetail_title">{space.title}</h1>
+
                         <p className="SpaceDetail_meta">
-                            👥 Capacity: {space.total_capacity} people
+                            📍 {space.city}, {space.area}
+                            {space.address && <span> - {space.address}</span>}
                         </p>
+
+                        {space.total_capacity && (
+                            <p className="SpaceDetail_meta">
+                                👥 Capacity: {space.total_capacity} people
+                            </p>
+                        )}
+
+                        <p className="SpaceDetail_meta">
+                            Availability: <span className="SpaceDetail_available">
+                                {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
+                            </span>
+                        </p>
+
+                        {getAvailableRateTypes().length > 1 && (
+                            <div className="SpaceDetail_rate_selector">
+                                <label>Select Pricing Plan:</label>
+                                <div className="SpaceDetail_rate_options">
+                                    {getAvailableRateTypes().map(type => (
+                                        <button
+                                            key={type.key}
+                                            className={`SpaceDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedRateType(type.key);
+                                                info(`${type.label} pricing selected`);
+                                            }}
+                                        >
+                                            {type.label}
+                                            <span className="SpaceDetail_rate_amount">
+                                                {type.rate.toLocaleString()} PKR
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="SpaceDetail_pricing">
+                            <p className="SpaceDetail_price">
+                                {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
+                            </p>
+                            {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
+                                <p className="SpaceDetail_note">
+                                    💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
+                                </p>
+                            )}
+                            {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
+                                <p className="SpaceDetail_note">
+                                    💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Date & Time Selection Section */}
+                        <div className="SpaceDetail_datetime_section">
+                            <h3 className="SpaceDetail_section_title">Select Date & Time</h3>
+                            <div className="SpaceDetail_datetime_grid">
+                                <DateTimePicker
+                                    label="Start Date & Time"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    minDate={new Date().toISOString()}
+                                    placeholder="Select start date and time"
+                                />
+                                <DateTimePicker
+                                    label="End Date & Time"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    minDate={startDate || new Date().toISOString()}
+                                    placeholder="Select end date and time"
+                                />
+                            </div>
+                        </div>
+
+                        {startDate && endDate && (
+                            <div className="SpaceDetail_summary">
+                                <div className="SpaceDetail_summary-row">
+                                    <span>Starting Date</span>
+                                    <span>{new Date(startDate).toLocaleString()}</span>
+                                </div>
+                                <div className="SpaceDetail_summary-row">
+                                    <span>Ending Date</span>
+                                    <span>{new Date(endDate).toLocaleString()}</span>
+                                </div>
+                                <div className="SpaceDetail_summary-row">
+                                    <span>
+                                        {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
+                                    </span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                                <div className="SpaceDetail_summary-row SpaceDetail_summary-total">
+                                    <span>Total</span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            className="SpaceDetail_continue-btn"
+                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            onClick={handleBooking}
+                        >
+                            {bookingLoading ? (
+                                <>
+                                    <span className="spinner-small"></span>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Confirm Booking'
+                            )}
+                        </button>
+                    </div>
+
+                    <div className="SpaceDetail_right">
+                        <div className="SpaceDetail_gallery">
+                            {images.length > 0 && images[0] ? (
+                                <img
+                                    src={images[currentImage]}
+                                    alt={space.title}
+                                    className="SpaceDetail_main-img"
+                                    onError={(e) => {
+                                        e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                    }}
+                                />
+                            ) : (
+                                <div className="SpaceDetail_no-img">No image available</div>
+                            )}
+
+                            {images.length > 1 && (
+                                <>
+                                    <button className="SpaceDetail_img-nav SpaceDetail_prev" onClick={prevImage}>‹</button>
+                                    <button className="SpaceDetail_img-nav SpaceDetail_next" onClick={nextImage}>›</button>
+                                    <div className="SpaceDetail_img-counter">
+                                        {currentImage + 1} / {images.length}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {images.length > 1 && (
+                            <div className="SpaceDetail_thumbnails">
+                                {images.slice(0, 5).map((img, i) => (
+                                    <img
+                                        key={i}
+                                        src={img}
+                                        alt={`view-${i}`}
+                                        className={`SpaceDetail_thumb ${i === currentImage ? 'active' : ''}`}
+                                        onClick={() => setCurrentImage(i)}
+                                        onError={(e) => {
+                                            e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="SpaceDetail_bottom">
+                    <div className="SpaceDetail_section">
+                        <h3 className="SpaceDetail_section-title">About this space</h3>
+                        <p className="SpaceDetail_description">
+                            {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
+                        </p>
+                    </div>
+
+                    {space.space?.opening_time && space.space?.closing_time && (
+                        <div className="SpaceDetail_section">
+                            <h3 className="SpaceDetail_section-title">Working Hours</h3>
+                            <p className="SpaceDetail_working_hours">
+                                {space.space.opening_time} - {space.space.closing_time}
+                            </p>
+                            {space.space.working_days && (
+                                <p className="SpaceDetail_working_days">
+                                    {space.space.working_days.join(', ')}
+                                </p>
+                            )}
+                        </div>
                     )}
 
-                    <p className="SpaceDetail_meta">
-                        Availability: <span className="SpaceDetail_available">
-                            {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
-                        </span>
-                    </p>
-
-                    {/* Rate Type Selector - Only show if multiple rate types available */}
-                    {getAvailableRateTypes().length > 1 && (
-                        <div className="SpaceDetail_rate_selector">
-                            <label>Select Pricing Plan:</label>
-                            <div className="SpaceDetail_rate_options">
-                                {getAvailableRateTypes().map(type => (
-                                    <button
-                                        key={type.key}
-                                        className={`SpaceDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
-                                        onClick={() => setSelectedRateType(type.key)}
-                                    >
-                                        {type.label}
-                                        <span className="SpaceDetail_rate_amount">
-                                            {type.rate.toLocaleString()} PKR
-                                        </span>
-                                    </button>
+                    {renderAmenities().length > 0 && (
+                        <div className="SpaceDetail_section">
+                            <h3 className="SpaceDetail_section-title">Amenities</h3>
+                            <div className="SpaceDetail_features">
+                                {renderAmenities().map((item, i) => (
+                                    <span key={i} className="SpaceDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Pricing Info - Single Rate Display */}
-                    <div className="SpaceDetail_pricing">
-                        <p className="SpaceDetail_price">
-                            {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
-                        </p>
-                        {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
-                            <p className="SpaceDetail_note">
-                                💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
-                            </p>
-                        )}
-                        {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
-                            <p className="SpaceDetail_note">
-                                💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Date Tabs */}
-                    <div className="SpaceDetail_tabs">
-                        <button
-                            className={`SpaceDetail_tab ${activeTab === 'start' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('start')}
-                        >
-                            Starting Date
-                        </button>
-                        <button
-                            className={`SpaceDetail_tab ${activeTab === 'end' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('end')}
-                        >
-                            Ending Date
-                        </button>
-                    </div>
-
-                    {/* Date Input */}
-                    <div className="SpaceDetail_date-input-wrap">
-                        {activeTab === 'start' ? (
-                            <input
-                                type="date"
-                                className="SpaceDetail_date-input"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        ) : (
-                            <input
-                                type="date"
-                                className="SpaceDetail_date-input"
-                                value={endDate}
-                                min={startDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
-                        )}
-                    </div>
-
-                    {/* Summary Card */}
-                    {startDate && endDate && (
-                        <div className="SpaceDetail_summary">
-                            <div className="SpaceDetail_summary-row">
-                                <span>Starting Date</span>
-                                <span>{formatDate(startDate)}</span>
+                    {space.space && (
+                        <div className="SpaceDetail_section">
+                            <h3 className="SpaceDetail_section-title">Space Information</h3>
+                            <div className="SpaceDetail_space_info">
+                                <p><strong>Space Name:</strong> {space.space.name}</p>
+                                <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
+                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
                             </div>
-                            <div className="SpaceDetail_summary-row">
-                                <span>Ending Date</span>
-                                <span>{formatDate(endDate)}</span>
-                            </div>
-                            <div className="SpaceDetail_summary-row">
-                                <span>
-                                    {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
-                                </span>
-                                <span>PKR {total.toLocaleString()}</span>
-                            </div>
-                            <div className="SpaceDetail_summary-row SpaceDetail_summary-total">
-                                <span>Total</span>
-                                <span>PKR {total.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <button
-                        className="SpaceDetail_continue-btn"
-                        disabled={!startDate || !endDate}
-                    >
-                        Continue to Booking
-                    </button>
-                </div>
-
-                {/* RIGHT — Image Gallery */}
-                <div className="SpaceDetail_right">
-                    <div className="SpaceDetail_gallery">
-                        {images.length > 0 && images[0] ? (
-                            <img
-                                src={images[currentImage]}
-                                alt={space.title}
-                                className="SpaceDetail_main-img"
-                                onError={(e) => {
-                                    // Fallback if image fails to load
-                                    e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                                }}
-                            />
-                        ) : (
-                            <div className="SpaceDetail_no-img">No image available</div>
-                        )}
-
-                        {images.length > 1 && (
-                            <>
-                                <button className="SpaceDetail_img-nav SpaceDetail_prev" onClick={prevImage}>‹</button>
-                                <button className="SpaceDetail_img-nav SpaceDetail_next" onClick={nextImage}>›</button>
-                                <div className="SpaceDetail_img-counter">
-                                    {currentImage + 1} / {images.length}
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    {images.length > 1 && (
-                        <div className="SpaceDetail_thumbnails">
-                            {images.slice(0, 5).map((img, i) => (
-                                <img
-                                    key={i}
-                                    src={img}
-                                    alt={`view-${i}`}
-                                    className={`SpaceDetail_thumb ${i === currentImage ? 'active' : ''}`}
-                                    onClick={() => setCurrentImage(i)}
-                                    onError={(e) => {
-                                        e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                                    }}
-                                />
-                            ))}
                         </div>
                     )}
                 </div>
             </div>
-
-            {/* Bottom — Description & Features */}
-            <div className="SpaceDetail_bottom">
-                <div className="SpaceDetail_section">
-                    <h3 className="SpaceDetail_section-title">About this space</h3>
-                    <p className="SpaceDetail_description">
-                        {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
-                    </p>
-                </div>
-
-                {/* Working Hours */}
-                {space.space?.opening_time && space.space?.closing_time && (
-                    <div className="SpaceDetail_section">
-                        <h3 className="SpaceDetail_section-title">Working Hours</h3>
-                        <p className="SpaceDetail_working_hours">
-                            {space.space.opening_time} - {space.space.closing_time}
-                        </p>
-                        {space.space.working_days && (
-                            <p className="SpaceDetail_working_days">
-                                {space.space.working_days.join(', ')}
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {/* Amenities */}
-                {renderAmenities().length > 0 && (
-                    <div className="SpaceDetail_section">
-                        <h3 className="SpaceDetail_section-title">Amenities</h3>
-                        <div className="SpaceDetail_features">
-                            {renderAmenities().map((item, i) => (
-                                <span key={i} className="SpaceDetail_feature-tag">✓ {item}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Space Info */}
-                {space.space && (
-                    <div className="SpaceDetail_section">
-                        <h3 className="SpaceDetail_section-title">Space Information</h3>
-                        <div className="SpaceDetail_space_info">
-                            <p><strong>Space Name:</strong> {space.space.name}</p>
-                            <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 

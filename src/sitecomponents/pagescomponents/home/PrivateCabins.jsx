@@ -5,6 +5,7 @@ import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
 import './../../../componentstyles/homestyle/privateCabins.css';
 import { useNavigate } from 'react-router-dom';
+import BaseUrl from '../../../utils/AppConstants.jsx';
 
 const Private_Cabins = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
@@ -38,7 +39,7 @@ const Private_Cabins = ({ title }) => {
     };
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL:  BaseUrl,
         timeout: 10000,
         headers: { 'Content-Type': 'application/json' }
     });

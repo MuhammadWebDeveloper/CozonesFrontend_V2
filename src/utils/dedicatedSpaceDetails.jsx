@@ -1,29 +1,74 @@
-// DedicatedDeskDetail.jsx - Fixed Image Slider with Complete Space Details
+// DedicatedDeskDetail.jsx - Updated with SpaceDetail Design and DateTimePicker
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import DateTimePicker from './DateTimePicker';
+import { useToast } from './UseTost';
+import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/dedicatedDesksDetailed.css';
+import BaseUrl from './AppConstants';
 
 const DedicatedDeskDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
-    const [imageLoading, setImageLoading] = useState(true);
-    const [loadedImages, setLoadedImages] = useState({});
-    const [activeTab, setActiveTab] = useState('start');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedRateType, setSelectedRateType] = useState('daily');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [imageLoading, setImageLoading] = useState(true);
+    const [loadedImages, setLoadedImages] = useState({});
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
-        timeout: 10000,
+        baseURL: BaseUrl,
+        timeout: 30000,
         headers: { 'Content-Type': 'application/json' }
     });
+
+    // Add token to requests
+    apiClient.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+    // Get current user info
+    useEffect(() => {
+        const getUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await apiClient.get('api/auth/profile');
+                    setUser(response.data.user);
+                    success('Welcome back! 👋');
+                } catch (err) {
+                    console.error('Error fetching user:', err);
+                }
+            }
+        };
+        getUser();
+    }, []);
+
+    // Check for pre-filled dates from "Book Again"
+    useEffect(() => {
+        const { state } = location;
+        if (state?.prefillStartDate && state?.prefillEndDate) {
+            setStartDate(state.prefillStartDate);
+            setEndDate(state.prefillEndDate);
+            if (state.fromBookAgain) {
+                info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
+            }
+        }
+    }, [location]);
 
     useEffect(() => {
         const fetchDedicatedDesk = async () => {
@@ -43,7 +88,7 @@ const DedicatedDeskDetail = () => {
                         rateType = 'monthly';
                     }
 
-                    // Parse images properly - handle JSON string or array
+                    // Parse images properly
                     let parsedImages = [];
                     if (unitData.images) {
                         if (typeof unitData.images === 'string') {
@@ -98,6 +143,7 @@ const DedicatedDeskDetail = () => {
                         space_amenities: parsedAmenities,
                         policies: parsedPolicies,
                         is_active: unitData.is_active,
+                        owner_id: unitData.space?.owner_id,
                         created_at: unitData.created_at,
                         updated_at: unitData.updated_at
                     };
@@ -106,11 +152,13 @@ const DedicatedDeskDetail = () => {
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
                     setLoadedImages({});
+                    success('Space details loaded successfully! 🎉');
                 } else {
-                    console.error('Unit not found');
+                    error('Space not found');
                 }
             } catch (err) {
                 console.error('Error fetching dedicated desk:', err);
+                error('Failed to load space details. Please try again.');
             } finally {
                 setLoading(false);
             }
@@ -121,42 +169,45 @@ const DedicatedDeskDetail = () => {
         }
     }, [id]);
 
-    // ✅ FIXED: Properly handle Base64 images, URLs, and file paths
+    const isOwnSpace = () => {
+        if (!user || !space) return false;
+        return user.id === space.owner_id;
+    };
+
     const getImages = useCallback(() => {
         if (space?.images && space.images.length > 0) {
             return space.images
                 .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
                 .map(img => {
-                    // If it's already a valid URL (http/https)
                     if (img && (img.startsWith('http://') || img.startsWith('https://'))) {
                         return img;
                     }
-                    // If it's a Base64 data URL
                     if (img && img.startsWith('data:image')) {
                         return img;
                     }
-                    // If it's a raw Base64 string (without data:image prefix)
                     if (img && !img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
-                        // Check if it looks like Base64 (alphanumeric + /+=)
                         if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
                             return `data:image/jpeg;base64,${img}`;
                         }
                         return img;
                     }
-                    // If it's a relative path starting with /
                     if (img && img.startsWith('/')) {
-                        return `http://localhost:4343${img}`;
+                        return `${BaseUrl}${img}`;
                     }
-                    // If it's a relative path without leading slash
                     if (img && !img.startsWith('http') && !img.startsWith('data:')) {
-                        return `http://localhost:4343/uploads/${img}`;
+                        return `${BaseUrl}uploads/${img}`;
                     }
                     return img;
                 });
         }
 
-        // Fallback images based on unit type
-        return ['https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c'];
+        const fallbackImages = {
+            'open_desk': 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c?w=800',
+            'dedicated_desk': 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c?w=800',
+            'private_cabin': 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c?w=800',
+            'meeting_room': 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c?w=800',
+        };x
+        return [fallbackImages[space?.unit_type] || fallbackImages.dedicated_desk];
     }, [space]);
 
     const images = getImages();
@@ -178,7 +229,6 @@ const DedicatedDeskDetail = () => {
         }
     }, [images]);
 
-    // Preload adjacent images for faster navigation
     const preloadAdjacentImages = useCallback((currentIdx) => {
         if (images.length === 0) return;
         const nextIdx = (currentIdx + 1) % images.length;
@@ -195,7 +245,6 @@ const DedicatedDeskDetail = () => {
         });
     }, [images, loadedImages]);
 
-    // Preload adjacent images when current image changes
     useEffect(() => {
         if (images.length > 0) {
             preloadAdjacentImages(currentImage);
@@ -243,7 +292,6 @@ const DedicatedDeskDetail = () => {
 
     const handleTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
-
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > 50;
         const isRightSwipe = distance < -50;
@@ -254,7 +302,6 @@ const DedicatedDeskDetail = () => {
         if (isRightSwipe) {
             prevImage();
         }
-
         setTouchStart(0);
         setTouchEnd(0);
     };
@@ -268,7 +315,6 @@ const DedicatedDeskDetail = () => {
                 nextImage();
             }
         };
-
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [nextImage, prevImage]);
@@ -293,19 +339,13 @@ const DedicatedDeskDetail = () => {
         return Math.max(0, monthDiff);
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-    };
-
     const getRateDisplay = () => {
-        if (!space) return { rate: 0, unit: 'day' };
+        if (!space) return { rate: 0, unit: 'day', value: 0 };
         switch (selectedRateType) {
-            case 'hourly': return { rate: space.hourly_rate, unit: 'hour' };
-            case 'daily': return { rate: space.daily_rate, unit: 'day' };
-            case 'monthly': return { rate: space.monthly_rate, unit: 'month' };
-            default: return { rate: space.daily_rate, unit: 'day' };
+            case 'hourly': return { rate: space.hourly_rate, unit: 'hour', value: space.hourly_rate || 0 };
+            case 'daily': return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
+            case 'monthly': return { rate: space.monthly_rate, unit: 'month', value: space.monthly_rate || 0 };
+            default: return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
         }
     };
 
@@ -339,6 +379,115 @@ const DedicatedDeskDetail = () => {
         }
     };
 
+    const handleBooking = async () => {
+        if (!user) {
+            warning('Please login to book this space');
+            setTimeout(() => {
+                navigate('/login', { state: { from: `/dedicated-desk/${id}` } });
+            }, 1500);
+            return;
+        }
+
+        if (isOwnSpace()) {
+            error('You cannot book your own space!');
+            return;
+        }
+
+        if (!startDate || !endDate) {
+            warning('Please select both start and end dates');
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start >= end) {
+            error('End time must be after start time');
+            return;
+        }
+
+        const totalPrice = calculateTotal();
+        if (totalPrice <= 0) {
+            error('Invalid booking duration or price');
+            return;
+        }
+
+        setBookingLoading(true);
+
+        try {
+            const bookingData = {
+                space_unit_id: id,
+                start_time: new Date(startDate).toISOString(),
+                end_time: new Date(endDate).toISOString(),
+                total_price: totalPrice
+            };
+
+            console.log('Sending booking data:', bookingData);
+
+            const response = await apiClient.post('api/bookings/createbooking', bookingData, {
+                timeout: 30000
+            });
+
+            if (response.data.success) {
+                success(`Booking successful! Reference: ${response.data.booking.booking_ref}`, 5000);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 2000);
+            } else {
+                throw new Error(response.data.message || 'Booking failed');
+            }
+
+        } catch (err) {
+            console.error('Booking error:', err);
+
+            let errorMessage = 'Failed to create booking. Please try again.';
+
+            if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                errorMessage = 'Booking is being processed. Please check "My Bookings" page to confirm your booking.';
+                warning(errorMessage);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 3000);
+                return;
+            }
+
+            if (err.response) {
+                if (err.response.status === 401) {
+                    errorMessage = 'Session expired. Please login again';
+                    setTimeout(() => navigate('/login'), 2000);
+                } else if (err.response.status === 409) {
+                    errorMessage = err.response.data.message || 'This time slot is already booked.';
+                } else if (err.response.data?.message) {
+                    errorMessage = err.response.data.message;
+                }
+            }
+
+            error(errorMessage);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+
+        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
+            warning('End date should be after start date');
+            setEndDate('');
+        }
+    };
+
+    const handleEndDateChange = (e) => {
+        const newEndDate = e.target.value;
+        setEndDate(newEndDate);
+
+        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
+            warning('End date must be after start date');
+            setEndDate('');
+        }
+    };
+
     const rateDisplay = getRateDisplay();
     const quantity = getQuantity();
     const total = calculateTotal();
@@ -346,13 +495,13 @@ const DedicatedDeskDetail = () => {
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
-        if (amenities.wifi) amenityList.push('✓ High-Speed WiFi');
-        if (amenities.ac) amenityList.push('❄️ Air Conditioning');
-        if (amenities.coffee) amenityList.push('☕ Free Coffee & Tea');
-        if (amenities.printer) amenityList.push('🖨️ Printer & Scanner');
-        if (amenities.parking) amenityList.push('🅿️ Parking');
-        if (amenities.security) amenityList.push('🔒 24/7 Security');
-        if (amenities.backup_power) amenityList.push('⚡ Backup Power');
+        if (amenities.wifi) amenityList.push('WiFi');
+        if (amenities.ac) amenityList.push('Air Conditioning');
+        if (amenities.coffee) amenityList.push('Free Coffee');
+        if (amenities.printer) amenityList.push('Printer');
+        if (amenities.parking) amenityList.push('Parking');
+        if (amenities.security) amenityList.push('24/7 Security');
+        if (amenities.backup_power) amenityList.push('Backup Power');
         return amenityList;
     };
 
@@ -382,296 +531,312 @@ const DedicatedDeskDetail = () => {
     if (!space) {
         return (
             <div className="DedicatedDeskDetail_loading">
-                <p>Dedicated desk not found.</p>
-                <button onClick={() => navigate('/dedicated-desks')} className="DedicatedDeskDetail_back-btn">Go Back</button>
+                <p>Unable to load space details.</p>
+                <button onClick={() => navigate(-1)} className="DedicatedDeskDetail_back-btn">Go Back</button>
+                <button onClick={() => window.location.reload()} className="DedicatedDeskDetail_retry-btn">Retry</button>
             </div>
         );
     }
 
     return (
-        <div className="DedicatedDeskDetail_page">
-            <button className="DedicatedDeskDetail_back-btn" onClick={() => navigate('/')}>
-                ← Back to spaces
-            </button>
+        <>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+            <div className="DedicatedDeskDetail_page">
+                <button className="DedicatedDeskDetail_back-btn" onClick={() => navigate(-1)}>
+                    Back to spaces
+                </button>
 
-            <h2 className="DedicatedDeskDetail_page-title">Dedicated Desk Details</h2>
+                <h2 className="DedicatedDeskDetail_page-title">Space Details</h2>
 
-            {space.unit_type && (
-                <div className="DedicatedDeskDetail_badge">
-                    {space.unit_type.replace('_', ' ').toUpperCase()}
-                </div>
-            )}
+                {isOwnSpace() && (
+                    <div className="DedicatedDeskDetail_owner_warning">
+                        ⚠️ This is your own space. You cannot book it.
+                    </div>
+                )}
 
-            <div className="DedicatedDeskDetail_top-grid">
-                <div className="DedicatedDeskDetail_left">
-                    <h1 className="DedicatedDeskDetail_title">{space.title}</h1>
+                {!user && (
+                    <div className="DedicatedDeskDetail_login_warning">
+                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    </div>
+                )}
 
-                    <p className="DedicatedDeskDetail_meta">
-                        📍 {space.city}, {space.area}
-                        {space.address && <span> - {space.address}</span>}
-                    </p>
+                {space.unit_type && (
+                    <div className="DedicatedDeskDetail_unit_badge">
+                        {space.unit_type.replace('_', ' ').toUpperCase()}
+                    </div>
+                )}
 
-                    {space.total_capacity && (
+                <div className="DedicatedDeskDetail_top-grid">
+                    <div className="DedicatedDeskDetail_left">
+                        <h1 className="DedicatedDeskDetail_title">{space.title}</h1>
+
                         <p className="DedicatedDeskDetail_meta">
-                            👥 Capacity: {space.total_capacity} people
+                            📍 {space.city}, {space.area}
+                            {space.address && <span> - {space.address}</span>}
                         </p>
+
+                        {space.total_capacity && (
+                            <p className="DedicatedDeskDetail_meta">
+                                👥 Capacity: {space.total_capacity} people
+                            </p>
+                        )}
+
+                        <p className="DedicatedDeskDetail_meta">
+                            Availability: <span className="DedicatedDeskDetail_available">
+                                {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
+                            </span>
+                        </p>
+
+                        {getAvailableRateTypes().length > 1 && (
+                            <div className="DedicatedDeskDetail_rate_selector">
+                                <label>Select Pricing Plan:</label>
+                                <div className="DedicatedDeskDetail_rate_options">
+                                    {getAvailableRateTypes().map(type => (
+                                        <button
+                                            key={type.key}
+                                            className={`DedicatedDeskDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedRateType(type.key);
+                                                info(`${type.label} pricing selected`);
+                                            }}
+                                        >
+                                            {type.label}
+                                            <span className="DedicatedDeskDetail_rate_amount">
+                                                {type.rate.toLocaleString()} PKR
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="DedicatedDeskDetail_pricing">
+                            <p className="DedicatedDeskDetail_price">
+                                {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
+                            </p>
+                            {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
+                                <p className="DedicatedDeskDetail_note">
+                                    💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
+                                </p>
+                            )}
+                            {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
+                                <p className="DedicatedDeskDetail_note">
+                                    💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Date & Time Selection Section with DateTimePicker */}
+                        <div className="DedicatedDeskDetail_datetime_section">
+                            <h3 className="DedicatedDeskDetail_section_title">Select Date & Time</h3>
+                            <div className="DedicatedDeskDetail_datetime_grid">
+                                <DateTimePicker
+                                    label="Start Date & Time"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    minDate={new Date().toISOString()}
+                                    placeholder="Select start date and time"
+                                />
+                                <DateTimePicker
+                                    label="End Date & Time"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    minDate={startDate || new Date().toISOString()}
+                                    placeholder="Select end date and time"
+                                />
+                            </div>
+                        </div>
+
+                        {startDate && endDate && (
+                            <div className="DedicatedDeskDetail_summary">
+                                <div className="DedicatedDeskDetail_summary-row">
+                                    <span>Starting Date</span>
+                                    <span>{new Date(startDate).toLocaleString()}</span>
+                                </div>
+                                <div className="DedicatedDeskDetail_summary-row">
+                                    <span>Ending Date</span>
+                                    <span>{new Date(endDate).toLocaleString()}</span>
+                                </div>
+                                <div className="DedicatedDeskDetail_summary-row">
+                                    <span>
+                                        {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
+                                    </span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                                <div className="DedicatedDeskDetail_summary-row DedicatedDeskDetail_summary-total">
+                                    <span>Total</span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            className="DedicatedDeskDetail_continue-btn"
+                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            onClick={handleBooking}
+                        >
+                            {bookingLoading ? (
+                                <>
+                                    <span className="spinner-small"></span>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Confirm Booking'
+                            )}
+                        </button>
+                    </div>
+
+                    {/* IMAGE SLIDER SECTION */}
+                    <div className="DedicatedDeskDetail_right">
+                        <div
+                            className="DedicatedDeskDetail_gallery"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            {images.length > 0 && images[0] ? (
+                                <>
+                                    {imageLoading && !loadedImages[currentImage] && (
+                                        <div className="DedicatedDeskDetail_image_loader">
+                                            <div className="DedicatedDeskDetail_spinner_small"></div>
+                                        </div>
+                                    )}
+
+                                    <img
+                                        key={currentImage}
+                                        src={images[currentImage]}
+                                        alt={`${space.title} - Image ${currentImage + 1}`}
+                                        className={`DedicatedDeskDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
+                                        onLoad={() => {
+                                            setImageLoading(false);
+                                            setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
+                                        }}
+                                        onError={(e) => {
+                                            console.error('Image failed to load');
+                                            e.target.src = 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c';
+                                            setImageLoading(false);
+                                        }}
+                                    />
+
+                                    {images.length > 1 && (
+                                        <>
+                                            <button
+                                                className="DedicatedDeskDetail_img-nav DedicatedDeskDetail_prev"
+                                                onClick={prevImage}
+                                                aria-label="Previous image"
+                                            >
+                                                ‹
+                                            </button>
+                                            <button
+                                                className="DedicatedDeskDetail_img-nav DedicatedDeskDetail_next"
+                                                onClick={nextImage}
+                                                aria-label="Next image"
+                                            >
+                                                ›
+                                            </button>
+                                            <div className="DedicatedDeskDetail_img-counter">
+                                                {currentImage + 1} / {images.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="DedicatedDeskDetail_no-img">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c"
+                                        alt="Fallback"
+                                        className="DedicatedDeskDetail_main-img"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {images.length > 1 && (
+                            <div className="DedicatedDeskDetail_thumbnails">
+                                {images.slice(0, 6).map((img, i) => (
+                                    <div
+                                        key={i}
+                                        className={`DedicatedDeskDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
+                                        onClick={() => goToImage(i)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Thumbnail ${i + 1}`}
+                                            className="DedicatedDeskDetail_thumb"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c';
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="DedicatedDeskDetail_bottom">
+                    <div className="DedicatedDeskDetail_section">
+                        <h3 className="DedicatedDeskDetail_section-title">About this space</h3>
+                        <p className="DedicatedDeskDetail_description">
+                            {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
+                        </p>
+                    </div>
+
+                    {/* Working Hours */}
+                    {space.space?.opening_time && space.space?.closing_time && (
+                        <div className="DedicatedDeskDetail_section">
+                            <h3 className="DedicatedDeskDetail_section-title">Working Hours</h3>
+                            <p className="DedicatedDeskDetail_working_hours">
+                                {space.space.opening_time} - {space.space.closing_time}
+                            </p>
+                            {space.space.working_days && (
+                                <p className="DedicatedDeskDetail_working_days">
+                                    {space.space.working_days.join(', ')}
+                                </p>
+                            )}
+                        </div>
                     )}
 
-                    <p className="DedicatedDeskDetail_meta">
-                        Availability: <span className="DedicatedDeskDetail_available">
-                            {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
-                        </span>
-                    </p>
-
-                    {getAvailableRateTypes().length > 1 && (
-                        <div className="DedicatedDeskDetail_rate_selector">
-                            <label>Select Pricing Plan:</label>
-                            <div className="DedicatedDeskDetail_rate_options">
-                                {getAvailableRateTypes().map(type => (
-                                    <button
-                                        key={type.key}
-                                        className={`DedicatedDeskDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
-                                        onClick={() => setSelectedRateType(type.key)}
-                                    >
-                                        {type.label}
-                                        <span className="DedicatedDeskDetail_rate_amount">
-                                            {type.rate.toLocaleString()} PKR
-                                        </span>
-                                    </button>
+                    {/* Amenities */}
+                    {renderAmenities().length > 0 && (
+                        <div className="DedicatedDeskDetail_section">
+                            <h3 className="DedicatedDeskDetail_section-title">Amenities</h3>
+                            <div className="DedicatedDeskDetail_features">
+                                {renderAmenities().map((item, i) => (
+                                    <span key={i} className="DedicatedDeskDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    <div className="DedicatedDeskDetail_pricing">
-                        <p className="DedicatedDeskDetail_price">
-                            {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
-                        </p>
-                        {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
-                            <p className="DedicatedDeskDetail_note">
-                                💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
-                            </p>
-                        )}
-                        {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
-                            <p className="DedicatedDeskDetail_note">
-                                💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="DedicatedDeskDetail_tabs">
-                        <button
-                            className={`DedicatedDeskDetail_tab ${activeTab === 'start' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('start')}
-                        >
-                            Starting Date
-                        </button>
-                        <button
-                            className={`DedicatedDeskDetail_tab ${activeTab === 'end' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('end')}
-                        >
-                            Ending Date
-                        </button>
-                    </div>
-
-                    <div className="DedicatedDeskDetail_date-input-wrap">
-                        {activeTab === 'start' ? (
-                            <input
-                                type="date"
-                                className="DedicatedDeskDetail_date-input"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        ) : (
-                            <input
-                                type="date"
-                                className="DedicatedDeskDetail_date-input"
-                                value={endDate}
-                                min={startDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
-                        )}
-                    </div>
-
-                    {startDate && endDate && (
-                        <div className="DedicatedDeskDetail_summary">
-                            <div className="DedicatedDeskDetail_summary-row">
-                                <span>Starting Date</span>
-                                <span>{formatDate(startDate)}</span>
-                            </div>
-                            <div className="DedicatedDeskDetail_summary-row">
-                                <span>Ending Date</span>
-                                <span>{formatDate(endDate)}</span>
-                            </div>
-                            <div className="DedicatedDeskDetail_summary-row">
-                                <span>{rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}</span>
-                                <span>PKR {total.toLocaleString()}</span>
-                            </div>
-                            <div className="DedicatedDeskDetail_summary-row DedicatedDeskDetail_summary-total">
-                                <span>Total</span>
-                                <span>PKR {total.toLocaleString()}</span>
+                    {/* Space Information */}
+                    {space.space && (
+                        <div className="DedicatedDeskDetail_section">
+                            <h3 className="DedicatedDeskDetail_section-title">Space Information</h3>
+                            <div className="DedicatedDeskDetail_space_info">
+                                <p><strong>Space Name:</strong> {space.space.name}</p>
+                                <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
+                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
                             </div>
                         </div>
                     )}
 
-                    <button
-                        className="DedicatedDeskDetail_continue-btn"
-                        disabled={!startDate || !endDate}
-                    >
-                        Continue to Booking
-                    </button>
-                </div>
-
-                {/* IMAGE SLIDER SECTION - FIXED FOR BASE64 */}
-                <div className="DedicatedDeskDetail_right">
-                    <div
-                        className="DedicatedDeskDetail_gallery"
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                    >
-                        {images.length > 0 && images[0] ? (
-                            <>
-                                {imageLoading && !loadedImages[currentImage] && (
-                                    <div className="DedicatedDeskDetail_image_loader">
-                                        <div className="DedicatedDeskDetail_spinner_small"></div>
-                                    </div>
-                                )}
-
-                                <img
-                                    key={currentImage}
-                                    src={images[currentImage]}
-                                    alt={`${space.title} - Image ${currentImage + 1}`}
-                                    className={`DedicatedDeskDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
-                                    onLoad={() => {
-                                        setImageLoading(false);
-                                        setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
-                                    }}
-                                    onError={(e) => {
-                                        console.error('Image failed to load');
-                                        e.target.src = 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c';
-                                        setImageLoading(false);
-                                    }}
-                                />
-
-                                {images.length > 1 && (
-                                    <>
-                                        <button
-                                            className="DedicatedDeskDetail_img-nav DedicatedDeskDetail_prev"
-                                            onClick={prevImage}
-                                            aria-label="Previous image"
-                                        >
-                                            ‹
-                                        </button>
-                                        <button
-                                            className="DedicatedDeskDetail_img-nav DedicatedDeskDetail_next"
-                                            onClick={nextImage}
-                                            aria-label="Next image"
-                                        >
-                                            ›
-                                        </button>
-                                        <div className="DedicatedDeskDetail_img-counter">
-                                            {currentImage + 1} / {images.length}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <div className="DedicatedDeskDetail_no-img">
-                                <img
-                                    src="https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c"
-                                    alt="Fallback"
-                                    className="DedicatedDeskDetail_main-img"
-                                />
+                    {/* Policies */}
+                    {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
+                        <div className="DedicatedDeskDetail_section">
+                            <h3 className="DedicatedDeskDetail_section-title">Policies</h3>
+                            <div className="DedicatedDeskDetail_policies">
+                                {space.policies.cancellation && <p><strong>Cancellation:</strong> {space.policies.cancellation}</p>}
+                                {space.policies.refund && <p><strong>Refund:</strong> {space.policies.refund}</p>}
+                                {space.policies.late_arrival && <p><strong>Late Arrival:</strong> {space.policies.late_arrival}</p>}
                             </div>
-                        )}
-                    </div>
-
-                    {images.length > 1 && (
-                        <div className="DedicatedDeskDetail_thumbnails">
-                            {images.slice(0, 6).map((img, i) => (
-                                <div
-                                    key={i}
-                                    className={`DedicatedDeskDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
-                                    onClick={() => goToImage(i)}
-                                >
-                                    <img
-                                        src={img}
-                                        alt={`Thumbnail ${i + 1}`}
-                                        className="DedicatedDeskDetail_thumb"
-                                        loading="lazy"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c';
-                                        }}
-                                    />
-                                </div>
-                            ))}
                         </div>
                     )}
                 </div>
             </div>
-
-            <div className="DedicatedDeskDetail_bottom">
-                <div className="DedicatedDeskDetail_section">
-                    <h3 className="DedicatedDeskDetail_section-title">About this space</h3>
-                    <p className="DedicatedDeskDetail_description">
-                        {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
-                    </p>
-                </div>
-
-                {/* Working Hours */}
-                {space.space?.opening_time && space.space?.closing_time && (
-                    <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">Working Hours</h3>
-                        <p className="DedicatedDeskDetail_working_hours">
-                            🕐 {space.space.opening_time} - {space.space.closing_time}
-                        </p>
-                        {space.space.working_days && (
-                            <p className="DedicatedDeskDetail_working_days">
-                                📅 {space.space.working_days.join(', ')}
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {/* Amenities */}
-                {renderAmenities().length > 0 && (
-                    <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">Amenities</h3>
-                        <div className="DedicatedDeskDetail_features">
-                            {renderAmenities().map((item, i) => (
-                                <span key={i} className="DedicatedDeskDetail_feature-tag">{item}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Space Information */}
-                {space.space && (
-                    <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">Space Information</h3>
-                        <div className="DedicatedDeskDetail_space_info">
-                            <p><strong>🏢 Space Name:</strong> {space.space.name}</p>
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                        </div>
-                    </div>
-                )}
-
-                {/* Policies */}
-                {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
-                    <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">Policies</h3>
-                        <div className="DedicatedDeskDetail_policies">
-                            {space.policies.cancellation && <p><strong>❌ Cancellation:</strong> {space.policies.cancellation}</p>}
-                            {space.policies.refund && <p><strong>💰 Refund:</strong> {space.policies.refund}</p>}
-                            {space.policies.late_arrival && <p><strong>⏰ Late Arrival:</strong> {space.policies.late_arrival}</p>}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 

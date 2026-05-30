@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/authstyls/LoginRegister.css';
+import BaseUrl from '../../utils/AppConstants';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const Register = () => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:4343/api/auth/register', {
+            const response = await axios.post(`${BaseUrl}api/auth/register`, {
                 full_name: formData.name,
                 email: formData.email,
                 password: formData.password,
@@ -34,7 +35,7 @@ const Register = () => {
 
             if (response.data.success) {
                 // Auto login after registration
-                const loginResponse = await axios.post('http://localhost:4343/api/auth/login', {
+                const loginResponse = await axios.post(`${BaseUrl}api/auth/login`, {
                     email: formData.email,
                     password: formData.password
                 });

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/sellerdashboardstyles/AddUnit.css';
+import BaseUrl from '../../utils/AppConstants';
 
 export default function AddUnit() {
     const { spaceId } = useParams();
@@ -35,7 +36,7 @@ export default function AddUnit() {
     const fetchSpaceDetails = async () => {
         try {
             const token = getAuthToken();
-            const response = await axios.get(`http://localhost:4343/api/spaces/owner/my-spaces`, {
+            const response = await axios.get( `${BaseUrl}api/spaces/owner/my-spaces`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -54,7 +55,7 @@ export default function AddUnit() {
     const fetchExistingUnits = async () => {
         try {
             const token = getAuthToken();
-            const response = await axios.get(`http://localhost:4343/api/spaces/${spaceId}/units`, {
+            const response = await axios.get(`${BaseUrl}api/spaces/${spaceId}/units`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -75,17 +76,48 @@ export default function AddUnit() {
         }));
     };
 
+    // Get available pricing options based on unit type
+    const getAvailablePricingOptions = () => {
+        const unitType = formData.unit_type;
+
+        // Meeting rooms should only have hourly and daily
+        if (unitType === 'meeting_room') {
+            return ['hourly', 'daily'];
+        }
+
+        // All other unit types (open_desk, dedicated_desk, private_cabin) have daily and monthly
+        return ['daily', 'monthly'];
+    };
+
+    // Get pricing option labels
+    const getPricingLabel = (type) => {
+        const labels = {
+            hourly: { title: '⏱️ Hourly Rate', description: 'Best for short-term bookings and meeting rooms', unit: '/hour(PKR)' },
+            daily: { title: '📅 Daily Rate', description: 'Perfect for daily workspace rentals', unit: '/day(PKR)' },
+            monthly: { title: '📆 Monthly Rate', description: 'Best value for long-term commitments', unit: '/month(PKR)' }
+        };
+        return labels[type];
+    };
+
     const handlePricingChange = (type) => {
         setActivePricing(type);
         setFormData(prev => ({
             ...prev,
-            active_pricing_type: type,
-            // Clear other pricing fields when switching
-            hourly_rate: type === 'hourly' ? prev.hourly_rate : '',
-            daily_rate: type === 'daily' ? prev.daily_rate : '',
-            monthly_rate: type === 'monthly' ? prev.monthly_rate : ''
+            active_pricing_type: type
         }));
     };
+
+    // Reset pricing selection when unit type changes
+    useEffect(() => {
+        setActivePricing('');
+        setFormData(prev => ({
+            ...prev,
+            hourly_rate: '',
+            daily_rate: '',
+            monthly_rate: '',
+            active_pricing_type: ''
+        }));
+    }, [formData.unit_type]);
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -150,7 +182,9 @@ export default function AddUnit() {
 
         // Validate pricing selection
         if (!activePricing) {
-            setMessage({ type: 'error', text: 'Please select a pricing plan (Hourly, Daily, or Monthly)' });
+            const availableOptions = getAvailablePricingOptions();
+            const optionsText = availableOptions.map(opt => opt === 'hourly' ? 'Hourly' : opt === 'daily' ? 'Daily' : 'Monthly').join(' or ');
+            setMessage({ type: 'error', text: `Please select a pricing plan (${optionsText})` });
             setLoading(false);
             return;
         }
@@ -185,14 +219,14 @@ export default function AddUnit() {
                 duration: formData.duration || null,
                 is_active: formData.is_active,
                 active_pricing_type: activePricing,
-                // Only send the selected pricing value, others will be set to -999 in backend
+                // Only send the selected pricing value
                 hourly_rate: activePricing === 'hourly' ? parseFloat(formData.hourly_rate) : null,
                 daily_rate: activePricing === 'daily' ? parseFloat(formData.daily_rate) : null,
                 monthly_rate: activePricing === 'monthly' ? parseFloat(formData.monthly_rate) : null
             };
 
             const response = await axios.post(
-                `http://localhost:4343/api/spaces/${spaceId}/addunits`,
+                `${BaseUrl}api/spaces/${spaceId}/addunits`,
                 submitData,
                 {
                     headers: {
@@ -231,6 +265,18 @@ export default function AddUnit() {
     // Check if a unit type is disabled (already exists)
     const isUnitTypeDisabled = (typeValue) => {
         return existingUnitTypes.includes(typeValue);
+    };
+
+    // Get pricing plan message based on unit type
+    const getPricingMessage = () => {
+        const unitType = formData.unit_type;
+        if (!unitType) return 'Please select a unit type first to see available pricing options';
+
+        if (unitType === 'meeting_room') {
+            return '💡 Meeting rooms can only be booked hourly or daily. Monthly plans are not available for meeting rooms.';
+        }
+
+        return '💡 Choose your preferred pricing plan. Only one plan will be active for this unit.';
     };
 
     return (
@@ -314,115 +360,57 @@ export default function AddUnit() {
                     </div>
                 </div>
 
-                {/* Pricing Plan Selection - Only ONE active */}
-                <div className="au__section">
-                    <h2 className="au__section-title">Select Pricing Plan</h2>
-                    <p className="au__section-hint">Choose ONE pricing plan for this unit. Only the selected plan will be active. Others will be set to inactive (-999).</p>
+                {/* Pricing Plan Selection - Conditional based on unit type */}
+                {formData.unit_type && (
+                    <div className="au__section">
+                        <h2 className="au__section-title">Select Pricing Plan</h2>
+                        <p className="au__section-hint">{getPricingMessage()}</p>
 
-                    <div className="au__pricing-plans">
-                        {/* Hourly Plan */}
-                        <div
-                            className={`au__pricing-card ${activePricing === 'hourly' ? 'au__pricing-card-active' : ''}`}
-                            onClick={() => handlePricingChange('hourly')}
-                        >
-                            <div className="au__pricing-radio">
-                                <div className={`au__radio-custom ${activePricing === 'hourly' ? 'au__radio-custom-active' : ''}`}>
-                                    {activePricing === 'hourly' && <div className="au__radio-dot"></div>}
-                                </div>
-                            </div>
-                            <div className="au__pricing-content">
-                                <h3>⏱️ Hourly Rate</h3>
-                                <p>Best for short-term bookings and meeting rooms</p>
-                                <div className="au__pricing-input">
-                                    <input
-                                        type="number"
-                                        name="hourly_rate"
-                                        value={formData.hourly_rate}
-                                        onChange={handleInputChange}
-                                        className="au__input"
-                                        placeholder="Enter hourly rate"
-                                        step="1"
-                                        min="0"
-                                        disabled={activePricing !== 'hourly'}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <span className="au__per">/hour (PKR)</span>
-                                </div>
-                                {/* {activePricing !== 'hourly' && (
-                                    // <div className="au__inactive-badge">Inactive (will be set to -9)</div>
-                                )} */}
-                            </div>
-                        </div>
+                        <div className="au__pricing-plans">
+                            {getAvailablePricingOptions().map(pricingType => {
+                                const pricing = getPricingLabel(pricingType);
+                                const isActive = activePricing === pricingType;
 
-                        {/* Daily Plan */}
-                        <div
-                            className={`au__pricing-card ${activePricing === 'daily' ? 'au__pricing-card-active' : ''}`}
-                            onClick={() => handlePricingChange('daily')}
-                        >
-                            <div className="au__pricing-radio">
-                                <div className={`au__radio-custom ${activePricing === 'daily' ? 'au__radio-custom-active' : ''}`}>
-                                    {activePricing === 'daily' && <div className="au__radio-dot"></div>}
-                                </div>
-                            </div>
-                            <div className="au__pricing-content">
-                                <h3>📅 Daily Rate</h3>
-                                <p>Perfect for daily workspace rentals</p>
-                                <div className="au__pricing-input">
-                                    <input
-                                        type="number"
-                                        name="daily_rate"
-                                        value={formData.daily_rate}
-                                        onChange={handleInputChange}
-                                        className="au__input"
-                                        placeholder="Enter daily rate"
-                                        step="1"
-                                        min="0"
-                                        disabled={activePricing !== 'daily'}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <span className="au__per">/day (PKR)</span>
-                                </div>
-                                {/* {activePricing !== 'daily' && (
-                                    // <div className="au__inactive-badge">Inactive (will be set to -999)</div>
-                                )} */}
-                            </div>
-                        </div>
-
-                        {/* Monthly Plan */}
-                        <div
-                            className={`au__pricing-card ${activePricing === 'monthly' ? 'au__pricing-card-active' : ''}`}
-                            onClick={() => handlePricingChange('monthly')}
-                        >
-                            <div className="au__pricing-radio">
-                                <div className={`au__radio-custom ${activePricing === 'monthly' ? 'au__radio-custom-active' : ''}`}>
-                                    {activePricing === 'monthly' && <div className="au__radio-dot"></div>}
-                                </div>
-                            </div>
-                            <div className="au__pricing-content">
-                                <h3>📆 Monthly Rate</h3>
-                                <p>Best value for long-term commitments</p>
-                                <div className="au__pricing-input">
-                                    <input
-                                        type="number"
-                                        name="monthly_rate"
-                                        value={formData.monthly_rate}
-                                        onChange={handleInputChange}
-                                        className="au__input"
-                                        placeholder="Enter monthly rate"
-                                        step="1"
-                                        min="0"
-                                        disabled={activePricing !== 'monthly'}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <span className="au__per">/month (PKR)</span>
-                                </div>
-                                {/* {activePricing !== 'monthly' && (
-                                    // <div className="au__inactive-badge">Inactive (will be set to -999)</div>
-                                )} */}
-                            </div>
+                                return (
+                                    <div
+                                        key={pricingType}
+                                        className={`au__pricing-card ${isActive ? 'au__pricing-card-active' : ''}`}
+                                        onClick={() => handlePricingChange(pricingType)}
+                                    >
+                                        <div className="au__pricing-radio">
+                                            <div className={`au__radio-custom ${isActive ? 'au__radio-custom-active' : ''}`}>
+                                                {isActive && <div className="au__radio-dot"></div>}
+                                            </div>
+                                        </div>
+                                        <div className="au__pricing-content">
+                                            <h3>{pricing.title}</h3>
+                                            <p>{pricing.description}</p>
+                                            <div className="au__pricing-input">
+                                                <input
+                                                    type="number"
+                                                    name={`${pricingType}_rate`}
+                                                    value={formData[`${pricingType}_rate`]}
+                                                    onChange={handleInputChange}
+                                                    className="au__input"
+                                                    placeholder={`Enter ${pricingType} rate`}
+                                                    step="1"
+                                                    min="0"
+                                                    disabled={!isActive}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    required={isActive}
+                                                />
+                                                <span className="au__per">{pricing.unit}</span>
+                                            </div>
+                                            {!isActive && pricingType === 'monthly' && formData.unit_type === 'meeting_room' && (
+                                                <div className="au__disabled-info">Not available for meeting rooms</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Images Section */}
                 <div className="au__section">

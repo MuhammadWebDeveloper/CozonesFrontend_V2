@@ -1,7 +1,8 @@
 // src/services/favoriteAPI.js
 import axios from 'axios';
+import BaseUrl from '../../utils/AppConstants';
 
-const API_BASE_URL = 'http://localhost:4343/api';
+const API_BASE_URL = `${BaseUrl}api`;
 
 // Create axios instance
 const favoriteAPI = axios.create({

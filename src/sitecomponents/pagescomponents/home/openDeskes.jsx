@@ -5,7 +5,7 @@ import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
 import './../../../componentstyles/homestyle/openDeskes.css';
 import { useNavigate } from 'react-router-dom';
-
+import BaseUrl from '../../../utils/AppConstants.jsx';
 const Open_Deskes = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ const Open_Deskes = ({ title }) => {
     };
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL: BaseUrl,
         timeout: 10000,
         headers: { 'Content-Type': 'application/json' }
     });
@@ -55,7 +55,7 @@ const Open_Deskes = ({ title }) => {
         try {
             setLoading(true);
             setError(false);
-            const response = await apiClient.get('api/spaces/unit/open_desks');
+            const response = await apiClient.get('/api/spaces/unit/open_desks');
 
             console.log('📡 API Response:', response.data);
 
@@ -68,7 +68,7 @@ const Open_Deskes = ({ title }) => {
                             // IMPORTANT: Use space_id for favorites, not unit id
                             id: unit.space_id,
                             unit_id: unit.id,   // Keep unit_id for reference if needed
-                            title:  unit.name || "Open Desk",
+                            title: unit.name || "Open Desk",
                             location: unit.city || "Coworking Space",
                             price: bestRate ? bestRate.display : "PKR 0/hour",
                             nights: 1,

@@ -1,29 +1,74 @@
-// MeetingRoomsDetail.jsx - Complete Meeting Room Details with Optimized Image Slider
+// MeetingRoomsDetail.jsx - Updated with SpaceDetail Design and DateTimePicker
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import DateTimePicker from './DateTimePicker';
+import { useToast } from './UseTost';
+import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/meetingRoomsDetail.css';
+import BaseUrl from './AppConstants';
 
 const MeetingRoomsDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
     const [imageLoading, setImageLoading] = useState(true);
     const [loadedImages, setLoadedImages] = useState({});
-    const [activeTab, setActiveTab] = useState('start');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedRateType, setSelectedRateType] = useState('daily');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [user, setUser] = useState(null);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
-        timeout: 10000,
+        baseURL: BaseUrl,
+        timeout: 30000,
         headers: { 'Content-Type': 'application/json' }
     });
+
+    // Add token to requests
+    apiClient.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+    // Get current user info
+    useEffect(() => {
+        const getUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await apiClient.get('api/auth/profile');
+                    setUser(response.data.user);
+                    success('Welcome back! 👋');
+                } catch (err) {
+                    console.error('Error fetching user:', err);
+                }
+            }
+        };
+        getUser();
+    }, []);
+
+    // Check for pre-filled dates from navigation state
+    useEffect(() => {
+        const { state } = location;
+        if (state?.prefillStartDate && state?.prefillEndDate) {
+            setStartDate(state.prefillStartDate);
+            setEndDate(state.prefillEndDate);
+            if (state.fromBookAgain) {
+                info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
+            }
+        }
+    }, [location]);
 
     useEffect(() => {
         const fetchMeetingRoom = async () => {
@@ -35,11 +80,11 @@ const MeetingRoomsDetail = () => {
                     const unitData = response.data.unit;
 
                     let rateType = 'daily';
-                    if (unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0) {
+                    if (unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0 && unitData.hourly_rate !== -999) {
                         rateType = 'hourly';
-                    } else if (unitData.daily_rate && parseFloat(unitData.daily_rate) > 0) {
+                    } else if (unitData.daily_rate && parseFloat(unitData.daily_rate) > 0 && unitData.daily_rate !== -999) {
                         rateType = 'daily';
-                    } else if (unitData.monthly_rate && parseFloat(unitData.monthly_rate) > 0) {
+                    } else if (unitData.monthly_rate && parseFloat(unitData.monthly_rate) > 0 && unitData.monthly_rate !== -999) {
                         rateType = 'monthly';
                     }
 
@@ -98,6 +143,7 @@ const MeetingRoomsDetail = () => {
                         space_amenities: parsedAmenities,
                         policies: parsedPolicies,
                         is_active: unitData.is_active,
+                        owner_id: unitData.space?.owner_id,
                         created_at: unitData.created_at,
                         updated_at: unitData.updated_at
                     };
@@ -106,11 +152,13 @@ const MeetingRoomsDetail = () => {
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
                     setLoadedImages({});
+                    success('Meeting room details loaded successfully! 🎉');
                 } else {
-                    console.error('Unit not found');
+                    error('Meeting room not found');
                 }
             } catch (err) {
                 console.error('Error fetching meeting room:', err);
+                error('Failed to load meeting room details. Please try again.');
             } finally {
                 setLoading(false);
             }
@@ -120,6 +168,11 @@ const MeetingRoomsDetail = () => {
             fetchMeetingRoom();
         }
     }, [id]);
+
+    const isOwnSpace = () => {
+        if (!user || !space) return false;
+        return user.id === space.owner_id;
+    };
 
     // ✅ FIXED: Properly handle Base64 images, URLs, and file paths
     const getImages = useCallback(() => {
@@ -145,18 +198,23 @@ const MeetingRoomsDetail = () => {
                     }
                     // If it's a relative path starting with /
                     if (img && img.startsWith('/')) {
-                        return `http://localhost:4343${img}`;
+                        return `${BaseUrl}${img}`;
                     }
                     // If it's a relative path without leading slash
                     if (img && !img.startsWith('http') && !img.startsWith('data:')) {
-                        return `http://localhost:4343/uploads/${img}`;
+                        return `${BaseUrl}uploads/${img}`;
                     }
                     return img;
                 });
         }
 
         // Fallback images based on unit type
-        return ['https://images.unsplash.com/photo-1497366216548-37526070297c'];
+        const fallbackImages = {
+            'meeting_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'conference_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'board_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
+        };
+        return [fallbackImages[space?.unit_type] || 'https://images.unsplash.com/photo-1497366216548-37526070297c'];
     }, [space]);
 
     const images = getImages();
@@ -170,7 +228,7 @@ const MeetingRoomsDetail = () => {
                     setLoadedImages(prev => ({ ...prev, [index]: true }));
                 };
                 img.onerror = () => {
-                    console.warn(`Failed to load image: ${src.substring(0, 100)}...`);
+                    console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
                     setLoadedImages(prev => ({ ...prev, [index]: false }));
                 };
                 img.src = src;
@@ -260,6 +318,12 @@ const MeetingRoomsDetail = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [nextImage, prevImage]);
 
+    const calcHours = () => {
+        if (!startDate || !endDate) return 0;
+        const diff = new Date(endDate) - new Date(startDate);
+        return Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+    };
+
     const calcDays = () => {
         if (!startDate || !endDate) return 0;
         const diff = new Date(endDate) - new Date(startDate);
@@ -274,26 +338,20 @@ const MeetingRoomsDetail = () => {
         return Math.max(0, monthDiff);
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-    };
-
     const getRateDisplay = () => {
-        if (!space) return { rate: 0, unit: 'day' };
+        if (!space) return { rate: 0, unit: 'day', value: 0 };
         switch (selectedRateType) {
-            case 'hourly': return { rate: space.hourly_rate, unit: 'hour' };
-            case 'daily': return { rate: space.daily_rate, unit: 'day' };
-            case 'monthly': return { rate: space.monthly_rate, unit: 'month' };
-            default: return { rate: space.daily_rate, unit: 'day' };
+            case 'hourly': return { rate: space.hourly_rate, unit: 'hour', value: space.hourly_rate || 0 };
+            case 'daily': return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
+            case 'monthly': return { rate: space.monthly_rate, unit: 'month', value: space.monthly_rate || 0 };
+            default: return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
         }
     };
 
     const calculateTotal = () => {
         if (!startDate || !endDate) return 0;
         switch (selectedRateType) {
-            case 'hourly': return calcDays() * 8 * (space?.hourly_rate || 0);
+            case 'hourly': return calcHours() * (space?.hourly_rate || 0);
             case 'daily': return calcDays() * (space?.daily_rate || 0);
             case 'monthly': return calcMonths() * (space?.monthly_rate || 0);
             default: return calcDays() * (space?.daily_rate || 0);
@@ -303,7 +361,7 @@ const MeetingRoomsDetail = () => {
     const getQuantity = () => {
         if (!startDate || !endDate) return 0;
         switch (selectedRateType) {
-            case 'hourly': return calcDays() * 8;
+            case 'hourly': return calcHours();
             case 'daily': return calcDays();
             case 'monthly': return Math.max(1, calcMonths());
             default: return calcDays();
@@ -314,9 +372,118 @@ const MeetingRoomsDetail = () => {
         const qty = getQuantity();
         switch (selectedRateType) {
             case 'hourly': return qty === 1 ? 'hour' : 'hours';
-            case 'daily': return qty === 1 ? 'day' : 'days';
+            case 'daily': return qty === 1 ? 'night' : 'nights';
             case 'monthly': return qty === 1 ? 'month' : 'months';
-            default: return qty === 1 ? 'day' : 'days';
+            default: return qty === 1 ? 'night' : 'nights';
+        }
+    };
+
+    const handleBooking = async () => {
+        if (!user) {
+            warning('Please login to book this meeting room');
+            setTimeout(() => {
+                navigate('/login', { state: { from: `/meeting-room/${id}` } });
+            }, 1500);
+            return;
+        }
+
+        if (isOwnSpace()) {
+            error('You cannot book your own space!');
+            return;
+        }
+
+        if (!startDate || !endDate) {
+            warning('Please select both start and end dates');
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start >= end) {
+            error('End time must be after start time');
+            return;
+        }
+
+        const totalPrice = calculateTotal();
+        if (totalPrice <= 0) {
+            error('Invalid booking duration or price');
+            return;
+        }
+
+        setBookingLoading(true);
+
+        try {
+            const bookingData = {
+                space_unit_id: id,
+                start_time: new Date(startDate).toISOString(),
+                end_time: new Date(endDate).toISOString(),
+                total_price: totalPrice
+            };
+
+            console.log('Sending booking data:', bookingData);
+
+            const response = await apiClient.post('api/bookings/createbooking', bookingData, {
+                timeout: 30000
+            });
+
+            if (response.data.success) {
+                success(`Booking successful! Reference: ${response.data.booking.booking_ref}`, 5000);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 2000);
+            } else {
+                throw new Error(response.data.message || 'Booking failed');
+            }
+
+        } catch (err) {
+            console.error('Booking error:', err);
+
+            let errorMessage = 'Failed to create booking. Please try again.';
+
+            if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                errorMessage = 'Booking is being processed. Please check "My Bookings" page to confirm your booking.';
+                warning(errorMessage);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 3000);
+                return;
+            }
+
+            if (err.response) {
+                if (err.response.status === 401) {
+                    errorMessage = 'Session expired. Please login again';
+                    setTimeout(() => navigate('/login'), 2000);
+                } else if (err.response.status === 409) {
+                    errorMessage = err.response.data.message || 'This time slot is already booked.';
+                } else if (err.response.data?.message) {
+                    errorMessage = err.response.data.message;
+                }
+            }
+
+            error(errorMessage);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+
+        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
+            warning('End date should be after start date');
+            setEndDate('');
+        }
+    };
+
+    const handleEndDateChange = (e) => {
+        const newEndDate = e.target.value;
+        setEndDate(newEndDate);
+
+        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
+            warning('End date must be after start date');
+            setEndDate('');
         }
     };
 
@@ -327,13 +494,15 @@ const MeetingRoomsDetail = () => {
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
-        if (amenities.wifi) amenityList.push('✓ High-Speed WiFi');
-        if (amenities.ac) amenityList.push('❄️ Air Conditioning');
-        if (amenities.coffee) amenityList.push('☕ Coffee & Tea');
-        if (amenities.printer) amenityList.push('🖨️ Printer & Scanner');
-        if (amenities.parking) amenityList.push('🅿️ Parking');
-        if (amenities.security) amenityList.push('🔒 24/7 Security');
-        if (amenities.backup_power) amenityList.push('⚡ Backup Power');
+        if (amenities.wifi) amenityList.push('WiFi');
+        if (amenities.ac) amenityList.push('Air Conditioning');
+        if (amenities.coffee) amenityList.push('Free Coffee');
+        if (amenities.printer) amenityList.push('Printer');
+        if (amenities.projector) amenityList.push('Projector');
+        if (amenities.whiteboard) amenityList.push('Whiteboard');
+        if (amenities.parking) amenityList.push('Parking');
+        if (amenities.security) amenityList.push('24/7 Security');
+        if (amenities.backup_power) amenityList.push('Backup Power');
         return amenityList;
     };
 
@@ -363,296 +532,316 @@ const MeetingRoomsDetail = () => {
     if (!space) {
         return (
             <div className="MeetingRoomsDetail_loading">
-                <p>Meeting room not found.</p>
-                <button onClick={() => navigate('/meeting-rooms')} className="MeetingRoomsDetail_back-btn">Go Back</button>
+                <p>Unable to load meeting room details.</p>
+                <button onClick={() => navigate(-1)} className="MeetingRoomsDetail_back-btn">Go Back</button>
+                <button onClick={() => window.location.reload()} className="MeetingRoomsDetail_retry-btn">Retry</button>
             </div>
         );
     }
 
     return (
-        <div className="MeetingRoomsDetail_page">
-            <button className="MeetingRoomsDetail_back-btn" onClick={() => navigate('/')}>
-                ← Back to spaces
-            </button>
+        <>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+            <div className="MeetingRoomsDetail_page">
+                <button className="MeetingRoomsDetail_back-btn" onClick={() => navigate(-1)}>
+                    Back to spaces
+                </button>
 
-            <h2 className="MeetingRoomsDetail_page-title">Meeting Room Details</h2>
+                <h2 className="MeetingRoomsDetail_page-title">Space Details</h2>
 
-            {space.unit_type && (
-                <div className="MeetingRoomsDetail_badge">
-                    {space.unit_type.replace('_', ' ').toUpperCase()}
-                </div>
-            )}
+                {isOwnSpace() && (
+                    <div className="MeetingRoomsDetail_owner_warning">
+                        ⚠️ This is your own space. You cannot book it.
+                    </div>
+                )}
 
-            <div className="MeetingRoomsDetail_top-grid">
-                <div className="MeetingRoomsDetail_left">
-                    <h1 className="MeetingRoomsDetail_title">{space.title}</h1>
+                {!user && (
+                    <div className="MeetingRoomsDetail_login_warning">
+                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    </div>
+                )}
 
-                    <p className="MeetingRoomsDetail_meta">
-                        📍 {space.city}, {space.area}
-                        {space.address && <span> - {space.address}</span>}
-                    </p>
+                {space.unit_type && (
+                    <div className="MeetingRoomsDetail_unit_badge">
+                        {space.unit_type.replace('_', ' ').toUpperCase()}
+                    </div>
+                )}
 
-                    {space.total_capacity && (
+                <div className="MeetingRoomsDetail_top-grid">
+                    <div className="MeetingRoomsDetail_left">
+                        <h1 className="MeetingRoomsDetail_title">{space.title}</h1>
+
                         <p className="MeetingRoomsDetail_meta">
-                            👥 Capacity: Up to {space.total_capacity} people
+                            📍 {space.city}, {space.area}
+                            {space.address && <span> - {space.address}</span>}
                         </p>
+
+                        {space.total_capacity && (
+                            <p className="MeetingRoomsDetail_meta">
+                                👥 Capacity: {space.total_capacity} people
+                            </p>
+                        )}
+
+                        <p className="MeetingRoomsDetail_meta">
+                            Availability: <span className="MeetingRoomsDetail_available">
+                                {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
+                            </span>
+                        </p>
+
+                        {getAvailableRateTypes().length > 1 && (
+                            <div className="MeetingRoomsDetail_rate_selector">
+                                <label>Select Pricing Plan:</label>
+                                <div className="MeetingRoomsDetail_rate_options">
+                                    {getAvailableRateTypes().map(type => (
+                                        <button
+                                            key={type.key}
+                                            className={`MeetingRoomsDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedRateType(type.key);
+                                                info(`${type.label} pricing selected`);
+                                            }}
+                                        >
+                                            {type.label}
+                                            <span className="MeetingRoomsDetail_rate_amount">
+                                                {type.rate.toLocaleString()} PKR
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="MeetingRoomsDetail_pricing">
+                            <p className="MeetingRoomsDetail_price">
+                                {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
+                            </p>
+                            {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
+                                <p className="MeetingRoomsDetail_note">
+                                    💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
+                                </p>
+                            )}
+                            {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
+                                <p className="MeetingRoomsDetail_note">
+                                    💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Date & Time Selection Section with DateTimePicker */}
+                        <div className="MeetingRoomsDetail_datetime_section">
+                            <h3 className="MeetingRoomsDetail_section_title">Select Date & Time</h3>
+                            <div className="MeetingRoomsDetail_datetime_grid">
+                                <DateTimePicker
+                                    label="Start Date & Time"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    minDate={new Date().toISOString()}
+                                    placeholder="Select start date and time"
+                                />
+                                <DateTimePicker
+                                    label="End Date & Time"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    minDate={startDate || new Date().toISOString()}
+                                    placeholder="Select end date and time"
+                                />
+                            </div>
+                        </div>
+
+                        {startDate && endDate && (
+                            <div className="MeetingRoomsDetail_summary">
+                                <div className="MeetingRoomsDetail_summary-row">
+                                    <span>Starting Date</span>
+                                    <span>{new Date(startDate).toLocaleString()}</span>
+                                </div>
+                                <div className="MeetingRoomsDetail_summary-row">
+                                    <span>Ending Date</span>
+                                    <span>{new Date(endDate).toLocaleString()}</span>
+                                </div>
+                                <div className="MeetingRoomsDetail_summary-row">
+                                    <span>
+                                        {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
+                                    </span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                                <div className="MeetingRoomsDetail_summary-row MeetingRoomsDetail_summary-total">
+                                    <span>Total</span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            className="MeetingRoomsDetail_continue-btn"
+                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            onClick={handleBooking}
+                        >
+                            {bookingLoading ? (
+                                <>
+                                    <span className="spinner-small"></span>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Confirm Booking'
+                            )}
+                        </button>
+                    </div>
+
+                    {/* OPTIMIZED IMAGE SLIDER SECTION */}
+                    <div className="MeetingRoomsDetail_right">
+                        <div
+                            className="MeetingRoomsDetail_gallery"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            {images.length > 0 && images[0] ? (
+                                <>
+                                    {/* Loading Spinner */}
+                                    {imageLoading && !loadedImages[currentImage] && (
+                                        <div className="MeetingRoomsDetail_image_loader">
+                                            <div className="MeetingRoomsDetail_spinner_small"></div>
+                                        </div>
+                                    )}
+
+                                    {/* Current Image */}
+                                    <img
+                                        key={currentImage}
+                                        src={images[currentImage]}
+                                        alt={`${space.title} - Image ${currentImage + 1}`}
+                                        className={`MeetingRoomsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
+                                        onLoad={() => {
+                                            setImageLoading(false);
+                                            setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
+                                        }}
+                                        onError={(e) => {
+                                            console.error('Image failed to load');
+                                            e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                            setImageLoading(false);
+                                        }}
+                                    />
+
+                                    {/* Navigation Buttons */}
+                                    {images.length > 1 && (
+                                        <>
+                                            <button
+                                                className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_prev"
+                                                onClick={prevImage}
+                                                aria-label="Previous image"
+                                            >
+                                                ‹
+                                            </button>
+                                            <button
+                                                className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_next"
+                                                onClick={nextImage}
+                                                aria-label="Next image"
+                                            >
+                                                ›
+                                            </button>
+                                            <div className="MeetingRoomsDetail_img-counter">
+                                                {currentImage + 1} / {images.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="MeetingRoomsDetail_no-img">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1497366216548-37526070297c"
+                                        alt="Fallback"
+                                        className="MeetingRoomsDetail_main-img"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnails */}
+                        {images.length > 1 && (
+                            <div className="MeetingRoomsDetail_thumbnails">
+                                {images.slice(0, 6).map((img, i) => (
+                                    <div
+                                        key={i}
+                                        className={`MeetingRoomsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
+                                        onClick={() => goToImage(i)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Thumbnail ${i + 1}`}
+                                            className="MeetingRoomsDetail_thumb"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="MeetingRoomsDetail_bottom">
+                    <div className="MeetingRoomsDetail_section">
+                        <h3 className="MeetingRoomsDetail_section-title">About this space</h3>
+                        <p className="MeetingRoomsDetail_description">
+                            {space.description || `A professional ${space.unit_type?.replace('_', ' ') || 'meeting room'} located in the heart of ${space.city}. Perfect for team meetings, client presentations, and workshops.`}
+                        </p>
+                    </div>
+
+                    {/* Working Hours */}
+                    {space.space?.opening_time && space.space?.closing_time && (
+                        <div className="MeetingRoomsDetail_section">
+                            <h3 className="MeetingRoomsDetail_section-title">Working Hours</h3>
+                            <p className="MeetingRoomsDetail_working_hours">
+                                {space.space.opening_time} - {space.space.closing_time}
+                            </p>
+                            {space.space.working_days && (
+                                <p className="MeetingRoomsDetail_working_days">
+                                    {space.space.working_days.join(', ')}
+                                </p>
+                            )}
+                        </div>
                     )}
 
-                    <p className="MeetingRoomsDetail_meta">
-                        Availability: <span className="MeetingRoomsDetail_available">
-                            {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
-                        </span>
-                    </p>
-
-                    {getAvailableRateTypes().length > 1 && (
-                        <div className="MeetingRoomsDetail_rate_selector">
-                            <label>Select Pricing Plan:</label>
-                            <div className="MeetingRoomsDetail_rate_options">
-                                {getAvailableRateTypes().map(type => (
-                                    <button
-                                        key={type.key}
-                                        className={`MeetingRoomsDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
-                                        onClick={() => setSelectedRateType(type.key)}
-                                    >
-                                        {type.label}
-                                        <span className="MeetingRoomsDetail_rate_amount">
-                                            {type.rate.toLocaleString()} PKR
-                                        </span>
-                                    </button>
+                    {/* Amenities */}
+                    {renderAmenities().length > 0 && (
+                        <div className="MeetingRoomsDetail_section">
+                            <h3 className="MeetingRoomsDetail_section-title">Amenities</h3>
+                            <div className="MeetingRoomsDetail_features">
+                                {renderAmenities().map((item, i) => (
+                                    <span key={i} className="MeetingRoomsDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    <div className="MeetingRoomsDetail_pricing">
-                        <p className="MeetingRoomsDetail_price">
-                            {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
-                        </p>
-                        {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
-                            <p className="MeetingRoomsDetail_note">
-                                💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
-                            </p>
-                        )}
-                        {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
-                            <p className="MeetingRoomsDetail_note">
-                                💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="MeetingRoomsDetail_tabs">
-                        <button
-                            className={`MeetingRoomsDetail_tab ${activeTab === 'start' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('start')}
-                        >
-                            Starting Date
-                        </button>
-                        <button
-                            className={`MeetingRoomsDetail_tab ${activeTab === 'end' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('end')}
-                        >
-                            Ending Date
-                        </button>
-                    </div>
-
-                    <div className="MeetingRoomsDetail_date-input-wrap">
-                        {activeTab === 'start' ? (
-                            <input
-                                type="date"
-                                className="MeetingRoomsDetail_date-input"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        ) : (
-                            <input
-                                type="date"
-                                className="MeetingRoomsDetail_date-input"
-                                value={endDate}
-                                min={startDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
-                        )}
-                    </div>
-
-                    {startDate && endDate && (
-                        <div className="MeetingRoomsDetail_summary">
-                            <div className="MeetingRoomsDetail_summary-row">
-                                <span>Start Date</span>
-                                <span>{formatDate(startDate)}</span>
-                            </div>
-                            <div className="MeetingRoomsDetail_summary-row">
-                                <span>End Date</span>
-                                <span>{formatDate(endDate)}</span>
-                            </div>
-                            <div className="MeetingRoomsDetail_summary-row">
-                                <span>{rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}</span>
-                                <span>PKR {total.toLocaleString()}</span>
-                            </div>
-                            <div className="MeetingRoomsDetail_summary-row MeetingRoomsDetail_summary-total">
-                                <span>Total</span>
-                                <span>PKR {total.toLocaleString()}</span>
+                    {/* Space Information */}
+                    {space.space && (
+                        <div className="MeetingRoomsDetail_section">
+                            <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
+                            <div className="MeetingRoomsDetail_space_info">
+                                <p><strong>Space Name:</strong> {space.space.name}</p>
+                                <p><strong>Room Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
+                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
                             </div>
                         </div>
                     )}
 
-                    <button
-                        className="MeetingRoomsDetail_continue-btn"
-                        disabled={!startDate || !endDate}
-                    >
-                        Book Meeting Room
-                    </button>
-                </div>
-
-                {/* OPTIMIZED IMAGE SLIDER SECTION - FIXED FOR BASE64 */}
-                <div className="MeetingRoomsDetail_right">
-                    <div
-                        className="MeetingRoomsDetail_gallery"
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                    >
-                        {images.length > 0 && images[0] ? (
-                            <>
-                                {/* Loading Spinner */}
-                                {imageLoading && !loadedImages[currentImage] && (
-                                    <div className="MeetingRoomsDetail_image_loader">
-                                        <div className="MeetingRoomsDetail_spinner_small"></div>
-                                    </div>
-                                )}
-
-                                {/* Current Image */}
-                                <img
-                                    key={currentImage}
-                                    src={images[currentImage]}
-                                    alt={`${space.title} - Image ${currentImage + 1}`}
-                                    className={`MeetingRoomsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
-                                    onLoad={() => {
-                                        setImageLoading(false);
-                                        setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
-                                    }}
-                                    onError={(e) => {
-                                        console.error('Image failed to load');
-                                        e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                                        setImageLoading(false);
-                                    }}
-                                />
-
-                                {/* Navigation Buttons */}
-                                {images.length > 1 && (
-                                    <>
-                                        <button
-                                            className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_prev"
-                                            onClick={prevImage}
-                                            aria-label="Previous image"
-                                        >
-                                            ‹
-                                        </button>
-                                        <button
-                                            className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_next"
-                                            onClick={nextImage}
-                                            aria-label="Next image"
-                                        >
-                                            ›
-                                        </button>
-                                        <div className="MeetingRoomsDetail_img-counter">
-                                            {currentImage + 1} / {images.length}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <div className="MeetingRoomsDetail_no-img">
-                                <img
-                                    src="https://images.unsplash.com/photo-1497366216548-37526070297c"
-                                    alt="Fallback"
-                                    className="MeetingRoomsDetail_main-img"
-                                />
+                    {/* Policies */}
+                    {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
+                        <div className="MeetingRoomsDetail_section">
+                            <h3 className="MeetingRoomsDetail_section-title">Booking Policies</h3>
+                            <div className="MeetingRoomsDetail_policies">
+                                {space.policies.cancellation && <p><strong>Cancellation:</strong> {space.policies.cancellation}</p>}
+                                {space.policies.refund && <p><strong>Refund:</strong> {space.policies.refund}</p>}
+                                {space.policies.late_arrival && <p><strong>Late Arrival:</strong> {space.policies.late_arrival}</p>}
                             </div>
-                        )}
-                    </div>
-
-                    {/* Thumbnails */}
-                    {images.length > 1 && (
-                        <div className="MeetingRoomsDetail_thumbnails">
-                            {images.slice(0, 6).map((img, i) => (
-                                <div
-                                    key={i}
-                                    className={`MeetingRoomsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
-                                    onClick={() => goToImage(i)}
-                                >
-                                    <img
-                                        src={img}
-                                        alt={`Thumbnail ${i + 1}`}
-                                        className="MeetingRoomsDetail_thumb"
-                                        loading="lazy"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                                        }}
-                                    />
-                                </div>
-                            ))}
                         </div>
                     )}
                 </div>
             </div>
-
-            <div className="MeetingRoomsDetail_bottom">
-                <div className="MeetingRoomsDetail_section">
-                    <h3 className="MeetingRoomsDetail_section-title">About this space</h3>
-                    <p className="MeetingRoomsDetail_description">
-                        {space.description || `A professional ${space.unit_type?.replace('_', ' ') || 'meeting room'} located in the heart of ${space.city}. Perfect for team meetings, client presentations, and workshops.`}
-                    </p>
-                </div>
-
-                {space.space?.opening_time && space.space?.closing_time && (
-                    <div className="MeetingRoomsDetail_section">
-                        <h3 className="MeetingRoomsDetail_section-title">Working Hours</h3>
-                        <p className="MeetingRoomsDetail_working_hours">
-                            🕐 {space.space.opening_time} - {space.space.closing_time}
-                        </p>
-                        {space.space.working_days && (
-                            <p className="MeetingRoomsDetail_working_days">
-                                📅 {space.space.working_days.join(', ')}
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {renderAmenities().length > 0 && (
-                    <div className="MeetingRoomsDetail_section">
-                        <h3 className="MeetingRoomsDetail_section-title">Amenities</h3>
-                        <div className="MeetingRoomsDetail_features">
-                            {renderAmenities().map((item, i) => (
-                                <span key={i} className="MeetingRoomsDetail_feature-tag">{item}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {space.space && (
-                    <div className="MeetingRoomsDetail_section">
-                        <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
-                        <div className="MeetingRoomsDetail_space_info">
-                            <p><strong>🏢 Space Name:</strong> {space.space.name}</p>
-                            <p><strong>📌 Room Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Maximum Capacity:</strong> {space.total_capacity} people</p>}
-                            {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                        </div>
-                    </div>
-                )}
-
-                {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
-                    <div className="MeetingRoomsDetail_section">
-                        <h3 className="MeetingRoomsDetail_section-title">Booking Policies</h3>
-                        <div className="MeetingRoomsDetail_policies">
-                            {space.policies.cancellation && <p><strong>❌ Cancellation:</strong> {space.policies.cancellation}</p>}
-                            {space.policies.refund && <p><strong>💰 Refund:</strong> {space.policies.refund}</p>}
-                            {space.policies.late_arrival && <p><strong>⏰ Late Arrival:</strong> {space.policies.late_arrival}</p>}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 

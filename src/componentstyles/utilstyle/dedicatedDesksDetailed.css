@@ -586,7 +586,7 @@
     box-shadow: var(--shadow-lg);
     animation: fadeInUp 0.6s ease 0.4s backwards;
     position: relative;
-    z-index: 1;
+    /* z-index: 1; */
 }
 
 .DedicatedDeskDetail_section {
@@ -989,4 +989,288 @@ html {
 .DedicatedDeskDetail_img-nav:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Add these styles to your existing CSS */
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 380px;
+}
+
+.toast {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 280px;
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid;
+}
+
+.toast-success {
+    border-left-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.toast-error {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.toast-warning {
+    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.toast-info {
+    border-left-color: #3b82f6;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.toast-icon {
+    font-size: 20px;
+}
+
+.toast-message {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    flex: 1;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.toast-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #4b5563;
+    transform: scale(1.1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Owner and Login Warnings */
+.DedicatedDeskDetail_owner_warning,
+.DedicatedDeskDetail_login_warning {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.DedicatedDeskDetail_owner_warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.DedicatedDeskDetail_login_warning {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.login-link {
+    background: none;
+    border: none;
+    color: #011CCD;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Date & Time Section */
+.DedicatedDeskDetail_datetime_section {
+    margin: 24px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+}
+
+.DedicatedDeskDetail_section_title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.DedicatedDeskDetail_section_title::before {
+    content: '📅';
+    font-size: 20px;
+}
+
+.DedicatedDeskDetail_datetime_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.DedicatedDeskDetail_date-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.DedicatedDeskDetail_date-input:focus {
+    outline: none;
+    border-color: #011CCD;
+    box-shadow: 0 0 0 3px rgba(1, 28, 205, 0.1);
+}
+
+/* Spinner */
+.spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .DedicatedDeskDetail_datetime_grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .toast-container {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+
+    .toast {
+        width: 100%;
+    }
+}
+
+/* Add these new styles to your existing dedicatedDesksDetailed.css */
+
+/* Unit Badge - matching SpaceDetail */
+.DedicatedDeskDetail_unit_badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Retry Button */
+.DedicatedDeskDetail_retry-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.DedicatedDeskDetail_retry-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* DateTimePicker wrapper styles to match SpaceDetail */
+.DedicatedDeskDetail_datetime_section {
+    margin: 24px 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.DedicatedDeskDetail_datetime_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+/* Ensure DateTimePicker component fits properly */
+.DedicatedDeskDetail_datetime_grid>div {
+    width: 100%;
+}
+
+/* Make sure the section title matches SpaceDetail */
+.DedicatedDeskDetail_section_title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.DedicatedDeskDetail_section_title::before {
+    content: '📅';
+    font-size: 1.2rem;
+}
+
+/* Responsive adjustments for datetime grid */
+@media (max-width: 768px) {
+    .DedicatedDeskDetail_datetime_grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }

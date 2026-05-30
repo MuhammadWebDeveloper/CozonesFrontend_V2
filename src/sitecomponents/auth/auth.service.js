@@ -1,7 +1,8 @@
 // src/services/auth.service.js
 import axios from 'axios';
+import BaseUrl from '../../utils/AppConstants';
 
-const API_URL = 'http://localhost:4343/api/auth';
+const API_URL = `${BaseUrl}api/auth`;
 
 // ✅ ADD THIS FUNCTION - Get auth token
 export const getAuthToken = () => {

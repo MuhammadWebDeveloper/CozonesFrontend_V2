@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { FaBuilding, FaMoneyBillWave, FaLock, FaCreditCard, FaChartLine, FaSpinner, FaHome, FaExclamationTriangle } from 'react-icons/fa';
 import '../../componentstyles/sellerdashboardstyles/SellerHome.css';
+import BaseUrl from '../../utils/AppConstants';
 
 export default function SellerHome() {
   const canvasRef = useRef(null);
@@ -22,7 +23,7 @@ export default function SellerHome() {
   const fetchSpacesData = async () => {
     try {
       const token = getAuthToken();
-      const response = await axios.get('http://localhost:4343/api/spaces/owner/my-spaces', {
+      const response = await axios.get(`${BaseUrl}api/spaces/owner/my-spaces`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -64,28 +65,7 @@ export default function SellerHome() {
   const fetchEarningsData = async () => {
     try {
       const token = getAuthToken();
-      // Uncomment when you have the earnings endpoint ready
-      /*
-      const response = await axios.get('http://localhost:4343/api/seller/earnings', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.data.success) {
-        setStats(prev => [
-          prev[0],
-          { label: 'Total Earnings', value: `PKR ${response.data.total_earnings?.toLocaleString() || 0}`, icon: <FaMoneyBillWave /> },
-          { label: 'Escrow Amount', value: `PKR ${response.data.escrow_amount?.toLocaleString() || 0}`, icon: <FaLock /> },
-          { label: 'Total Available', value: `PKR ${response.data.available_amount?.toLocaleString() || 0}`, icon: <FaCreditCard /> },
-        ]);
-        
-        setChartData(prev => [
-          prev[0],
-          response.data.total_earnings || 0,
-          response.data.escrow_amount || 0,
-          response.data.available_amount || 0,
-          0
-        ]);
-      }
-      */
+    
     } catch (err) {
       console.error('Failed to fetch earnings:', err);
     }

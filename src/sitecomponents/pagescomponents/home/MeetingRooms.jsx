@@ -5,6 +5,7 @@ import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
 import './../../../componentstyles/homestyle/meetingRooms.css';
 import { useNavigate } from 'react-router-dom';
+import BaseUrl from '../../../utils/AppConstants.jsx';
 
 const Meeting_Rooms = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
@@ -40,7 +41,7 @@ const Meeting_Rooms = ({ title }) => {
 
     // Axios instance
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL: BaseUrl ,
         timeout: 10000,
         headers: {
             'Content-Type': 'application/json',

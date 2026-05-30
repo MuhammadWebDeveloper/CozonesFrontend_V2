@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import "../../../src/componentstyles/utilstyle/myfavorites.css";
 import { FiHeart, FiMapPin, FiClock, FiArrowLeft } from 'react-icons/fi';
 import axios from 'axios';
+import BaseUrl from '../../utils/AppConstants';
 
 const MyFavorites = () => {
     const [favorites, setFavorites] = useState([]);
@@ -12,7 +13,7 @@ const MyFavorites = () => {
     const navigate = useNavigate();
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL: BaseUrl,
         timeout: 10000,
         headers: { 'Content-Type': 'application/json' }
     });
@@ -87,7 +88,7 @@ const MyFavorites = () => {
             // Handle different image formats
             if (typeof img === 'string' && img.startsWith('data:image')) return img;
             if (typeof img === 'string' && img.startsWith('http')) return img;
-            if (typeof img === 'string' && img.startsWith('/')) return `http://localhost:4343${img}`;
+            if (typeof img === 'string' && img.startsWith('/')) return `${BaseUrl}${img}`;
 
             // If it's not a string (maybe already processed), try to use it
             if (img) return img;

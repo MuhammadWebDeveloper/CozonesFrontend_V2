@@ -17,6 +17,10 @@ import Loader from './utils/cozonesloader';
 import CreateSpace from './sellersitecomponents/sellerdashboard/SellerCreateSpace';
 import SpaceDetails from './sellersitecomponents/sellerdashboard/spacesDetails';
 import AddUnit from './sellersitecomponents/utils/AddUnits';
+import UpdateSpace from './sellersitecomponents/utils/UpdateSpace';
+import UpdateUnit from './sellersitecomponents/utils/UpdateUnits';
+import MyBookings from './utils/MyBookings';
+
 
 function App() {
     return (
@@ -79,6 +83,21 @@ function AppContent() {
                 <Route path="/spaces/:spaceId/addunits" element={
                     <ProtectedRoute>
                         <AddUnit />
+                    </ProtectedRoute>
+                } />
+                <Route path="/space/update/:id" element={
+                    <ProtectedRoute>
+                        <UpdateSpace />
+                    </ProtectedRoute>
+                } />
+                <Route path="/spaces/:spaceId/units/:unitId/edit" element={
+                    <ProtectedRoute>
+                        <UpdateUnit />
+                    </ProtectedRoute>
+                } />
+                <Route path="/my-bookings" element={
+                    <ProtectedRoute>
+                        <MyBookings />
                     </ProtectedRoute>
                 } />
 

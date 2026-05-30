@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/authstyls/LoginRegister.css';
+import BaseUrl from '../../utils/AppConstants';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Login = () => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:4343/api/auth/login', formData);
+            const response = await axios.post(`${BaseUrl}api/auth/login`, formData);
 
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);

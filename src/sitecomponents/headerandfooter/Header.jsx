@@ -8,6 +8,7 @@ import axios from 'axios';
 import '../../componentstyles/headerandfooterstyles/header.css';
 import logo from '../../assets/logo.png';
 import { logout } from '../auth/auth.service';
+import BaseUrl from '../../utils/AppConstants';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ const Navbar = () => {
     const [guests, setGuests] = useState({ adults: 0, children: 0, infants: 0 });
 
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL: BaseUrl,
         timeout: 10000,
         headers: { 'Content-Type': 'application/json' }
     });

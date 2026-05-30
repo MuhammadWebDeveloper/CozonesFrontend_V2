@@ -1,29 +1,126 @@
-// PrivateCabinsDetail.jsx - Fixed Image Slider with Complete Space Details
+// PrivateCabinsDetail.jsx - Updated with SpaceDetail Design, DateTimePicker, and Complete Booking Features
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import DateTimePicker from './DateTimePicker';
+import { useToast } from './UseTost';
+import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/privateCabinsDetail.css';
+import BaseUrl from './AppConstants';
 
 const PrivateCabinsDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
-    const [imageLoading, setImageLoading] = useState(true);
-    const [loadedImages, setLoadedImages] = useState({});
-    const [activeTab, setActiveTab] = useState('start');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedRateType, setSelectedRateType] = useState('daily');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [imageLoading, setImageLoading] = useState(true);
+    const [loadedImages, setLoadedImages] = useState({});
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
 
+    // Cancel booking states
+    const [existingBooking, setExistingBooking] = useState(null);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
-        timeout: 10000,
+        baseURL: BaseUrl,
+        timeout: 30000,
         headers: { 'Content-Type': 'application/json' }
     });
+
+    // Add token to requests
+    apiClient.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+    // Get current user info
+    useEffect(() => {
+        const getUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await apiClient.get('api/auth/profile');
+                    setUser(response.data.user);
+                    success('Welcome back! 👋');
+                } catch (err) {
+                    console.error('Error fetching user:', err);
+                }
+            }
+        };
+        getUser();
+    }, []);
+
+    // Check for pre-filled dates from "Book Again"
+    useEffect(() => {
+        const { state } = location;
+        if (state?.prefillStartDate && state?.prefillEndDate) {
+            setStartDate(state.prefillStartDate);
+            setEndDate(state.prefillEndDate);
+            if (state.fromBookAgain) {
+                info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
+            }
+        }
+    }, [location]);
+
+    // Fetch existing booking for this space
+    const fetchExistingBooking = async () => {
+        if (!user || !space) return;
+
+        try {
+            const response = await apiClient.get(`api/bookings/user`);
+            if (response.data.success && response.data.bookings) {
+                // Find booking for this specific space that is active/upcoming
+                const booking = response.data.bookings.find(
+                    b => b.space_unit_id === parseInt(id) &&
+                        ['pending', 'confirmed', 'upcoming', 'active'].includes(b.status) &&
+                        new Date(b.start_time) > new Date()
+                );
+                setExistingBooking(booking);
+            }
+        } catch (err) {
+            console.error('Error fetching existing booking:', err);
+        }
+    };
+
+    // Cancel booking function
+    const handleCancelBooking = async () => {
+        if (!existingBooking) return;
+
+        setCancelLoading(true);
+        try {
+            const response = await apiClient.put(`api/bookings/${existingBooking.id}/cancel`);
+
+            if (response.data.success) {
+                success('Booking cancelled successfully!');
+                setExistingBooking(null);
+                setShowCancelConfirm(false);
+                // Refresh the page data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(response.data.message || 'Failed to cancel booking');
+            }
+        } catch (err) {
+            console.error('Cancel booking error:', err);
+            error(err.response?.data?.message || 'Failed to cancel booking. Please try again.');
+        } finally {
+            setCancelLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchPrivateCabin = async () => {
@@ -98,6 +195,7 @@ const PrivateCabinsDetail = () => {
                         space_amenities: parsedAmenities,
                         policies: parsedPolicies,
                         is_active: unitData.is_active,
+                        owner_id: unitData.space?.owner_id,
                         created_at: unitData.created_at,
                         updated_at: unitData.updated_at
                     };
@@ -106,11 +204,13 @@ const PrivateCabinsDetail = () => {
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
                     setLoadedImages({});
+                    success('Private cabin details loaded successfully! 🎉');
                 } else {
-                    console.error('Unit not found');
+                    error('Private cabin not found');
                 }
             } catch (err) {
                 console.error('Error fetching private cabin:', err);
+                error('Failed to load private cabin details. Please try again.');
             } finally {
                 setLoading(false);
             }
@@ -121,42 +221,51 @@ const PrivateCabinsDetail = () => {
         }
     }, [id]);
 
-    // ✅ FIXED: Properly handle Base64 images, URLs, and file paths
+    // Fetch existing booking after user and space are loaded
+    useEffect(() => {
+        if (user && space) {
+            fetchExistingBooking();
+        }
+    }, [user, space]);
+
+    const isOwnSpace = () => {
+        if (!user || !space) return false;
+        return user.id === space.owner_id;
+    };
+
+    // Handle Base64 images, URLs, and file paths
     const getImages = useCallback(() => {
         if (space?.images && space.images.length > 0) {
             return space.images
                 .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
                 .map(img => {
-                    // If it's already a valid URL (http/https)
                     if (img && (img.startsWith('http://') || img.startsWith('https://'))) {
                         return img;
                     }
-                    // If it's a Base64 data URL
                     if (img && img.startsWith('data:image')) {
                         return img;
                     }
-                    // If it's a raw Base64 string (without data:image prefix)
                     if (img && !img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
-                        // Check if it looks like Base64 (alphanumeric + /+=)
                         if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
                             return `data:image/jpeg;base64,${img}`;
                         }
                         return img;
                     }
-                    // If it's a relative path starting with /
                     if (img && img.startsWith('/')) {
-                        return `http://localhost:4343${img}`;
+                        return `${BaseUrl}${img}`;
                     }
-                    // If it's a relative path without leading slash
                     if (img && !img.startsWith('http') && !img.startsWith('data:')) {
-                        return `http://localhost:4343/uploads/${img}`;
+                        return `${BaseUrl}uploads/${img}`;
                     }
                     return img;
                 });
         }
-        
-        // Fallback images based on unit type
-        return ['https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a'];
+
+        const fallbackImages = {
+            'private_cabin': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
+            'private_office': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
+        };
+        return [fallbackImages[space?.unit_type] || 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'];
     }, [space]);
 
     const images = getImages();
@@ -178,7 +287,6 @@ const PrivateCabinsDetail = () => {
         }
     }, [images]);
 
-    // Preload adjacent images for faster navigation
     const preloadAdjacentImages = useCallback((currentIdx) => {
         if (images.length === 0) return;
         const nextIdx = (currentIdx + 1) % images.length;
@@ -195,7 +303,6 @@ const PrivateCabinsDetail = () => {
         });
     }, [images, loadedImages]);
 
-    // Preload adjacent images when current image changes
     useEffect(() => {
         if (images.length > 0) {
             preloadAdjacentImages(currentImage);
@@ -280,19 +387,13 @@ const PrivateCabinsDetail = () => {
         return Math.max(0, monthDiff);
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-    };
-
     const getRateDisplay = () => {
-        if (!space) return { rate: 0, unit: 'day' };
+        if (!space) return { rate: 0, unit: 'day', value: 0 };
         switch (selectedRateType) {
-            case 'hourly': return { rate: space.hourly_rate, unit: 'hour' };
-            case 'daily': return { rate: space.daily_rate, unit: 'day' };
-            case 'monthly': return { rate: space.monthly_rate, unit: 'month' };
-            default: return { rate: space.daily_rate, unit: 'day' };
+            case 'hourly': return { rate: space.hourly_rate, unit: 'hour', value: space.hourly_rate || 0 };
+            case 'daily': return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
+            case 'monthly': return { rate: space.monthly_rate, unit: 'month', value: space.monthly_rate || 0 };
+            default: return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
         }
     };
 
@@ -326,6 +427,115 @@ const PrivateCabinsDetail = () => {
         }
     };
 
+    const handleBooking = async () => {
+        if (!user) {
+            warning('Please login to book this private cabin');
+            setTimeout(() => {
+                navigate('/login', { state: { from: `/private-cabin/${id}` } });
+            }, 1500);
+            return;
+        }
+
+        if (isOwnSpace()) {
+            error('You cannot book your own space!');
+            return;
+        }
+
+        if (!startDate || !endDate) {
+            warning('Please select both start and end dates');
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start >= end) {
+            error('End time must be after start time');
+            return;
+        }
+
+        const totalPrice = calculateTotal();
+        if (totalPrice <= 0) {
+            error('Invalid booking duration or price');
+            return;
+        }
+
+        setBookingLoading(true);
+
+        try {
+            const bookingData = {
+                space_unit_id: id,
+                start_time: new Date(startDate).toISOString(),
+                end_time: new Date(endDate).toISOString(),
+                total_price: totalPrice
+            };
+
+            console.log('Sending booking data:', bookingData);
+
+            const response = await apiClient.post('api/bookings/createbooking', bookingData, {
+                timeout: 30000
+            });
+
+            if (response.data.success) {
+                success(`Booking successful! Reference: ${response.data.booking.booking_ref}`, 5000);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 2000);
+            } else {
+                throw new Error(response.data.message || 'Booking failed');
+            }
+
+        } catch (err) {
+            console.error('Booking error:', err);
+
+            let errorMessage = 'Failed to create booking. Please try again.';
+
+            if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+                errorMessage = 'Booking is being processed. Please check "My Bookings" page to confirm your booking.';
+                warning(errorMessage);
+                setTimeout(() => {
+                    navigate('/my-bookings');
+                }, 3000);
+                return;
+            }
+
+            if (err.response) {
+                if (err.response.status === 401) {
+                    errorMessage = 'Session expired. Please login again';
+                    setTimeout(() => navigate('/login'), 2000);
+                } else if (err.response.status === 409) {
+                    errorMessage = err.response.data.message || 'This time slot is already booked.';
+                } else if (err.response.data?.message) {
+                    errorMessage = err.response.data.message;
+                }
+            }
+
+            error(errorMessage);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+
+        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
+            warning('End date should be after start date');
+            setEndDate('');
+        }
+    };
+
+    const handleEndDateChange = (e) => {
+        const newEndDate = e.target.value;
+        setEndDate(newEndDate);
+
+        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
+            warning('End date must be after start date');
+            setEndDate('');
+        }
+    };
+
     const rateDisplay = getRateDisplay();
     const quantity = getQuantity();
     const total = calculateTotal();
@@ -333,13 +543,15 @@ const PrivateCabinsDetail = () => {
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
-        if (amenities.wifi) amenityList.push('✓ High-Speed WiFi');
-        if (amenities.ac) amenityList.push('❄️ Air Conditioning');
-        if (amenities.coffee) amenityList.push('☕ Free Coffee & Tea');
-        if (amenities.printer) amenityList.push('🖨️ Printer & Scanner');
-        if (amenities.parking) amenityList.push('🅿️ Parking');
-        if (amenities.security) amenityList.push('🔒 24/7 Security');
-        if (amenities.backup_power) amenityList.push('⚡ Backup Power');
+        if (amenities.wifi) amenityList.push('WiFi');
+        if (amenities.ac) amenityList.push('Air Conditioning');
+        if (amenities.coffee) amenityList.push('Free Coffee');
+        if (amenities.printer) amenityList.push('Printer');
+        if (amenities.parking) amenityList.push('Parking');
+        if (amenities.security) amenityList.push('24/7 Security');
+        if (amenities.backup_power) amenityList.push('Backup Power');
+        if (amenities.private_bathroom) amenityList.push('Private Bathroom');
+        if (amenities.meeting_table) amenityList.push('Meeting Table');
         return amenityList;
     };
 
@@ -369,292 +581,369 @@ const PrivateCabinsDetail = () => {
     if (!space) {
         return (
             <div className="PrivateCabinsDetail_loading">
-                <p>Private cabin not found.</p>
-                <button onClick={() => navigate('/private-cabins')} className="PrivateCabinsDetail_back-btn">Go Back</button>
+                <p>Unable to load private cabin details.</p>
+                <button onClick={() => navigate(-1)} className="PrivateCabinsDetail_back-btn">Go Back</button>
+                <button onClick={() => window.location.reload()} className="PrivateCabinsDetail_retry-btn">Retry</button>
             </div>
         );
     }
 
     return (
-        <div className="PrivateCabinsDetail_page">
-            <button className="PrivateCabinsDetail_back-btn" onClick={() => navigate('/')}>
-                ← Back to spaces
-            </button>
+        <>
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+            <div className="PrivateCabinsDetail_page">
+                <button className="PrivateCabinsDetail_back-btn" onClick={() => navigate(-1)}>
+                    Back to spaces
+                </button>
 
-            <h2 className="PrivateCabinsDetail_page-title">Private Cabin Details</h2>
+                <h2 className="PrivateCabinsDetail_page-title">Space Details</h2>
 
-            {space.unit_type && (
-                <div className="PrivateCabinsDetail_badge">
-                    {space.unit_type.replace('_', ' ').toUpperCase()}
-                </div>
-            )}
+                {isOwnSpace() && (
+                    <div className="PrivateCabinsDetail_owner_warning">
+                        ⚠️ This is your own space. You cannot book it.
+                    </div>
+                )}
 
-            <div className="PrivateCabinsDetail_top-grid">
-                <div className="PrivateCabinsDetail_left">
-                    <h1 className="PrivateCabinsDetail_title">{space.title}</h1>
+                {!user && (
+                    <div className="PrivateCabinsDetail_login_warning">
+                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    </div>
+                )}
 
-                    <p className="PrivateCabinsDetail_meta">
-                        📍 {space.city}, {space.area}
-                        {space.address && <span> - {space.address}</span>}
-                    </p>
+                {/* Existing Booking Alert with Cancel Option */}
+                {existingBooking && (
+                    <div className="PrivateCabinsDetail_existing_booking">
+                        <div className="PrivateCabinsDetail_booking_info">
+                            <h4>📅 You have an existing booking for this space</h4>
+                            <p>
+                                <strong>Booking Reference:</strong> {existingBooking.booking_ref}<br />
+                                <strong>Date:</strong> {new Date(existingBooking.start_time).toLocaleString()} - {new Date(existingBooking.end_time).toLocaleString()}<br />
+                                <strong>Status:</strong> {existingBooking.status}
+                            </p>
+                            {!showCancelConfirm ? (
+                                <button
+                                    className="PrivateCabinsDetail_cancel_booking_btn"
+                                    onClick={() => setShowCancelConfirm(true)}
+                                >
+                                    Cancel Booking
+                                </button>
+                            ) : (
+                                <div className="PrivateCabinsDetail_cancel_confirm">
+                                    <p>Are you sure you want to cancel this booking?</p>
+                                    <div className="PrivateCabinsDetail_cancel_actions">
+                                        <button
+                                            className="PrivateCabinsDetail_confirm_cancel_btn"
+                                            onClick={handleCancelBooking}
+                                            disabled={cancelLoading}
+                                        >
+                                            {cancelLoading ? 'Cancelling...' : 'Yes, Cancel Booking'}
+                                        </button>
+                                        <button
+                                            className="PrivateCabinsDetail_keep_booking_btn"
+                                            onClick={() => setShowCancelConfirm(false)}
+                                        >
+                                            No, Keep It
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
-                    {space.total_capacity && (
+                {space.unit_type && (
+                    <div className="PrivateCabinsDetail_unit_badge">
+                        {space.unit_type.replace('_', ' ').toUpperCase()}
+                    </div>
+                )}
+
+                <div className="PrivateCabinsDetail_top-grid">
+                    <div className="PrivateCabinsDetail_left">
+                        <h1 className="PrivateCabinsDetail_title">{space.title}</h1>
+
                         <p className="PrivateCabinsDetail_meta">
-                            👥 Capacity: {space.total_capacity} people
+                            📍 {space.city}, {space.area}
+                            {space.address && <span> - {space.address}</span>}
                         </p>
+
+                        {space.total_capacity && (
+                            <p className="PrivateCabinsDetail_meta">
+                                👥 Capacity: {space.total_capacity} people
+                            </p>
+                        )}
+
+                        <p className="PrivateCabinsDetail_meta">
+                            Availability: <span className="PrivateCabinsDetail_available">
+                                {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
+                            </span>
+                        </p>
+
+                        {getAvailableRateTypes().length > 1 && (
+                            <div className="PrivateCabinsDetail_rate_selector">
+                                <label>Select Pricing Plan:</label>
+                                <div className="PrivateCabinsDetail_rate_options">
+                                    {getAvailableRateTypes().map(type => (
+                                        <button
+                                            key={type.key}
+                                            className={`PrivateCabinsDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedRateType(type.key);
+                                                info(`${type.label} pricing selected`);
+                                            }}
+                                        >
+                                            {type.label}
+                                            <span className="PrivateCabinsDetail_rate_amount">
+                                                {type.rate.toLocaleString()} PKR
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="PrivateCabinsDetail_pricing">
+                            <p className="PrivateCabinsDetail_price">
+                                {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
+                            </p>
+                            {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
+                                <p className="PrivateCabinsDetail_note">
+                                    💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
+                                </p>
+                            )}
+                            {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
+                                <p className="PrivateCabinsDetail_note">
+                                    💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Date & Time Selection Section with DateTimePicker */}
+                        {!existingBooking && (
+                            <div className="PrivateCabinsDetail_datetime_section">
+                                <h3 className="PrivateCabinsDetail_section_title">Select Date & Time</h3>
+                                <div className="PrivateCabinsDetail_datetime_grid">
+                                    <DateTimePicker
+                                        label="Start Date & Time"
+                                        value={startDate}
+                                        onChange={handleStartDateChange}
+                                        minDate={new Date().toISOString()}
+                                        placeholder="Select start date and time"
+                                    />
+                                    <DateTimePicker
+                                        label="End Date & Time"
+                                        value={endDate}
+                                        onChange={handleEndDateChange}
+                                        minDate={startDate || new Date().toISOString()}
+                                        placeholder="Select end date and time"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {existingBooking && (
+                            <div className="PrivateCabinsDetail_existing_booking_note">
+                                <p>📌 You already have a booking for this space. Please cancel your existing booking if you want to make a new reservation.</p>
+                                <button
+                                    className="PrivateCabinsDetail_view_booking_btn"
+                                    onClick={() => navigate('/my-bookings')}
+                                >
+                                    View My Bookings
+                                </button>
+                            </div>
+                        )}
+
+                        {startDate && endDate && !existingBooking && (
+                            <div className="PrivateCabinsDetail_summary">
+                                <div className="PrivateCabinsDetail_summary-row">
+                                    <span>Starting Date</span>
+                                    <span>{new Date(startDate).toLocaleString()}</span>
+                                </div>
+                                <div className="PrivateCabinsDetail_summary-row">
+                                    <span>Ending Date</span>
+                                    <span>{new Date(endDate).toLocaleString()}</span>
+                                </div>
+                                <div className="PrivateCabinsDetail_summary-row">
+                                    <span>
+                                        {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
+                                    </span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                                <div className="PrivateCabinsDetail_summary-row PrivateCabinsDetail_summary-total">
+                                    <span>Total</span>
+                                    <span>PKR {total.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {!existingBooking && (
+                            <button
+                                className="PrivateCabinsDetail_continue-btn"
+                                disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                                onClick={handleBooking}
+                            >
+                                {bookingLoading ? (
+                                    <>
+                                        <span className="spinner-small"></span>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    'Confirm Booking'
+                                )}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* IMAGE SLIDER SECTION */}
+                    <div className="PrivateCabinsDetail_right">
+                        <div
+                            className="PrivateCabinsDetail_gallery"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            {images.length > 0 && images[0] ? (
+                                <>
+                                    {imageLoading && !loadedImages[currentImage] && (
+                                        <div className="PrivateCabinsDetail_image_loader">
+                                            <div className="PrivateCabinsDetail_spinner_small"></div>
+                                        </div>
+                                    )}
+
+                                    <img
+                                        key={currentImage}
+                                        src={images[currentImage]}
+                                        alt={`${space.title} - Image ${currentImage + 1}`}
+                                        className={`PrivateCabinsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
+                                        onLoad={() => {
+                                            setImageLoading(false);
+                                            setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
+                                        }}
+                                        onError={(e) => {
+                                            console.error('Image failed to load');
+                                            e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
+                                            setImageLoading(false);
+                                        }}
+                                    />
+
+                                    {images.length > 1 && (
+                                        <>
+                                            <button
+                                                className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_prev"
+                                                onClick={prevImage}
+                                                aria-label="Previous image"
+                                            >
+                                                ‹
+                                            </button>
+                                            <button
+                                                className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_next"
+                                                onClick={nextImage}
+                                                aria-label="Next image"
+                                            >
+                                                ›
+                                            </button>
+                                            <div className="PrivateCabinsDetail_img-counter">
+                                                {currentImage + 1} / {images.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="PrivateCabinsDetail_no-img">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a"
+                                        alt="Fallback"
+                                        className="PrivateCabinsDetail_main-img"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {images.length > 1 && (
+                            <div className="PrivateCabinsDetail_thumbnails">
+                                {images.slice(0, 6).map((img, i) => (
+                                    <div
+                                        key={i}
+                                        className={`PrivateCabinsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
+                                        onClick={() => goToImage(i)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Thumbnail ${i + 1}`}
+                                            className="PrivateCabinsDetail_thumb"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="PrivateCabinsDetail_bottom">
+                    <div className="PrivateCabinsDetail_section">
+                        <h3 className="PrivateCabinsDetail_section-title">About this space</h3>
+                        <p className="PrivateCabinsDetail_description">
+                            {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'private cabin'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive and private environment.`}
+                        </p>
+                    </div>
+
+                    {/* Working Hours */}
+                    {space.space?.opening_time && space.space?.closing_time && (
+                        <div className="PrivateCabinsDetail_section">
+                            <h3 className="PrivateCabinsDetail_section-title">Working Hours</h3>
+                            <p className="PrivateCabinsDetail_working_hours">
+                                {space.space.opening_time} - {space.space.closing_time}
+                            </p>
+                            {space.space.working_days && (
+                                <p className="PrivateCabinsDetail_working_days">
+                                    {space.space.working_days.join(', ')}
+                                </p>
+                            )}
+                        </div>
                     )}
 
-                    <p className="PrivateCabinsDetail_meta">
-                        Availability: <span className="PrivateCabinsDetail_available">
-                            {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
-                        </span>
-                    </p>
-
-                    {getAvailableRateTypes().length > 1 && (
-                        <div className="PrivateCabinsDetail_rate_selector">
-                            <label>Select Pricing Plan:</label>
-                            <div className="PrivateCabinsDetail_rate_options">
-                                {getAvailableRateTypes().map(type => (
-                                    <button
-                                        key={type.key}
-                                        className={`PrivateCabinsDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
-                                        onClick={() => setSelectedRateType(type.key)}
-                                    >
-                                        {type.label}
-                                        <span className="PrivateCabinsDetail_rate_amount">
-                                            {type.rate.toLocaleString()} PKR
-                                        </span>
-                                    </button>
+                    {/* Amenities */}
+                    {renderAmenities().length > 0 && (
+                        <div className="PrivateCabinsDetail_section">
+                            <h3 className="PrivateCabinsDetail_section-title">Amenities</h3>
+                            <div className="PrivateCabinsDetail_features">
+                                {renderAmenities().map((item, i) => (
+                                    <span key={i} className="PrivateCabinsDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    <div className="PrivateCabinsDetail_pricing">
-                        <p className="PrivateCabinsDetail_price">
-                            {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
-                        </p>
-                        {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
-                            <p className="PrivateCabinsDetail_note">
-                                💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
-                            </p>
-                        )}
-                        {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
-                            <p className="PrivateCabinsDetail_note">
-                                💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="PrivateCabinsDetail_tabs">
-                        <button
-                            className={`PrivateCabinsDetail_tab ${activeTab === 'start' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('start')}
-                        >
-                            Starting Date
-                        </button>
-                        <button
-                            className={`PrivateCabinsDetail_tab ${activeTab === 'end' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('end')}
-                        >
-                            Ending Date
-                        </button>
-                    </div>
-
-                    <div className="PrivateCabinsDetail_date-input-wrap">
-                        {activeTab === 'start' ? (
-                            <input
-                                type="date"
-                                className="PrivateCabinsDetail_date-input"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        ) : (
-                            <input
-                                type="date"
-                                className="PrivateCabinsDetail_date-input"
-                                value={endDate}
-                                min={startDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
-                        )}
-                    </div>
-
-                    {startDate && endDate && (
-                        <div className="PrivateCabinsDetail_summary">
-                            <div className="PrivateCabinsDetail_summary-row">
-                                <span>Starting Date</span>
-                                <span>{formatDate(startDate)}</span>
-                            </div>
-                            <div className="PrivateCabinsDetail_summary-row">
-                                <span>Ending Date</span>
-                                <span>{formatDate(endDate)}</span>
-                            </div>
-                            <div className="PrivateCabinsDetail_summary-row">
-                                <span>{rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}</span>
-                                <span>PKR {total.toLocaleString()}</span>
-                            </div>
-                            <div className="PrivateCabinsDetail_summary-row PrivateCabinsDetail_summary-total">
-                                <span>Total</span>
-                                <span>PKR {total.toLocaleString()}</span>
+                    {/* Space Information */}
+                    {space.space && (
+                        <div className="PrivateCabinsDetail_section">
+                            <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
+                            <div className="PrivateCabinsDetail_space_info">
+                                <p><strong>Space Name:</strong> {space.space.name}</p>
+                                <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
+                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
                             </div>
                         </div>
                     )}
 
-                    <button
-                        className="PrivateCabinsDetail_continue-btn"
-                        disabled={!startDate || !endDate}
-                    >
-                        Continue to Booking
-                    </button>
-                </div>
-
-                {/* IMAGE SLIDER SECTION - FIXED FOR BASE64 */}
-                <div className="PrivateCabinsDetail_right">
-                    <div
-                        className="PrivateCabinsDetail_gallery"
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                    >
-                        {images.length > 0 && images[0] ? (
-                            <>
-                                {imageLoading && !loadedImages[currentImage] && (
-                                    <div className="PrivateCabinsDetail_image_loader">
-                                        <div className="PrivateCabinsDetail_spinner_small"></div>
-                                    </div>
-                                )}
-
-                                <img
-                                    key={currentImage}
-                                    src={images[currentImage]}
-                                    alt={`${space.title} - Image ${currentImage + 1}`}
-                                    className={`PrivateCabinsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
-                                    onLoad={() => {
-                                        setImageLoading(false);
-                                        setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
-                                    }}
-                                    onError={(e) => {
-                                        console.error('Image failed to load');
-                                        e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
-                                        setImageLoading(false);
-                                    }}
-                                />
-
-                                {images.length > 1 && (
-                                    <>
-                                        <button
-                                            className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_prev"
-                                            onClick={prevImage}
-                                            aria-label="Previous image"
-                                        >
-                                            ‹
-                                        </button>
-                                        <button
-                                            className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_next"
-                                            onClick={nextImage}
-                                            aria-label="Next image"
-                                        >
-                                            ›
-                                        </button>
-                                        <div className="PrivateCabinsDetail_img-counter">
-                                            {currentImage + 1} / {images.length}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <div className="PrivateCabinsDetail_no-img">
-                                <img 
-                                    src="https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a" 
-                                    alt="Fallback"
-                                    className="PrivateCabinsDetail_main-img"
-                                />
+                    {/* Policies */}
+                    {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
+                        <div className="PrivateCabinsDetail_section">
+                            <h3 className="PrivateCabinsDetail_section-title">Policies</h3>
+                            <div className="PrivateCabinsDetail_policies">
+                                {space.policies.cancellation && <p><strong>Cancellation:</strong> {space.policies.cancellation}</p>}
+                                {space.policies.refund && <p><strong>Refund:</strong> {space.policies.refund}</p>}
+                                {space.policies.late_arrival && <p><strong>Late Arrival:</strong> {space.policies.late_arrival}</p>}
                             </div>
-                        )}
-                    </div>
-
-                    {images.length > 1 && (
-                        <div className="PrivateCabinsDetail_thumbnails">
-                            {images.slice(0, 6).map((img, i) => (
-                                <div
-                                    key={i}
-                                    className={`PrivateCabinsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
-                                    onClick={() => goToImage(i)}
-                                >
-                                    <img
-                                        src={img}
-                                        alt={`Thumbnail ${i + 1}`}
-                                        className="PrivateCabinsDetail_thumb"
-                                        loading="lazy"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
-                                        }}
-                                    />
-                                </div>
-                            ))}
                         </div>
                     )}
                 </div>
             </div>
-
-            <div className="PrivateCabinsDetail_bottom">
-                <div className="PrivateCabinsDetail_section">
-                    <h3 className="PrivateCabinsDetail_section-title">About this space</h3>
-                    <p className="PrivateCabinsDetail_description">
-                        {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
-                    </p>
-                </div>
-
-                {space.space?.opening_time && space.space?.closing_time && (
-                    <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">Working Hours</h3>
-                        <p className="PrivateCabinsDetail_working_hours">
-                            🕐 {space.space.opening_time} - {space.space.closing_time}
-                        </p>
-                        {space.space.working_days && (
-                            <p className="PrivateCabinsDetail_working_days">
-                                📅 {space.space.working_days.join(', ')}
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {renderAmenities().length > 0 && (
-                    <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">Amenities</h3>
-                        <div className="PrivateCabinsDetail_features">
-                            {renderAmenities().map((item, i) => (
-                                <span key={i} className="PrivateCabinsDetail_feature-tag">{item}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {space.space && (
-                    <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
-                        <div className="PrivateCabinsDetail_space_info">
-                            <p><strong>🏢 Space Name:</strong> {space.space.name}</p>
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                        </div>
-                    </div>
-                )}
-
-                {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
-                    <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">Policies</h3>
-                        <div className="PrivateCabinsDetail_policies">
-                            {space.policies.cancellation && <p><strong>❌ Cancellation:</strong> {space.policies.cancellation}</p>}
-                            {space.policies.refund && <p><strong>💰 Refund:</strong> {space.policies.refund}</p>}
-                            {space.policies.late_arrival && <p><strong>⏰ Late Arrival:</strong> {space.policies.late_arrival}</p>}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 

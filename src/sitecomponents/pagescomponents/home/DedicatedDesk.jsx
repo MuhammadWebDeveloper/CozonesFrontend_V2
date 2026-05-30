@@ -5,6 +5,7 @@ import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
 import './../../../componentstyles/homestyle/dedicatedDesks.css';
 import { useNavigate } from 'react-router-dom';
+import BaseUrl from '../../../utils/AppConstants.jsx';
 
 const Dedicated_Desks = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
@@ -13,7 +14,7 @@ const Dedicated_Desks = ({ title }) => {
 
     // Axios instance
     const apiClient = axios.create({
-        baseURL: 'http://localhost:4343/',
+        baseURL:  BaseUrl ,
         timeout: 10000,
         headers: {
             'Content-Type': 'application/json',

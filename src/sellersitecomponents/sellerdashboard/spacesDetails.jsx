@@ -25,7 +25,11 @@ import {
   FaClock,
   FaList,
   FaFileContract,
-  FaRegBuilding
+  FaRegBuilding,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaToggleOn,
+  FaToggleOff
 } from 'react-icons/fa';
 import {
   MdLocationOn,
@@ -35,6 +39,7 @@ import {
   MdAccessTimeFilled
 } from 'react-icons/md';
 import '../../componentstyles/sellerdashboardstyles/SpaceDetails.css';
+import BaseUrl from '../../utils/AppConstants';
 
 export default function SpaceDetails() {
   const { spaceId } = useParams();
@@ -44,6 +49,7 @@ export default function SpaceDetails() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [deletingUnit, setDeletingUnit] = useState(null);
+  const [togglingUnit, setTogglingUnit] = useState(null);
 
   const getAuthToken = () => localStorage.getItem('token');
 
@@ -55,7 +61,7 @@ export default function SpaceDetails() {
     setLoading(true);
     try {
       const token = getAuthToken();
-      const response = await axios.get(`http://localhost:4343/api/spaces/owner/my-spaces`, {
+      const response = await axios.get(`${BaseUrl}api/spaces/owner/my-spaces`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -77,20 +83,20 @@ export default function SpaceDetails() {
     }
   };
 
-  const handleEdit = () => navigate(`/edit-space/${spaceId}`);
+  const handleEdit = () => navigate(`/space/update/${spaceId}`);
   const handleAddUnit = () => navigate(`/spaces/${spaceId}/addunits`);
   const handleViewUnits = () => navigate(`/spaces/${spaceId}/units`);
 
   const handleEditUnit = (unitId) => {
-    navigate(`/spaces/${spaceId}/units/${unitId}/edit`);
+    const unit = space.units.find(u => u.id === unitId);
+    navigate(`/spaces/${spaceId}/units/${unitId}/edit`, { state: { unit } });
   };
-
   const handleDeleteUnit = async (unitId, unitName) => {
     if (window.confirm(`Are you sure you want to delete "${unitName || 'this unit'}"? This action cannot be undone.`)) {
       setDeletingUnit(unitId);
       try {
         const token = getAuthToken();
-        await axios.delete(`http://localhost:4343/api/spaces/${spaceId}/units/${unitId}`, {
+        await axios.delete(`${BaseUrl}api/spaces/${spaceId}/units/${unitId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         fetchSpaceDetails();
@@ -99,6 +105,29 @@ export default function SpaceDetails() {
         alert(error.response?.data?.message || 'Failed to delete unit');
       } finally {
         setDeletingUnit(null);
+      }
+    }
+  };
+
+  const handleToggleUnitStatus = async (unitId, currentStatus, unitName) => {
+    const newStatus = !currentStatus;
+    const action = newStatus ? 'activate' : 'deactivate';
+
+    if (window.confirm(`Are you sure you want to ${action} "${unitName || 'this unit'}"?`)) {
+      setTogglingUnit(unitId);
+      try {
+        const token = getAuthToken();
+        await axios.put(
+          `${BaseUrl}api/spaces/${spaceId}/units/${unitId}/toggle-status`,
+          { is_active: newStatus },
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        fetchSpaceDetails();
+      } catch (error) {
+        console.error('Failed to toggle unit status:', error);
+        alert(error.response?.data?.message || 'Failed to update unit status');
+      } finally {
+        setTogglingUnit(null);
       }
     }
   };
@@ -119,7 +148,7 @@ export default function SpaceDetails() {
   };
 
   const getUnitIcon = (unitType) => {
-    switch(unitType) {
+    switch (unitType) {
       case 'open_desk':
         return '🖥️';
       case 'dedicated_desk':
@@ -131,6 +160,13 @@ export default function SpaceDetails() {
       default:
         return '📦';
     }
+  };
+
+  const getActivePricing = (unit) => {
+    if (unit.hourly_rate && unit.hourly_rate > 0) return { type: 'hourly', rate: unit.hourly_rate };
+    if (unit.daily_rate && unit.daily_rate > 0) return { type: 'daily', rate: unit.daily_rate };
+    if (unit.monthly_rate && unit.monthly_rate > 0) return { type: 'monthly', rate: unit.monthly_rate };
+    return null;
   };
 
   if (loading) {
@@ -192,7 +228,15 @@ export default function SpaceDetails() {
           <h1 className="sd__title">{space.name}</h1>
           <div className="sd__badge-group">
             <span className={`sd__badge sd__badge-${space.is_active ? 'active' : 'inactive'}`}>
-              {space.is_active ? '● Active' : '○ Inactive'}
+              {space.is_active ? (
+                <>
+                  <FaCheckCircle /> Active
+                </>
+              ) : (
+                <>
+                  <FaTimesCircle /> Inactive
+                </>
+              )}
             </span>
             <span className="sd__badge sd__badge-id">
               <FaRegBuilding /> ID: {space.id?.slice(0, 8)}...
@@ -228,8 +272,8 @@ export default function SpaceDetails() {
         <div className="sd__stat-card">
           <div className="sd__stat-icon"><FaStar /></div>
           <div className="sd__stat-info">
-            <span className="sd__stat-label">Rating</span>
-            <span className="sd__stat-number">{space.rating || 'New'}</span>
+            <span className="sd__stat-label">Active Units</span>
+            <span className="sd__stat-number">{space.units?.filter(u => u.is_active).length || 0}</span>
           </div>
         </div>
       </div>
@@ -264,7 +308,7 @@ export default function SpaceDetails() {
           className={`sd__tab ${activeTab === 'units' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('units')}
         >
-          <FaBuilding /> Units ({space.units?.length || 0})
+          <FaBuilding /> Units ({space.units?.filter(u => u.is_active).length}/{space.units?.length || 0})
         </button>
         <button
           className={`sd__tab ${activeTab === 'policies' ? 'sd__tab-active' : ''}`}
@@ -288,7 +332,17 @@ export default function SpaceDetails() {
                 </div>
                 <div className="sd__info-item">
                   <span className="sd__info-label">Status</span>
-                  <span className="sd__info-value">{space.is_active ? 'Active' : 'Inactive'}</span>
+                  <div className={`sd__status-badge ${space.is_active ? 'status-active' : 'status-inactive'}`}>
+                    {space.is_active ? (
+                      <>
+                        <FaCheckCircle /> Active
+                      </>
+                    ) : (
+                      <>
+                        <FaTimesCircle /> Inactive
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="sd__info-item">
                   <span className="sd__info-label">Created</span>
@@ -395,25 +449,25 @@ export default function SpaceDetails() {
             <div className="sd__info-card">
               <h3>✨ Amenities & Features</h3>
               <div className="sd__amenities-grid">
-                <div className={`sd__amenity ${space.has_wifi ? 'active' : ''}`}>
-                  <FaWifi /> {space.has_wifi ? 'Wi-Fi' : 'No Wi-Fi'}
+                <div className={`sd__amenity ${space.has_wifi ? 'active' : 'inactive'}`}>
+                  <FaWifi /> {space.has_wifi ? 'Wi-Fi Available' : 'No Wi-Fi'}
                 </div>
-                <div className={`sd__amenity ${space.has_ac ? 'active' : ''}`}>
+                <div className={`sd__amenity ${space.has_ac ? 'active' : 'inactive'}`}>
                   <FaSnowflake /> {space.has_ac ? 'Air Conditioning' : 'No AC'}
                 </div>
-                <div className={`sd__amenity ${space.has_coffee ? 'active' : ''}`}>
+                <div className={`sd__amenity ${space.has_coffee ? 'active' : 'inactive'}`}>
                   <FaCoffee /> {space.has_coffee ? 'Coffee/Tea' : 'No Coffee'}
                 </div>
-                <div className={`sd__amenity ${space.has_printer ? 'active' : ''}`}>
+                <div className={`sd__amenity ${space.has_printer ? 'active' : 'inactive'}`}>
                   <FaPrint /> {space.has_printer ? 'Printer/Scanner' : 'No Printer'}
                 </div>
-                <div className={`sd__amenity ${space.has_parking ? 'active' : ''}`}>
-                  <FaParking /> {space.has_parking ? 'Parking' : 'No Parking'}
+                <div className={`sd__amenity ${space.has_parking ? 'active' : 'inactive'}`}>
+                  <FaParking /> {space.has_parking ? 'Parking Available' : 'No Parking'}
                 </div>
-                <div className={`sd__amenity ${space.has_security ? 'active' : ''}`}>
+                <div className={`sd__amenity ${space.has_security ? 'active' : 'inactive'}`}>
                   <FaShieldAlt /> {space.has_security ? '24/7 Security' : 'No Security'}
                 </div>
-                <div className={`sd__amenity ${space.has_backup_power ? 'active' : ''}`}>
+                <div className={`sd__amenity ${space.has_backup_power ? 'active' : 'inactive'}`}>
                   <FaBolt /> {space.has_backup_power ? 'Backup Power' : 'No Backup Power'}
                 </div>
               </div>
@@ -421,7 +475,7 @@ export default function SpaceDetails() {
           </div>
         )}
 
-        {/* Units Tab with Edit and Delete Icons */}
+        {/* Units Tab with Active/Inactive Toggle */}
         {activeTab === 'units' && (
           <div className="sd__units">
             <div className="sd__info-card">
@@ -433,66 +487,93 @@ export default function SpaceDetails() {
               </div>
               {space.units?.length > 0 ? (
                 <div className="sd__units-list">
-                  {space.units.map((unit, index) => (
-                    <div key={unit.id} className="sd__unit-item">
-                      <div className="sd__unit-header">
-                        <div className="sd__unit-info-left">
-                          <span className="sd__unit-number">#{index + 1}</span>
-                          <span className="sd__unit-icon">{getUnitIcon(unit.unit_type)}</span>
-                          <span className="sd__unit-type">{unit.unit_type?.replace('_', ' ')}</span>
+                  {space.units.map((unit, index) => {
+                    const activePricing = getActivePricing(unit);
+                    return (
+                      <div key={unit.id} className={`sd__unit-item ${!unit.is_active ? 'sd__unit-inactive' : ''}`}>
+                        <div className="sd__unit-header">
+                          <div className="sd__unit-info-left">
+                            <span className="sd__unit-number">#{index + 1}</span>
+                            <span className="sd__unit-icon">{getUnitIcon(unit.unit_type)}</span>
+                            <span className="sd__unit-type">{unit.unit_type?.replace('_', ' ')}</span>
+                            <div className={`sd__unit-status-badge ${unit.is_active ? 'status-active' : 'status-inactive'}`}>
+                              {unit.is_active ? (
+                                <>
+                                  <FaCheckCircle /> Active
+                                </>
+                              ) : (
+                                <>
+                                  <FaTimesCircle /> Inactive
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="sd__unit-actions">
+                            {/* <button
+                              onClick={() => handleToggleUnitStatus(unit.id, unit.is_active, unit.name || unit.unit_type)}
+                              className={`sd__unit-toggle-btn ${unit.is_active ? 'toggle-active' : 'toggle-inactive'}`}
+                              disabled={togglingUnit === unit.id}
+                              title={unit.is_active ? 'Deactivate Unit' : 'Activate Unit'}
+                            >
+                              {togglingUnit === unit.id ? (
+                                <div className="sd__small-loader"></div>
+                              ) : unit.is_active ? (
+                                <FaToggleOn />
+                              ) : (
+                                <FaToggleOff />
+                              )}
+                            </button> */}
+                            <button
+                              onClick={() => handleEditUnit(unit.id)}
+                              className="sd__unit-edit-btn"
+                              title="Edit Unit"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUnit(unit.id, unit.name || unit.unit_type)}
+                              className="sd__unit-delete-btn"
+                              disabled={deletingUnit === unit.id}
+                              title="Delete Unit"
+                            >
+                              {deletingUnit === unit.id ? (
+                                <div className="sd__small-loader"></div>
+                              ) : (
+                                <FaTrashAlt />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <div className="sd__unit-actions">
-                          <button 
-                            onClick={() => handleEditUnit(unit.id)} 
-                            className="sd__unit-edit-btn"
-                            title="Edit Unit"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteUnit(unit.id, unit.name)} 
-                            className="sd__unit-delete-btn"
-                            disabled={deletingUnit === unit.id}
-                            title="Delete Unit"
-                          >
-                            {deletingUnit === unit.id ? (
-                              <div className="sd__small-loader"></div>
-                            ) : (
-                              <FaTrashAlt />
-                            )}
-                          </button>
+                        <div className="sd__unit-details">
+                          <div className="sd__unit-detail">
+                            <span>Name:</span>
+                            <strong>{unit.name || 'Not specified'}</strong>
+                          </div>
+                          <div className="sd__unit-detail">
+                            <FaUsers /> <span>Capacity:</span>
+                            <strong>{unit.total_capacity || 0} people</strong>
+                          </div>
+                          {activePricing && (
+                            <div className="sd__unit-detail sd__unit-pricing">
+                              <FaMoneyBillWave /> <span>Active Pricing:</span>
+                              <strong className="pricing-badge">
+                                {activePricing.type === 'hourly' && '⏱️ Hourly'}
+                                {activePricing.type === 'daily' && '📅 Daily'}
+                                {activePricing.type === 'monthly' && '📆 Monthly'}
+                                : PKR {activePricing.rate}
+                              </strong>
+                            </div>
+                          )}
+                          {unit.duration && (
+                            <div className="sd__unit-detail">
+                              <FaClock /> <span>Duration:</span>
+                              <strong>{unit.duration}</strong>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="sd__unit-details">
-                        <div className="sd__unit-detail">
-                          <span>Name:</span>
-                          <strong>{unit.name || 'Not specified'}</strong>
-                        </div>
-                        <div className="sd__unit-detail">
-                          <FaUsers /> <span>Capacity:</span>
-                          <strong>{unit.total_capacity || 0} people</strong>
-                        </div>
-                        {unit.hourly_rate && unit.hourly_rate > 0 && (
-                          <div className="sd__unit-detail">
-                            <FaMoneyBillWave /> <span>Hourly Rate:</span>
-                            <strong>PKR {unit.hourly_rate}</strong>
-                          </div>
-                        )}
-                        {unit.daily_rate && unit.daily_rate > 0 && (
-                          <div className="sd__unit-detail">
-                            <FaMoneyBillWave /> <span>Daily Rate:</span>
-                            <strong>PKR {unit.daily_rate}</strong>
-                          </div>
-                        )}
-                        {unit.monthly_rate && unit.monthly_rate > 0 && (
-                          <div className="sd__unit-detail">
-                            <FaMoneyBillWave /> <span>Monthly Rate:</span>
-                            <strong>PKR {unit.monthly_rate}</strong>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="sd__no-units">
