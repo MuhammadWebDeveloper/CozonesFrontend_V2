@@ -82,7 +82,6 @@ const PrivateCabinsDetail = () => {
         try {
             const response = await apiClient.get(`api/bookings/user`);
             if (response.data.success && response.data.bookings) {
-                // Find booking for this specific space that is active/upcoming
                 const booking = response.data.bookings.find(
                     b => b.space_unit_id === parseInt(id) &&
                         ['pending', 'confirmed', 'upcoming', 'active'].includes(b.status) &&
@@ -107,7 +106,6 @@ const PrivateCabinsDetail = () => {
                 success('Booking cancelled successfully!');
                 setExistingBooking(null);
                 setShowCancelConfirm(false);
-                // Refresh the page data
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -140,18 +138,24 @@ const PrivateCabinsDetail = () => {
                         rateType = 'monthly';
                     }
 
-                    // Parse images properly - handle JSON string or array
+                    // ✅ FIXED: Parse images properly - handle image objects with image_base64
                     let parsedImages = [];
                     if (unitData.images) {
                         if (typeof unitData.images === 'string') {
                             try {
                                 const parsed = JSON.parse(unitData.images);
-                                parsedImages = Array.isArray(parsed) ? parsed : [parsed];
+                                if (Array.isArray(parsed)) {
+                                    parsedImages = parsed.map(img => extractImageUrl(img));
+                                } else {
+                                    parsedImages = [extractImageUrl(parsed)];
+                                }
                             } catch (e) {
                                 parsedImages = [unitData.images];
                             }
                         } else if (Array.isArray(unitData.images)) {
-                            parsedImages = unitData.images;
+                            parsedImages = unitData.images.map(img => extractImageUrl(img));
+                        } else if (typeof unitData.images === 'object' && unitData.images !== null) {
+                            parsedImages = [extractImageUrl(unitData.images)];
                         }
                     }
 
@@ -190,7 +194,7 @@ const PrivateCabinsDetail = () => {
                         monthly_rate: unitData.monthly_rate && unitData.monthly_rate !== -999 ? parseFloat(unitData.monthly_rate) : null,
                         total_capacity: unitData.total_capacity,
                         unit_type: unitData.unit_type,
-                        images: parsedImages,
+                        images: parsedImages.filter(img => img !== null && img !== ''),
                         space: unitData.space,
                         space_amenities: parsedAmenities,
                         policies: parsedPolicies,
@@ -221,6 +225,35 @@ const PrivateCabinsDetail = () => {
         }
     }, [id]);
 
+    // Helper function to extract image URL from object or string
+    const extractImageUrl = (img) => {
+        if (!img) return null;
+
+        // If it's a string, return as is
+        if (typeof img === 'string') {
+            return img;
+        }
+
+        // If it's an object with image_base64
+        if (typeof img === 'object' && img !== null) {
+            if (img.image_base64 && typeof img.image_base64 === 'string') {
+                return img.image_base64;
+            }
+            if (img.url && typeof img.url === 'string') {
+                return img.url;
+            }
+            if (img.src && typeof img.src === 'string') {
+                return img.src;
+            }
+            if (img.path && typeof img.path === 'string') {
+                return img.path;
+            }
+        }
+
+        console.warn('Could not extract image URL from:', img);
+        return null;
+    };
+
     // Fetch existing booking after user and space are loaded
     useEffect(() => {
         if (user && space) {
@@ -233,39 +266,48 @@ const PrivateCabinsDetail = () => {
         return user.id === space.owner_id;
     };
 
-    // Handle Base64 images, URLs, and file paths
+    // Get images - now properly handles string URLs
     const getImages = useCallback(() => {
         if (space?.images && space.images.length > 0) {
             return space.images
                 .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
                 .map(img => {
-                    if (img && (img.startsWith('http://') || img.startsWith('https://'))) {
-                        return img;
-                    }
-                    if (img && img.startsWith('data:image')) {
-                        return img;
-                    }
-                    if (img && !img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
-                        if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
-                            return `data:image/jpeg;base64,${img}`;
+                    // If it's already a valid URL (http/https)
+                    if (typeof img === 'string') {
+                        if (img.startsWith('http://') || img.startsWith('https://')) {
+                            return img;
+                        }
+                        // If it's a Base64 data URL
+                        if (img.startsWith('data:image')) {
+                            return img;
+                        }
+                        // If it's a raw Base64 string
+                        if (!img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
+                            if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
+                                return `data:image/jpeg;base64,${img}`;
+                            }
+                            return img;
+                        }
+                        // If it's a relative path starting with /
+                        if (img.startsWith('/')) {
+                            return `${BaseUrl.replace(/\/$/, '')}${img}`;
+                        }
+                        // If it's a relative path without leading slash
+                        if (!img.startsWith('http') && !img.startsWith('data:')) {
+                            return `${BaseUrl.replace(/\/$/, '')}/uploads/${img}`;
                         }
                         return img;
                     }
-                    if (img && img.startsWith('/')) {
-                        return `${BaseUrl}${img}`;
-                    }
-                    if (img && !img.startsWith('http') && !img.startsWith('data:')) {
-                        return `${BaseUrl}uploads/${img}`;
-                    }
-                    return img;
+                    return 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
                 });
         }
 
+        // Fallback images
         const fallbackImages = {
-            'private_cabin': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'private_office': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
+            'private_cabin': 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a',
+            'private_office': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
         };
-        return [fallbackImages[space?.unit_type] || 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'];
+        return [fallbackImages[space?.unit_type] || 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a'];
     }, [space]);
 
     const images = getImages();
@@ -274,15 +316,19 @@ const PrivateCabinsDetail = () => {
     useEffect(() => {
         if (images && images.length > 0) {
             images.forEach((src, index) => {
-                const img = new Image();
-                img.onload = () => {
-                    setLoadedImages(prev => ({ ...prev, [index]: true }));
-                };
-                img.onerror = () => {
-                    console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
+                if (src && typeof src === 'string') {
+                    const img = new Image();
+                    img.onload = () => {
+                        setLoadedImages(prev => ({ ...prev, [index]: true }));
+                    };
+                    img.onerror = () => {
+                        console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
+                        setLoadedImages(prev => ({ ...prev, [index]: false }));
+                    };
+                    img.src = src;
+                } else {
                     setLoadedImages(prev => ({ ...prev, [index]: false }));
-                };
-                img.src = src;
+                }
             });
         }
     }, [images]);
@@ -293,7 +339,7 @@ const PrivateCabinsDetail = () => {
         const prevIdx = (currentIdx - 1 + images.length) % images.length;
 
         [nextIdx, prevIdx].forEach(idx => {
-            if (!loadedImages[idx] && images[idx]) {
+            if (!loadedImages[idx] && images[idx] && typeof images[idx] === 'string') {
                 const img = new Image();
                 img.src = images[idx];
                 img.onload = () => {

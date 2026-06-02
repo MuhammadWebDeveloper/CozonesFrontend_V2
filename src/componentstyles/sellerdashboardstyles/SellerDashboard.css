@@ -1,70 +1,314 @@
+/* SellerDashboard.css */
+
+/* Main Layout - No overflow issues */
 .sd__shell {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   background: #f4f5f9;
+  position: relative;
 }
 
+/* Sidebar - Completely Fixed */
 .sd__sidebar {
-  width: 180px;
-  min-width: 180px;
+  width: 220px;
+  min-width: 220px;
   background: #0d1a5e;
   display: flex;
   flex-direction: column;
-  padding: 20px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
+/* Custom scrollbar for sidebar */
+.sd__sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sd__sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sd__sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Logo */
 .sd__logo {
   color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  padding: 0 20px 24px;
+  padding: 24px 20px;
   letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
 }
 
+/* Navigation */
 .sd__nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  padding: 0 12px;
 }
 
 .sd__nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 20px;
+  gap: 12px;
+  padding: 12px 16px;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: rgba(255,255,255,0.6);
-  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
   text-align: left;
   width: 100%;
-  transition: background 0.15s, color 0.15s;
+  border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
 .sd__nav-item:hover {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .sd__nav-item--active {
-  background: rgba(255,255,255,0.15) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   color: #fff !important;
   font-weight: 500;
 }
 
-.sd__nav-icon { width: 20px; text-align: center; }
-
-.sd__content {
-  flex: 1;
-  overflow-y: auto;
+.sd__nav-icon {
+  width: 24px;
+  font-size: 18px;
+  text-align: center;
 }
 
+/* Content Area - Shifts right to accommodate fixed sidebar */
+.sd__content {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+  width: calc(100% - 220px);
+  background: #f4f5f9;
+  overflow-x: hidden;
+}
+
+/* Coming Soon */
 .sd__coming-soon {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
+  min-height: 500px;
   color: #9ca3af;
   font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sd__sidebar {
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .sd__logo {
+    font-size: 12px;
+    padding: 20px 12px;
+    text-align: center;
+  }
+
+  .sd__nav-item span:last-child {
+    display: none;
+  }
+
+  .sd__nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .sd__nav-icon {
+    width: auto;
+    font-size: 20px;
+  }
+
+  .sd__content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+}
+
+/* SellerDashboard.css */
+
+/* Main Layout */
+.sd__shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f5f9;
+  position: relative;
+}
+
+/* Sidebar - Completely Fixed */
+.sd__sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: #0d1a5e;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for sidebar */
+.sd__sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sd__sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sd__sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Logo */
+.sd__logo {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 24px 20px;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+/* Navigation */
+.sd__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+  flex: 1;
+}
+
+.sd__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.sd__nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sd__nav-item--active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.sd__nav-icon {
+  width: 24px;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Bottom Navigation */
+.sd__bottom-nav {
+  margin-top: auto;
+  padding: 20px 12px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sd__nav-item-bottom {
+  margin-bottom: 8px;
+}
+
+.sd__nav-item-logout:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+}
+
+/* Content Area */
+.sd__content {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+  width: calc(100% - 220px);
+  background: #f4f5f9;
+  overflow-x: hidden;
+}
+
+/* Coming Soon */
+.sd__coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 500px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sd__sidebar {
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .sd__logo {
+    font-size: 12px;
+    padding: 20px 12px;
+    text-align: center;
+  }
+
+  .sd__nav-item span:last-child {
+    display: none;
+  }
+
+  .sd__nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .sd__nav-icon {
+    width: auto;
+    font-size: 20px;
+  }
+
+  .sd__bottom-nav .sd__nav-item span:last-child {
+    display: none;
+  }
+
+  .sd__content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
 }

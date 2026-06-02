@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../../componentstyles/authstyls/LoginRegister.css';
 import BaseUrl from '../../utils/AppConstants';
 
@@ -9,6 +10,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,9 +45,42 @@ const Login = () => {
                 <p>Log in to your account</p>
                 {error && <div className="Auth-error">{error}</div>}
                 <form onSubmit={handleSubmit}>
-                    <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-                    <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-                    <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Log In'}</button>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        placeholder="Email" 
+                        value={formData.email} 
+                        onChange={handleChange} 
+                        required 
+                    />
+                    
+                    <div className="password-field">
+                        <input 
+                            type={showPassword ? "text" : "password"} 
+                            name="password" 
+                            placeholder="Password" 
+                            value={formData.password} 
+                            onChange={handleChange} 
+                            required 
+                        />
+                        <span 
+                            className="password-eye"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                        </span>
+                    </div>
+                    
+                    {/* Forgot Password Link */}
+                    <div style={{ textAlign: 'right', marginBottom: '15px' }}>
+                        <Link to="/forgot-password" className="forgot-password-link">
+                            Forgot Password?
+                        </Link>
+                    </div>
+                    
+                    <button type="submit" disabled={loading}>
+                        {loading ? 'Logging in...' : 'Log In'}
+                    </button>
                 </form>
                 <p>Don't have an account? <Link to="/register">Sign up</Link></p>
             </div>

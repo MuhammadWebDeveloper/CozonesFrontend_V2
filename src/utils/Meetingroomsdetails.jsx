@@ -41,6 +41,39 @@ const MeetingRoomsDetail = () => {
         return config;
     });
 
+    // Helper function to extract image URL from object or string
+    const extractImageUrl = (img) => {
+        if (!img) return null;
+
+        // If it's a string, return as is
+        if (typeof img === 'string') {
+            return img;
+        }
+
+        // If it's an object with image data
+        if (typeof img === 'object' && img !== null) {
+            // Check for image_base64 (most common)
+            if (img.image_base64 && typeof img.image_base64 === 'string') {
+                return img.image_base64;
+            }
+            // Check for url field
+            if (img.url && typeof img.url === 'string') {
+                return img.url;
+            }
+            // Check for src field
+            if (img.src && typeof img.src === 'string') {
+                return img.src;
+            }
+            // Check for path field
+            if (img.path && typeof img.path === 'string') {
+                return img.path;
+            }
+        }
+
+        console.warn('Could not extract image URL from:', img);
+        return null;
+    };
+
     // Get current user info
     useEffect(() => {
         const getUser = async () => {
@@ -88,18 +121,26 @@ const MeetingRoomsDetail = () => {
                         rateType = 'monthly';
                     }
 
-                    // Parse images properly - handle JSON string or array
+                    // ✅ FIXED: Parse images properly - handle image objects with image_base64
                     let parsedImages = [];
                     if (unitData.images) {
                         if (typeof unitData.images === 'string') {
                             try {
                                 const parsed = JSON.parse(unitData.images);
-                                parsedImages = Array.isArray(parsed) ? parsed : [parsed];
+                                if (Array.isArray(parsed)) {
+                                    parsedImages = parsed.map(img => extractImageUrl(img)).filter(img => img !== null);
+                                } else {
+                                    const extracted = extractImageUrl(parsed);
+                                    if (extracted) parsedImages = [extracted];
+                                }
                             } catch (e) {
                                 parsedImages = [unitData.images];
                             }
                         } else if (Array.isArray(unitData.images)) {
-                            parsedImages = unitData.images;
+                            parsedImages = unitData.images.map(img => extractImageUrl(img)).filter(img => img !== null);
+                        } else if (typeof unitData.images === 'object' && unitData.images !== null) {
+                            const extracted = extractImageUrl(unitData.images);
+                            if (extracted) parsedImages = [extracted];
                         }
                     }
 
@@ -174,45 +215,50 @@ const MeetingRoomsDetail = () => {
         return user.id === space.owner_id;
     };
 
-    // ✅ FIXED: Properly handle Base64 images, URLs, and file paths
+    // ✅ FIXED: Get images - now properly handles string URLs from extracted data
     const getImages = useCallback(() => {
         if (space?.images && space.images.length > 0) {
             return space.images
                 .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
                 .map(img => {
+                    // Safety check - ensure img is a string
+                    if (typeof img !== 'string') {
+                        console.warn('Invalid image type:', typeof img, img);
+                        return 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                    }
+
                     // If it's already a valid URL (http/https)
-                    if (img && (img.startsWith('http://') || img.startsWith('https://'))) {
+                    if (img.startsWith('http://') || img.startsWith('https://')) {
                         return img;
                     }
                     // If it's a Base64 data URL
-                    if (img && img.startsWith('data:image')) {
-                        return img;
-                    }
-                    // If it's a raw Base64 string (without data:image prefix)
-                    if (img && !img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
-                        // Check if it looks like Base64 (alphanumeric + /+=)
-                        if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
-                            return `data:image/jpeg;base64,${img}`;
-                        }
+                    if (img.startsWith('data:image')) {
                         return img;
                     }
                     // If it's a relative path starting with /
-                    if (img && img.startsWith('/')) {
-                        return `${BaseUrl}${img}`;
+                    if (img.startsWith('/')) {
+                        return `${BaseUrl.replace(/\/$/, '')}${img}`;
+                    }
+                    // If it's a raw Base64 string (without data:image prefix)
+                    if (img.length > 100 && !img.startsWith('http') && !img.startsWith('/') && !img.startsWith('data:')) {
+                        // Check if it looks like Base64
+                        if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
+                            return `data:image/jpeg;base64,${img}`;
+                        }
                     }
                     // If it's a relative path without leading slash
-                    if (img && !img.startsWith('http') && !img.startsWith('data:')) {
-                        return `${BaseUrl}uploads/${img}`;
+                    if (!img.startsWith('http') && !img.startsWith('data:')) {
+                        return `${BaseUrl.replace(/\/$/, '')}/uploads/${img}`;
                     }
                     return img;
                 });
         }
 
-        // Fallback images based on unit type
+        // Fallback images
         const fallbackImages = {
-            'meeting_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'conference_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'board_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
+            'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+            'conference_room': 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a',
+            'board_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
         };
         return [fallbackImages[space?.unit_type] || 'https://images.unsplash.com/photo-1497366216548-37526070297c'];
     }, [space]);
@@ -223,15 +269,19 @@ const MeetingRoomsDetail = () => {
     useEffect(() => {
         if (images && images.length > 0) {
             images.forEach((src, index) => {
-                const img = new Image();
-                img.onload = () => {
-                    setLoadedImages(prev => ({ ...prev, [index]: true }));
-                };
-                img.onerror = () => {
-                    console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
+                if (src && typeof src === 'string') {
+                    const img = new Image();
+                    img.onload = () => {
+                        setLoadedImages(prev => ({ ...prev, [index]: true }));
+                    };
+                    img.onerror = () => {
+                        console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
+                        setLoadedImages(prev => ({ ...prev, [index]: false }));
+                    };
+                    img.src = src;
+                } else {
                     setLoadedImages(prev => ({ ...prev, [index]: false }));
-                };
-                img.src = src;
+                }
             });
         }
     }, [images]);
@@ -243,7 +293,7 @@ const MeetingRoomsDetail = () => {
         const prevIdx = (currentIdx - 1 + images.length) % images.length;
 
         [nextIdx, prevIdx].forEach(idx => {
-            if (!loadedImages[idx] && images[idx]) {
+            if (!loadedImages[idx] && images[idx] && typeof images[idx] === 'string') {
                 const img = new Image();
                 img.src = images[idx];
                 img.onload = () => {

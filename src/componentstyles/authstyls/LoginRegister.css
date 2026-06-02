@@ -377,3 +377,112 @@ form {
     font-size: 0.875rem;
     color: var(--success);
 }
+
+
+
+
+/* Password field with eye icon inside */
+.password-field {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.password-field input {
+    width: 100%;
+    padding-right: 40px;
+    margin-bottom: 0;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.password-field input:focus {
+    border-color: #011CCD;
+}
+
+.password-eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: color 0.2s;
+    z-index: 1;
+}
+
+.password-eye:hover {
+    color: #011CCD;
+}
+
+/* Forgot Password Link Styles */
+.forgot-password-link {
+    color: #011CCD;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: inline-block;
+}
+/* 
+.forgot-password-link:hover {
+    color: green;
+    text-decoration: underline;
+} */
+
+
+/* Success message */
+.Auth-success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Input icon */
+.input-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    pointer-events: none;
+}
+
+/* Reset link button */
+.reset-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #011CCD;
+    text-decoration: none;
+}
+
+.reset-link:hover {
+    text-decoration: underline;
+}
+
+/* Forgot Password Link Styles */
+.forgot-password-link {
+    color: #011CCD;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: inline-block;
+}
+
+.forgot-password-link:hover {
+    /* color: #000b6b; */
+    text-decoration: underline;
+}

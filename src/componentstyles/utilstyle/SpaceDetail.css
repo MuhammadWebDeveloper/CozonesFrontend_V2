@@ -1098,3 +1098,111 @@ html {
         transform: rotate(360deg);
     }
 }
+
+/* Add to your SpaceDetail.css file */
+
+/* Unavailable state */
+.SpaceDetail_unavailable {
+    color: #dc2626 !important;
+    background: rgba(220, 38, 38, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Note text in pricing section */
+.SpaceDetail_note {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(1, 9, 90, 0.05);
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* Rate selector styles */
+.SpaceDetail_rate_selector {
+    margin: 20px 0;
+}
+
+.SpaceDetail_rate_selector label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a4a6a;
+    margin-bottom: 12px;
+}
+
+.SpaceDetail_rate_options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.SpaceDetail_rate_option {
+    flex: 1;
+    min-width: 100px;
+    padding: 12px 16px;
+    background: white;
+    border: 2px solid #e8eaf0;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 600;
+    color: #4a4a6a;
+}
+
+.SpaceDetail_rate_option.active {
+    border-color: #01095A;
+    background: rgba(1, 9, 90, 0.05);
+    color: #01095A;
+}
+
+.SpaceDetail_rate_option:hover {
+    border-color: #01095A;
+    transform: translateY(-2px);
+}
+
+.SpaceDetail_rate_amount {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 4px;
+    color: #01095A;
+}
+
+/* Login link button */
+.login-link {
+    background: none;
+    border: none;
+    color: #01095A;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0;
+    font-size: inherit;
+}
+
+.login-link:hover {
+    color: #000740;
+}
+
+/* Retry button */
+.SpaceDetail_retry-btn {
+    background: #01095A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+.SpaceDetail_retry-btn:hover {
+    background: #000740;
+    transform: translateY(-2px);
+}

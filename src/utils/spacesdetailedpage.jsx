@@ -10,7 +10,7 @@ import BaseUrl from './AppConstants';
 const SpaceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation(); // Add this
+    const location = useLocation();
     const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -20,6 +20,19 @@ const SpaceDetail = () => {
     const [selectedRateType, setSelectedRateType] = useState('daily');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
+
+    // Image navigation functions
+    const nextImage = () => {
+        if (space?.images && space.images.length > 0) {
+            setCurrentImage((prev) => (prev + 1) % space.images.length);
+        }
+    };
+
+    const prevImage = () => {
+        if (space?.images && space.images.length > 0) {
+            setCurrentImage((prev) => (prev - 1 + space.images.length) % space.images.length);
+        }
+    };
 
     // Axios instance
     const apiClient = axios.create({
@@ -47,20 +60,17 @@ const SpaceDetail = () => {
                 try {
                     const response = await apiClient.get('api/auth/profile');
                     setUser(response.data.user);
+                    console.log('Current user:', response.data.user);
                     success('Welcome back! 👋');
                 } catch (err) {
                     console.error('Error fetching user:', err);
-                    // Don't show error for this as it's not critical
                 }
             }
         };
         getUser();
     }, []);
 
-
-
     useEffect(() => {
-        // Check if we have pre-filled dates from navigation state
         const { state } = location;
         if (state?.prefillStartDate && state?.prefillEndDate) {
             setStartDate(state.prefillStartDate);
@@ -71,10 +81,6 @@ const SpaceDetail = () => {
         }
     }, [location]);
 
-
-
-
-
     useEffect(() => {
         const fetchSpace = async () => {
             try {
@@ -83,57 +89,104 @@ const SpaceDetail = () => {
 
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
                 console.log('API Response:', response.data);
+                // Add this right after setting the transformedSpace, before setSpace:
 
                 if (response.data?.success && response.data?.unit) {
                     const unitData = response.data.unit;
                     console.log('Unit Data:', unitData);
 
-                    // Determine rate type
+                    // Determine rate type based on available rates
                     let rateType = 'daily';
-                    if (unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0) {
-                        rateType = 'hourly';
-                    } else if (unitData.daily_rate && parseFloat(unitData.daily_rate) > 0) {
-                        rateType = 'daily';
-                    } else if (unitData.monthly_rate && parseFloat(unitData.monthly_rate) > 0) {
-                        rateType = 'monthly';
+                    const hasHourly = unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0 && unitData.hourly_rate !== -999;
+                    const hasDaily = unitData.daily_rate && parseFloat(unitData.daily_rate) > 0 && unitData.daily_rate !== -999;
+                    const hasMonthly = unitData.monthly_rate && parseFloat(unitData.monthly_rate) > 0 && unitData.monthly_rate !== -999;
+
+                    if (hasHourly) rateType = 'hourly';
+                    else if (hasDaily) rateType = 'daily';
+                    else if (hasMonthly) rateType = 'monthly';
+
+                    // Handle images - images are objects with image_base64
+                    let imagesArray = [];
+                    if (unitData.images && Array.isArray(unitData.images)) {
+                        imagesArray = unitData.images
+                            .filter(img => img.image_base64)
+                            .map(img => img.image_base64);
                     }
 
-                    // Handle images
-                    let imagesArray = [];
-                    if (unitData.images) {
-                        if (Array.isArray(unitData.images)) {
-                            imagesArray = unitData.images;
-                        } else if (typeof unitData.images === 'string') {
-                            try {
-                                const parsed = JSON.parse(unitData.images);
-                                imagesArray = Array.isArray(parsed) ? parsed : [parsed];
-                            } catch (e) {
-                                imagesArray = [unitData.images];
-                            }
-                        }
+                    // If no images, use fallback based on unit type
+                    if (imagesArray.length === 0) {
+                        const fallbackImages = {
+                            'open_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'dedicated_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'private_cabin': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
+                        };
+                        imagesArray = [fallbackImages[unitData.unit_type] || fallbackImages.open_desk];
                     }
+
+                    // Get owner_id - check both possible locations
+                    // Some APIs have owner_id directly, others have it in space object
+                    let ownerId = null;
+                    if (unitData.owner_id) {
+                        ownerId = unitData.owner_id;
+                    } else if (unitData.space?.owner_id) {
+                        ownerId = unitData.space.owner_id;
+                    } else if (unitData.space_owner_id) {
+                        ownerId = unitData.space_owner_id;
+                    }
+
+                    console.log('Owner ID found:', ownerId);
 
                     const transformedSpace = {
+                        // IDs
                         id: unitData.id,
+                        space_id: unitData.space_id,
+
+                        // Basic Info - directly from unitData
                         title: unitData.name || unitData.unit_type?.replace('_', ' ') || "Workspace",
-                        description: unitData.space?.description || "A comfortable workspace with all necessary amenities",
-                        location: unitData.space?.city || "Coworking Space",
-                        area: unitData.space?.area,
-                        address: unitData.space?.address,
-                        city: unitData.space?.city,
-                        rateType: rateType,
-                        hourly_rate: unitData.hourly_rate ? parseFloat(unitData.hourly_rate) : null,
-                        daily_rate: unitData.daily_rate ? parseFloat(unitData.daily_rate) : null,
-                        monthly_rate: unitData.monthly_rate ? parseFloat(unitData.monthly_rate) : null,
-                        total_capacity: unitData.total_capacity,
+                        description: unitData.space_description || "A comfortable workspace with all necessary amenities",
                         unit_type: unitData.unit_type,
+                        total_capacity: unitData.total_capacity,
+                        is_active: unitData.is_active !== false,
+
+                        // Location Info - directly from unitData
+                        city: unitData.city || 'City not specified',
+                        area: unitData.area,
+                        address: unitData.address || 'Address not specified',
+                        latitude: unitData.latitude,
+                        longitude: unitData.longitude,
+
+                        // Working Hours - directly from unitData
+                        opening_time: unitData.opening_time,
+                        closing_time: unitData.closing_time,
+                        working_days: unitData.working_days || [],
+
+                        // Space names - directly from unitData
+                        space_name: unitData.space_name,
+                        space_description: unitData.space_description,
+
+                        // Rates
+                        rateType: rateType,
+                        hourly_rate: unitData.hourly_rate && unitData.hourly_rate !== -999 ? parseFloat(unitData.hourly_rate) : null,
+                        daily_rate: unitData.daily_rate && unitData.daily_rate !== -999 ? parseFloat(unitData.daily_rate) : null,
+                        monthly_rate: unitData.monthly_rate && unitData.monthly_rate !== -999 ? parseFloat(unitData.monthly_rate) : null,
+
+                        // Amenities - directly from unitData
+                        has_wifi: unitData.has_wifi || false,
+                        has_ac: unitData.has_ac || false,
+                        has_coffee: unitData.has_coffee || false,
+                        has_printer: unitData.has_printer || false,
+                        has_parking: unitData.has_parking || false,
+                        has_security: unitData.has_security || false,
+                        has_backup_power: unitData.has_backup_power || false,
+
+                        // Images
                         images: imagesArray,
-                        space: unitData.space,
-                        space_amenities: unitData.space_amenities,
-                        policies: unitData.policies,
-                        is_active: unitData.is_active,
-                        owner_id: unitData.space?.owner_id
+                        owner_id: ownerId
                     };
+
+                    console.log('Transformed Space:', transformedSpace);
+                    console.log('Owner ID in transformed space:', transformedSpace.owner_id);
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
@@ -144,13 +197,6 @@ const SpaceDetail = () => {
                 }
             } catch (err) {
                 console.error('Error fetching space:', err);
-                console.error('Error details:', {
-                    message: err.message,
-                    response: err.response?.data,
-                    status: err.response?.status,
-                    config: err.config
-                });
-
                 let errorMessage = 'Failed to load space details. Please try again.';
                 if (err.response?.status === 404) {
                     errorMessage = 'Space not found. It may have been removed.';
@@ -161,7 +207,6 @@ const SpaceDetail = () => {
                 } else if (err.message === 'Network Error') {
                     errorMessage = 'Network error. Please check if the server is running.';
                 }
-
                 error(errorMessage);
             } finally {
                 setLoading(false);
@@ -177,48 +222,13 @@ const SpaceDetail = () => {
     }, [id]);
 
     const isOwnSpace = () => {
-        if (!user || !space) return false;
-        return user.id === space.owner_id;
-    };
-
-    const getImages = () => {
-        if (space?.images && space.images.length > 0) {
-            return space.images;
+        if (!user || !space) {
+            console.log('isOwnSpace check failed - missing user or space');
+            return false;
         }
-
-        const fallbackImages = {
-            'open_desk': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'dedicated_desk': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'private_cabin': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html',
-            'meeting_room': 'https://www.tripadvisor.com/Attraction_Review-g295424-d10687494-Reviews-IMG_Worlds_of_Adventure-Dubai_Emirate_of_Dubai.html'
-        };
-
-        return [fallbackImages[space?.unit_type] || fallbackImages.open_desk];
-    };
-
-    const images = getImages();
-
-    const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
-    const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
-
-    const calcHours = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
-        return Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
-    };
-
-    const calcDays = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
-        return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-    };
-
-    const calcMonths = () => {
-        if (!startDate || !endDate) return 0;
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-        return Math.max(0, monthDiff);
+        const isOwner = user.id === space.owner_id;
+        console.log('isOwnSpace check:', { userId: user.id, ownerId: space.owner_id, isOwner });
+        return isOwner;
     };
 
     const getRateDisplay = () => {
@@ -234,6 +244,26 @@ const SpaceDetail = () => {
             default:
                 return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
         }
+    };
+
+    const calcHours = () => {
+        if (!startDate || !endDate) return 0;
+        const diff = new Date(endDate) - new Date(startDate);
+        return Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+    };
+
+    const calcDays = () => {
+        if (!startDate || !endDate) return 0;
+        const diff = new Date(endDate) - new Date(startDate);
+        return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    };
+
+    const calcMonths = () => {
+        if (!startDate || !endDate) return 0;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        return Math.max(0, monthDiff);
     };
 
     const calculateTotal = () => {
@@ -290,7 +320,7 @@ const SpaceDetail = () => {
         }
 
         if (isOwnSpace()) {
-            error('You cannot book your own space!');
+            error('❌ You cannot book your own space! As the owner, you can edit your space instead.');
             return;
         }
 
@@ -323,8 +353,7 @@ const SpaceDetail = () => {
                 total_price: totalPrice
             };
 
-            console.log(bookingData);
-
+            console.log('Booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData);
 
@@ -376,35 +405,38 @@ const SpaceDetail = () => {
         }
     };
 
-    const rateDisplay = getRateDisplay();
-    const quantity = getQuantity();
-    const total = calculateTotal();
-
     const renderAmenities = () => {
-        const amenities = space?.space_amenities || {};
-        const amenityList = [];
+        if (!space) return [];
 
-        if (amenities.wifi) amenityList.push('WiFi');
-        if (amenities.ac) amenityList.push('Air Conditioning');
-        if (amenities.coffee) amenityList.push('Free Coffee');
-        if (amenities.printer) amenityList.push('Printer');
-        if (amenities.parking) amenityList.push('Parking');
-        if (amenities.security) amenityList.push('24/7 Security');
-        if (amenities.backup_power) amenityList.push('Backup Power');
+        const amenities = [];
+        if (space.has_wifi) amenities.push('WiFi');
+        if (space.has_ac) amenities.push('Air Conditioning');
+        if (space.has_coffee) amenities.push('Free Coffee');
+        if (space.has_printer) amenities.push('Printer');
+        if (space.has_parking) amenities.push('Parking');
+        if (space.has_security) amenities.push('24/7 Security');
+        if (space.has_backup_power) amenities.push('Backup Power');
 
-        return amenityList;
+        return amenities;
     };
 
     const getAvailableRateTypes = () => {
         const types = [];
-        if (space?.hourly_rate && space.hourly_rate > 0 && space.hourly_rate !== -999)
+        if (space?.hourly_rate && space.hourly_rate > 0)
             types.push({ key: 'hourly', label: 'Hourly', rate: space.hourly_rate });
-        if (space?.daily_rate && space.daily_rate > 0 && space.daily_rate !== -999)
+        if (space?.daily_rate && space.daily_rate > 0)
             types.push({ key: 'daily', label: 'Daily', rate: space.daily_rate });
-        if (space?.monthly_rate && space.monthly_rate > 0 && space.monthly_rate !== -999)
+        if (space?.monthly_rate && space.monthly_rate > 0)
             types.push({ key: 'monthly', label: 'Monthly', rate: space.monthly_rate });
         return types;
     };
+
+    const rateDisplay = getRateDisplay();
+    const quantity = getQuantity();
+    const total = calculateTotal();
+    const amenities = renderAmenities();
+    const availableRateTypes = getAvailableRateTypes();
+    const isOwner = isOwnSpace();
 
     if (loading) return (
         <div className="SpaceDetail_loading">
@@ -431,9 +463,27 @@ const SpaceDetail = () => {
 
                 <h2 className="SpaceDetail_page-title">Space Details</h2>
 
-                {isOwnSpace() && (
-                    <div className="SpaceDetail_owner_warning">
-                        ⚠️ This is your own space. You cannot book it.
+                {/* Owner Warning - Prominent and Clear */}
+                {isOwner && (
+                    <div className="SpaceDetail_owner_warning" style={{
+                        backgroundColor: '#fff3cd',
+                        borderLeft: '4px solid #ffc107',
+                        padding: '16px 20px',
+                        marginBottom: '24px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                    }}>
+                        <span style={{ fontSize: '24px' }}>⚠️</span>
+                        <div>
+                            <strong style={{ display: 'block', marginBottom: '4px', color: '#856404' }}>
+                                You are viewing your own space
+                            </strong>
+                            <span style={{ color: '#856404', fontSize: '14px' }}>
+                                As the owner, you cannot book this space. You can edit it from your dashboard instead.
+                            </span>
+                        </div>
                     </div>
                 )}
 
@@ -454,7 +504,8 @@ const SpaceDetail = () => {
                         <h1 className="SpaceDetail_title">{space.title}</h1>
 
                         <p className="SpaceDetail_meta">
-                            📍 {space.city}, {space.area}
+                            📍 {space.city || 'City not specified'}
+                            {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
@@ -465,16 +516,16 @@ const SpaceDetail = () => {
                         )}
 
                         <p className="SpaceDetail_meta">
-                            Availability: <span className="SpaceDetail_available">
-                                {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
+                            Availability: <span className={space.is_active ? "SpaceDetail_available" : "SpaceDetail_unavailable"}>
+                                {space.is_active ? 'Available' : 'Currently Unavailable'}
                             </span>
                         </p>
 
-                        {getAvailableRateTypes().length > 1 && (
+                        {availableRateTypes.length > 1 && (
                             <div className="SpaceDetail_rate_selector">
                                 <label>Select Pricing Plan:</label>
                                 <div className="SpaceDetail_rate_options">
-                                    {getAvailableRateTypes().map(type => (
+                                    {availableRateTypes.map(type => (
                                         <button
                                             key={type.key}
                                             className={`SpaceDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
@@ -509,8 +560,8 @@ const SpaceDetail = () => {
                             )}
                         </div>
 
-                        {/* Date & Time Selection Section */}
-                        <div className="SpaceDetail_datetime_section">
+                        {/* Date & Time Selection Section - Disabled for owner */}
+                        <div className="SpaceDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="SpaceDetail_section_title">Select Date & Time</h3>
                             <div className="SpaceDetail_datetime_grid">
                                 <DateTimePicker
@@ -519,6 +570,7 @@ const SpaceDetail = () => {
                                     onChange={handleStartDateChange}
                                     minDate={new Date().toISOString()}
                                     placeholder="Select start date and time"
+                                    disabled={isOwner}
                                 />
                                 <DateTimePicker
                                     label="End Date & Time"
@@ -526,11 +578,12 @@ const SpaceDetail = () => {
                                     onChange={handleEndDateChange}
                                     minDate={startDate || new Date().toISOString()}
                                     placeholder="Select end date and time"
+                                    disabled={isOwner}
                                 />
                             </div>
                         </div>
 
-                        {startDate && endDate && (
+                        {startDate && endDate && !isOwner && (
                             <div className="SpaceDetail_summary">
                                 <div className="SpaceDetail_summary-row">
                                     <span>Starting Date</span>
@@ -555,25 +608,54 @@ const SpaceDetail = () => {
 
                         <button
                             className="SpaceDetail_continue-btn"
-                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            disabled={isOwner || !startDate || !endDate || bookingLoading || !user || !space.is_active}
                             onClick={handleBooking}
+                            style={{
+                                backgroundColor: isOwner ? '#6c757d' : undefined,
+                                cursor: isOwner ? 'not-allowed' : 'pointer'
+                            }}
                         >
                             {bookingLoading ? (
                                 <>
                                     <span className="spinner-small"></span>
                                     Processing...
                                 </>
+                            ) : isOwner ? (
+                                '📝 Edit Your Space'
+                            ) : !space.is_active ? (
+                                'Currently Unavailable'
                             ) : (
                                 'Confirm Booking'
                             )}
                         </button>
+
+                        {/* Owner action buttons */}
+                        {isOwner && (
+                            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                                <button
+                                    onClick={() => navigate(`/edit-space/${space.id}`)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: '2px solid #01095A',
+                                        color: '#01095A',
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        width: '100%'
+                                    }}
+                                >
+                                    ✏️ Edit Space Details
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="SpaceDetail_right">
                         <div className="SpaceDetail_gallery">
-                            {images.length > 0 && images[0] ? (
+                            {space.images && space.images.length > 0 ? (
                                 <img
-                                    src={images[currentImage]}
+                                    src={space.images[currentImage]}
                                     alt={space.title}
                                     className="SpaceDetail_main-img"
                                     onError={(e) => {
@@ -584,20 +666,20 @@ const SpaceDetail = () => {
                                 <div className="SpaceDetail_no-img">No image available</div>
                             )}
 
-                            {images.length > 1 && (
+                            {space.images && space.images.length > 1 && (
                                 <>
                                     <button className="SpaceDetail_img-nav SpaceDetail_prev" onClick={prevImage}>‹</button>
                                     <button className="SpaceDetail_img-nav SpaceDetail_next" onClick={nextImage}>›</button>
                                     <div className="SpaceDetail_img-counter">
-                                        {currentImage + 1} / {images.length}
+                                        {currentImage + 1} / {space.images.length}
                                     </div>
                                 </>
                             )}
                         </div>
 
-                        {images.length > 1 && (
+                        {space.images && space.images.length > 1 && (
                             <div className="SpaceDetail_thumbnails">
-                                {images.slice(0, 5).map((img, i) => (
+                                {space.images.slice(0, 5).map((img, i) => (
                                     <img
                                         key={i}
                                         src={img}
@@ -618,46 +700,61 @@ const SpaceDetail = () => {
                     <div className="SpaceDetail_section">
                         <h3 className="SpaceDetail_section-title">About this space</h3>
                         <p className="SpaceDetail_description">
-                            {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
+                            {space.description}
                         </p>
                     </div>
 
-                    {space.space?.opening_time && space.space?.closing_time && (
+                    {/* Working Hours Section */}
+                    {(space.opening_time && space.closing_time) && (
                         <div className="SpaceDetail_section">
                             <h3 className="SpaceDetail_section-title">Working Hours</h3>
                             <p className="SpaceDetail_working_hours">
-                                {space.space.opening_time} - {space.space.closing_time}
+                                ⏰ {space.opening_time} - {space.closing_time}
                             </p>
-                            {space.space.working_days && (
+                            {space.working_days && space.working_days.length > 0 && (
                                 <p className="SpaceDetail_working_days">
-                                    {space.space.working_days.join(', ')}
+                                    📅 {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
                     )}
 
-                    {renderAmenities().length > 0 && (
+                    {/* Amenities Section */}
+                    {amenities.length > 0 && (
                         <div className="SpaceDetail_section">
                             <h3 className="SpaceDetail_section-title">Amenities</h3>
                             <div className="SpaceDetail_features">
-                                {renderAmenities().map((item, i) => (
+                                {amenities.map((item, i) => (
                                     <span key={i} className="SpaceDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {space.space && (
-                        <div className="SpaceDetail_section">
-                            <h3 className="SpaceDetail_section-title">Space Information</h3>
-                            <div className="SpaceDetail_space_info">
-                                <p><strong>Space Name:</strong> {space.space.name}</p>
-                                <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
-                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                            </div>
+                    {/* Space Information Section */}
+                    <div className="SpaceDetail_section">
+                        <h3 className="SpaceDetail_section-title">Space Information</h3>
+                        <div className="SpaceDetail_space_info">
+                            {space.space_name && (
+                                <p><strong>🏢 Space Name:</strong> {space.space_name}</p>
+                            )}
+                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            {space.total_capacity && (
+                                <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>
+                            )}
+                            {space.address && (
+                                <p><strong>📍 Address:</strong> {space.address}</p>
+                            )}
+                            {space.city && (
+                                <p><strong>🌆 City:</strong> {space.city}</p>
+                            )}
+                            {isOwner && (
+                                <p style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e8eaf0', color: '#01095A' }}>
+                                    👑 You are the owner of this space
+                                </p>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </>

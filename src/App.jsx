@@ -20,7 +20,14 @@ import AddUnit from './sellersitecomponents/utils/AddUnits';
 import UpdateSpace from './sellersitecomponents/utils/UpdateSpace';
 import UpdateUnit from './sellersitecomponents/utils/UpdateUnits';
 import MyBookings from './utils/MyBookings';
+import ForgotPassword from './utils/ForgotPassword';
+import ResetPassword from './utils/ResetPassword';
 
+// Routes where Navbar should be hidden (these pages have their own navigation)
+const HIDE_NAVBAR_ROUTES = [
+    '/seller-dashboard',
+    '/create-space',
+];
 
 function App() {
     return (
@@ -33,6 +40,11 @@ function App() {
 function AppContent() {
     const location = useLocation();
     const [isLoading, setIsLoading] = useState(false);
+
+    // Check if current path should hide navbar
+    const shouldHideNavbar = HIDE_NAVBAR_ROUTES.some(route =>
+        location.pathname === route || location.pathname.startsWith(route)
+    );
 
     useEffect(() => {
         setIsLoading(true);
@@ -50,11 +62,26 @@ function AppContent() {
 
     return (
         <>
-            <Navbar />
+            {/* Conditionally render Navbar - hide on seller dashboard and protected routes */}
+            {!shouldHideNavbar && <Navbar />}
+
             <Routes>
+                {/* Public Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+
+                {/* Auth Routes - Forgot/Reset Password */}
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+
+                {/* Public Space Detail Routes */}
+                <Route path="/spaces/:id" element={<SpaceDetail />} />
+                <Route path="/dedicated-desk/:id" element={<DedicatedDesksDetails />} />
+                <Route path="/private-cabins/:id" element={<PrivateCabinsDetail />} />
+                <Route path="/meeting-rooms/:id" element={<MeetingRoomsDetail />} />
+
+                {/* Protected Routes - User Profile & Favorites */}
                 <Route path="/My-Profile" element={
                     <ProtectedRoute>
                         <ProfileSidebar />
@@ -65,14 +92,21 @@ function AppContent() {
                         <MyFavorites />
                     </ProtectedRoute>
                 } />
-                <Route path="/create-space" element={
+                <Route path="/my-bookings" element={
                     <ProtectedRoute>
-                        <CreateSpace />
+                        <MyBookings />
                     </ProtectedRoute>
                 } />
+
+                {/* Protected Routes - Seller/Owner Dashboard */}
                 <Route path="/seller-dashboard" element={
                     <ProtectedRoute>
                         <SellerDashboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/create-space" element={
+                    <ProtectedRoute>
+                        <CreateSpace />
                     </ProtectedRoute>
                 } />
                 <Route path="/space/:spaceId" element={
@@ -95,18 +129,6 @@ function AppContent() {
                         <UpdateUnit />
                     </ProtectedRoute>
                 } />
-                <Route path="/my-bookings" element={
-                    <ProtectedRoute>
-                        <MyBookings />
-                    </ProtectedRoute>
-                } />
-
-
-
-                <Route path="/spaces/:id" element={<SpaceDetail />} />
-                <Route path="/dedicated-desk/:id" element={<DedicatedDesksDetails />} />
-                <Route path="/private-cabins/:id" element={<PrivateCabinsDetail />} />
-                <Route path="/meeting-rooms/:id" element={<MeetingRoomsDetail />} />
             </Routes>
         </>
     );

@@ -1,4 +1,4 @@
-// MyFavorites.jsx - Updated to show unit name with fixed image handling
+// MyFavorites.jsx - Updated to work with nested API response
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../../src/componentstyles/utilstyle/myfavorites.css";
@@ -32,66 +32,83 @@ const MyFavorites = () => {
         try {
             setLoading(true);
             const response = await apiClient.get('api/favorites/my-favorites');
+            console.log('API Response:', response.data);
+
             if (response.data.success) {
                 setFavorites(response.data.favorites);
                 console.log('Favorites data:', response.data.favorites);
             }
         } catch (err) {
+            console.error('Error fetching favorites:', err);
             setError('Failed to load favorites');
-            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
+    // ✅ FIXED: Access unit.id from nested structure
     const removeFavorite = async (unitId) => {
         try {
-            await apiClient.post(`api/favorites/toggle/${unitId}`);
-            setFavorites(prev => prev.filter(f => f.unit?.id !== unitId));
+            console.log('Removing favorite for unit:', unitId);
+            const response = await apiClient.post(`api/favorites/toggle/${unitId}`);
+            
+            if (response.data.success) {
+                // Filter by unit.id from nested structure
+                setFavorites(prev => prev.filter(fav => fav.unit?.id !== unitId));
+                console.log('Favorite removed successfully');
+            }
         } catch (err) {
             console.error('Failed to remove favorite:', err);
+            fetchFavorites(); // Refresh to sync
         }
     };
 
+    // ✅ FIXED: Get best rate from nested unit object
     const getBestRate = (favorite) => {
         const unit = favorite.unit;
-        if (unit?.hourly_rate && parseFloat(unit.hourly_rate) > 0 && unit.hourly_rate !== -999)
+        if (unit?.hourly_rate && parseFloat(unit.hourly_rate) > 0 && unit.hourly_rate !== -999) {
             return `PKR ${parseFloat(unit.hourly_rate).toLocaleString()}/hour`;
-        if (unit?.daily_rate && parseFloat(unit.daily_rate) > 0 && unit.daily_rate !== -999)
+        }
+        if (unit?.daily_rate && parseFloat(unit.daily_rate) > 0 && unit.daily_rate !== -999) {
             return `PKR ${parseFloat(unit.daily_rate).toLocaleString()}/night`;
-        if (unit?.monthly_rate && parseFloat(unit.monthly_rate) > 0 && unit.monthly_rate !== -999)
+        }
+        if (unit?.monthly_rate && parseFloat(unit.monthly_rate) > 0 && unit.monthly_rate !== -999) {
             return `PKR ${parseFloat(unit.monthly_rate).toLocaleString()}/month`;
+        }
         return 'Price on request';
     };
 
-    // ✅ FIXED: Handle different image formats including application/octet-stream
+    // ✅ FIXED: Get image from nested unit object
     const getImage = (favorite) => {
         const unit = favorite.unit;
-        if (unit?.images && unit.images.length > 0) {
+        if (unit?.images && Array.isArray(unit.images) && unit.images.length > 0) {
             let img = unit.images[0];
 
-            // Skip empty or null images
             if (!img) return getFallbackImage();
 
-            // Fix for application/octet-stream images
+            if (typeof img === 'object' && img.image_base64) {
+                img = img.image_base64;
+            }
+
             if (typeof img === 'string' && img.startsWith('data:application/octet-stream')) {
                 img = img.replace('data:application/octet-stream', 'data:image/jpeg');
             }
 
-            // Handle raw Base64 without data: prefix
             if (typeof img === 'string' && !img.startsWith('data:image') && !img.startsWith('http') && img.length > 100) {
                 if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
                     return `data:image/jpeg;base64,${img}`;
                 }
             }
 
-            // Handle different image formats
-            if (typeof img === 'string' && img.startsWith('data:image')) return img;
-            if (typeof img === 'string' && img.startsWith('http')) return img;
-            if (typeof img === 'string' && img.startsWith('/')) return `${BaseUrl}${img}`;
+            if (typeof img === 'string' && (img.startsWith('data:image') || img.startsWith('http'))) {
+                return img;
+            }
 
-            // If it's not a string (maybe already processed), try to use it
-            if (img) return img;
+            if (typeof img === 'string' && img.startsWith('/')) {
+                return `${BaseUrl}${img}`;
+            }
+
+            return img;
         }
         return getFallbackImage();
     };
@@ -102,9 +119,20 @@ const MyFavorites = () => {
 
     const formatDate = (dateStr) => {
         if (!dateStr) return 'Recently';
-        return new Date(dateStr).toLocaleDateString('en-PK', {
-            year: 'numeric', month: 'short', day: 'numeric'
-        });
+        try {
+            return new Date(dateStr).toLocaleDateString('en-PK', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return 'Recently';
+        }
+    };
+
+    const getUnitTypeDisplay = (unitType) => {
+        if (!unitType) return 'SPACE';
+        return unitType.replace('_', ' ').toUpperCase();
     };
 
     if (loading) return (
@@ -150,7 +178,8 @@ const MyFavorites = () => {
             ) : (
                 <div className="MF_grid">
                     {favorites.map((fav) => (
-                        <div key={fav.unit?.id || fav.favorite_id} className="MF_card">
+                        // ✅ Use favorite_id or unit.id as key
+                        <div key={fav.favorite_id || fav.unit?.id} className="MF_card">
                             <div
                                 className="MF_imageWrap"
                                 onClick={() => navigate(`/spaces/${fav.unit?.id}`)}
@@ -164,13 +193,13 @@ const MyFavorites = () => {
                                     }}
                                 />
                                 <div className="MF_badge">
-                                    {fav.unit?.unit_type?.replace('_', ' ').toUpperCase() || 'SPACE'}
+                                    {getUnitTypeDisplay(fav.unit?.unit_type)}
                                 </div>
                                 <button
                                     className="MF_removeBtn"
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                         e.stopPropagation();
-                                        removeFavorite(fav.unit?.id);
+                                        await removeFavorite(fav.unit?.id);
                                     }}
                                 >
                                     <FiHeart size={20} fill="white" stroke="white" />

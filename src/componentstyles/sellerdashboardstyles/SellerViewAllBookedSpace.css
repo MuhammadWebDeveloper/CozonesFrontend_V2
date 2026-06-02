@@ -1,0 +1,691 @@
+/* SellerViewAllBookedSpace.css */
+
+/* Container */
+.seller-bookings-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.bookings-header {
+  margin-bottom: 24px;
+}
+
+.bookings-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.bookings-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Statistics Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1000px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-total {
+  border-left: 4px solid #3b82f6;
+}
+
+.stat-card-pending {
+  border-left: 4px solid #eab308;
+}
+
+.stat-card-confirmed {
+  border-left: 4px solid #22c55e;
+}
+
+.stat-card-rejected {
+  border-left: 4px solid #ef4444;
+}
+
+.stat-card-cancelled {
+  border-left: 4px solid #6b7280;
+}
+
+.stat-card svg {
+  opacity: 0.7;
+}
+
+.stat-card-total svg {
+  color: #3b82f6;
+}
+
+.stat-card-pending svg {
+  color: #eab308;
+}
+
+.stat-card-confirmed svg {
+  color: #22c55e;
+}
+
+.stat-card-rejected svg {
+  color: #ef4444;
+}
+
+.stat-card-cancelled svg {
+  color: #6b7280;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+/* Filters */
+.filters-container {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-box {
+  flex: 1;
+  position: relative;
+  min-width: 200px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.status-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+}
+
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.refresh-button:hover {
+  background: #e5e7eb;
+}
+
+/* Bookings List */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Booking Card */
+.booking-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.booking-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-header-info {
+  flex: 1;
+}
+
+.unit-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.space-info {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.badge-container {
+  display: flex;
+  gap: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-cancelled {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.card-body {
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .card-body {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.info-icon {
+  color: #9ca3af;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-text {
+  font-size: 13px;
+  color: #111827;
+  margin: 0;
+  font-weight: 500;
+}
+
+.info-subtext {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 2px 0 0 0;
+}
+
+.price-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3b82f6;
+  margin: 4px 0 0 0;
+}
+
+/* Card Actions */
+.card-actions {
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  gap: 12px;
+}
+
+.btn-approve {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-approve:hover {
+  background: #16a34a;
+}
+
+.btn-reject {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reject:hover {
+  background: #dc2626;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 8px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.ref-text {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.ref-value {
+  font-family: monospace;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: white;
+  border-radius: 12px;
+}
+
+.empty-state svg {
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Cancel Modal Styles */
+.cancel-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.cancel-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cancel-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.cancel-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.cancel-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.cancel-modal-close:hover {
+  background: #e5e7eb;
+}
+
+.cancel-modal-body {
+  padding: 20px;
+}
+
+.cancel-booking-info {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.cancel-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.cancel-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.cancel-textarea:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.cancel-warning {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+.cancel-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.cancel-btn-secondary {
+  flex: 1;
+  padding: 10px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.cancel-btn-primary {
+  flex: 1;
+  padding: 10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-btn-primary:hover {
+  background: #dc2626;
+}
+
+.cancel-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Cancel Button in Card */
+.btn-cancel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* Delete Button */
+.btn-delete {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Delete Warning */
+.delete-warning {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* Delete Button in Modal */
+.delete-btn-primary {
+  flex: 1;
+  padding: 10px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.delete-btn-primary:hover {
+  background: #b91c1c;
+}
+
+.delete-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

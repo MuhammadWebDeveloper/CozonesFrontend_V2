@@ -1,0 +1,447 @@
+/* SellerCalendar.css */
+
+.seller-calendar-container {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Header */
+.seller-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.seller-calendar-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.seller-calendar-title-section h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.seller-calendar-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.seller-calendar-nav-btn {
+    padding: 8px 12px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seller-calendar-nav-btn:hover {
+    background: #e5e7eb;
+}
+
+.seller-calendar-today-btn {
+    padding: 8px 16px;
+    background: #011CCD;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.seller-calendar-today-btn:hover {
+    background: #000b6b;
+}
+
+/* Month Year */
+.seller-calendar-month-year {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.seller-calendar-month-year h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+/* Legend */
+.seller-calendar-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.seller-calendar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.seller-calendar-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.seller-calendar-legend-color.pending {
+    background: #f59e0b;
+}
+
+.seller-calendar-legend-color.confirmed {
+    background: #22c55e;
+}
+
+.seller-calendar-legend-color.rejected {
+    background: #ef4444;
+}
+
+.seller-calendar-legend-color.cancelled {
+    background: #6b7280;
+}
+
+/* Calendar Grid */
+.seller-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    background: #f9fafb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.seller-calendar-weekday {
+    background: #f3f4f6;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+}
+
+.seller-calendar-day {
+    min-height: 100px;
+    background: white;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.seller-calendar-day:hover {
+    background: #f9fafb;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+.seller-calendar-day.empty {
+    background: #f9fafb;
+    cursor: default;
+}
+
+.seller-calendar-day.today {
+    background: #eff6ff;
+    border: 2px solid #011CCD;
+}
+
+.seller-calendar-day.past {
+    background: #fef2f2;
+    opacity: 0.7;
+}
+
+.seller-calendar-day.has-bookings {
+    background: #f0fdf4;
+}
+
+.seller-calendar-day-number {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #111827;
+}
+
+.seller-calendar-day.today .seller-calendar-day-number {
+    color: #011CCD;
+    font-weight: 700;
+}
+
+/* Booking Indicators */
+.seller-calendar-booking-indicators {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.seller-calendar-booking-indicator {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+}
+
+.seller-calendar-booking-indicator.pending {
+    background: #f59e0b;
+}
+
+.seller-calendar-booking-indicator.confirmed {
+    background: #22c55e;
+}
+
+.seller-calendar-booking-indicator.rejected {
+    background: #ef4444;
+}
+
+/* Modal Styles */
+.seller-calendar-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.seller-calendar-modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.seller-calendar-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.seller-calendar-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #111827;
+}
+
+.seller-calendar-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    color: #6b7280;
+}
+
+.seller-calendar-modal-close:hover {
+    background: #e5e7eb;
+}
+
+.seller-calendar-modal-body {
+    padding: 20px 24px;
+}
+
+.seller-calendar-bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.seller-calendar-booking-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.seller-calendar-booking-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.seller-calendar-booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.seller-calendar-booking-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+}
+
+.seller-calendar-booking-ref {
+    font-family: monospace;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.seller-calendar-booking-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.seller-calendar-booking-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.seller-calendar-booking-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #011CCD;
+    text-align: right;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.seller-calendar-no-bookings {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px;
+}
+
+.seller-calendar-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.seller-calendar-modal-close-btn {
+    width: 100%;
+    padding: 10px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.seller-calendar-modal-close-btn:hover {
+    background: #e5e7eb;
+}
+
+/* Loading */
+.seller-calendar-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    gap: 16px;
+}
+
+.seller-calendar-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #011CCD;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .seller-calendar-container {
+        padding: 16px;
+    }
+
+    .seller-calendar-day {
+        min-height: 70px;
+        font-size: 12px;
+    }
+
+    .seller-calendar-booking-indicator {
+        font-size: 8px;
+        padding: 1px 4px;
+    }
+
+    .seller-calendar-month-year h2 {
+        font-size: 20px;
+    }
+
+    .seller-calendar-title-section h1 {
+        font-size: 18px;
+    }
+}
+
+/* Add this to SellerCalendar.css */
+
+/* Booking dates section in modal */
+.seller-calendar-booking-dates {
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #374151;
+}
+
+.seller-calendar-booking-dates strong {
+    color: #011CCD;
+}
+
+/* Cancelled indicator */
+.seller-calendar-booking-indicator.cancelled {
+    background: #6b7280;
+}

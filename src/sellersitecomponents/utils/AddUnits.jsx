@@ -9,9 +9,12 @@ export default function AddUnit() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [spaceName, setSpaceName] = useState('');
-    const [existingUnitTypes, setExistingUnitTypes] = useState([]);
+    const [existingUnits, setExistingUnits] = useState([]);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [activePricing, setActivePricing] = useState(''); // 'hourly', 'daily', 'monthly'
+    const [activePricing, setActivePricing] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [addedUnitName, setAddedUnitName] = useState('');
+    const [imageUploading, setImageUploading] = useState(false); // New state
 
     const [formData, setFormData] = useState({
         unit_type: '',
@@ -36,7 +39,7 @@ export default function AddUnit() {
     const fetchSpaceDetails = async () => {
         try {
             const token = getAuthToken();
-            const response = await axios.get( `${BaseUrl}api/spaces/owner/my-spaces`, {
+            const response = await axios.get(`${BaseUrl}api/spaces/owner/my-spaces`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -51,7 +54,6 @@ export default function AddUnit() {
         }
     };
 
-    // Fetch existing units to check for duplicates
     const fetchExistingUnits = async () => {
         try {
             const token = getAuthToken();
@@ -60,8 +62,7 @@ export default function AddUnit() {
             });
 
             if (response.data.success && response.data.units) {
-                const existingTypes = response.data.units.map(unit => unit.unit_type);
-                setExistingUnitTypes(existingTypes);
+                setExistingUnits(response.data.units);
             }
         } catch (error) {
             console.error('Failed to fetch existing units:', error);
@@ -76,25 +77,19 @@ export default function AddUnit() {
         }));
     };
 
-    // Get available pricing options based on unit type
     const getAvailablePricingOptions = () => {
         const unitType = formData.unit_type;
-
-        // Meeting rooms should only have hourly and daily
         if (unitType === 'meeting_room') {
             return ['hourly', 'daily'];
         }
-
-        // All other unit types (open_desk, dedicated_desk, private_cabin) have daily and monthly
         return ['daily', 'monthly'];
     };
 
-    // Get pricing option labels
     const getPricingLabel = (type) => {
         const labels = {
-            hourly: { title: '⏱️ Hourly Rate', description: 'Best for short-term bookings and meeting rooms', unit: '/hour(PKR)' },
-            daily: { title: '📅 Daily Rate', description: 'Perfect for daily workspace rentals', unit: '/day(PKR)' },
-            monthly: { title: '📆 Monthly Rate', description: 'Best value for long-term commitments', unit: '/month(PKR)' }
+            hourly: { title: '⏱️ Hourly Rate', description: 'Best for short-term bookings and meeting rooms', unit: '/hour (PKR)' },
+            daily: { title: '📅 Daily Rate', description: 'Perfect for daily workspace rentals', unit: '/day (PKR)' },
+            monthly: { title: '📆 Monthly Rate', description: 'Best value for long-term commitments', unit: '/month (PKR)' }
         };
         return labels[type];
     };
@@ -107,7 +102,6 @@ export default function AddUnit() {
         }));
     };
 
-    // Reset pricing selection when unit type changes
     useEffect(() => {
         setActivePricing('');
         setFormData(prev => ({
@@ -119,22 +113,57 @@ export default function AddUnit() {
         }));
     }, [formData.unit_type]);
 
-    const handleImageUpload = (e) => {
+    // Improved image upload with compression and validation
+    const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
-        const imagePromises = files.map(file => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
+        
+        // Validate file sizes and types
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        
+        const invalidFiles = files.filter(file => {
+            if (!validTypes.includes(file.type)) {
+                setMessage({ type: 'error', text: `${file.name} is not a valid image type. Use JPG, PNG, or WEBP.` });
+                return true;
+            }
+            if (file.size > MAX_SIZE) {
+                setMessage({ type: 'error', text: `${file.name} exceeds 5MB limit.` });
+                return true;
+            }
+            return false;
+        });
+        
+        if (invalidFiles.length > 0) return;
+        
+        setImageUploading(true);
+        
+        try {
+            const imagePromises = files.map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => resolve(null);
+                });
             });
-        });
 
-        Promise.all(imagePromises).then(images => {
-            setFormData(prev => ({
-                ...prev,
-                images: [...prev.images, ...images]
-            }));
-        });
+            const images = await Promise.all(imagePromises);
+            const validImages = images.filter(img => img !== null);
+            
+            if (validImages.length > 0) {
+                setFormData(prev => ({
+                    ...prev,
+                    images: [...prev.images, ...validImages]
+                }));
+                setMessage({ type: 'success', text: `${validImages.length} image(s) uploaded successfully!` });
+                setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            }
+        } catch (error) {
+            console.error('Image upload error:', error);
+            setMessage({ type: 'error', text: 'Failed to upload images. Please try again.' });
+        } finally {
+            setImageUploading(false);
+        }
     };
 
     const removeImage = (index) => {
@@ -144,16 +173,21 @@ export default function AddUnit() {
         }));
     };
 
-    // Check if unit type already exists
-    const isUnitTypeDuplicate = () => {
-        if (existingUnitTypes.includes(formData.unit_type)) {
-            setMessage({
-                type: 'error',
-                text: `A "${formData.unit_type.replace('_', ' ')}" already exists in this space. Each unit type can only be created once.`
-            });
-            return true;
-        }
-        return false;
+    const resetForm = () => {
+        setFormData({
+            unit_type: '',
+            name: '',
+            total_capacity: '',
+            hourly_rate: '',
+            daily_rate: '',
+            monthly_rate: '',
+            images: [],
+            duration: '',
+            is_active: true,
+            active_pricing_type: ''
+        });
+        setActivePricing('');
+        setMessage({ type: '', text: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -168,19 +202,18 @@ export default function AddUnit() {
             return;
         }
 
-        // Check for duplicate unit type
-        if (isUnitTypeDuplicate()) {
+        if (!formData.name.trim()) {
+            setMessage({ type: 'error', text: 'Please enter a unit name' });
             setLoading(false);
             return;
         }
 
-        if (!formData.total_capacity) {
-            setMessage({ type: 'error', text: 'Please enter total capacity' });
+        if (!formData.total_capacity || formData.total_capacity <= 0) {
+            setMessage({ type: 'error', text: 'Please enter a valid total capacity (greater than 0)' });
             setLoading(false);
             return;
         }
 
-        // Validate pricing selection
         if (!activePricing) {
             const availableOptions = getAvailablePricingOptions();
             const optionsText = availableOptions.map(opt => opt === 'hourly' ? 'Hourly' : opt === 'daily' ? 'Daily' : 'Monthly').join(' or ');
@@ -210,16 +243,14 @@ export default function AddUnit() {
         try {
             const token = getAuthToken();
 
-            // Prepare data for submission
             const submitData = {
                 unit_type: formData.unit_type,
-                name: formData.name,
+                name: formData.name.trim(),
                 total_capacity: parseInt(formData.total_capacity),
                 images: formData.images,
                 duration: formData.duration || null,
                 is_active: formData.is_active,
                 active_pricing_type: activePricing,
-                // Only send the selected pricing value
                 hourly_rate: activePricing === 'hourly' ? parseFloat(formData.hourly_rate) : null,
                 daily_rate: activePricing === 'daily' ? parseFloat(formData.daily_rate) : null,
                 monthly_rate: activePricing === 'monthly' ? parseFloat(formData.monthly_rate) : null
@@ -232,27 +263,55 @@ export default function AddUnit() {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    timeout: 30000 // 30 second timeout for image uploads
                 }
             );
 
             if (response.data.success) {
+                const unitDisplayName = formData.name || `${formData.unit_type.replace('_', ' ')}`;
+                setAddedUnitName(unitDisplayName);
+                setShowSuccessModal(true);
+                
+                // Refresh existing units list
+                await fetchExistingUnits();
+                
+                // Reset form after successful addition
+                resetForm();
+                
                 setMessage({ type: 'success', text: 'Unit added successfully!' });
+                
+                // Auto-hide success message after 3 seconds
                 setTimeout(() => {
-                    navigate(`/space/${spaceId}`);
-                }, 2000);
+                    setMessage({ type: '', text: '' });
+                }, 3000);
             } else {
                 setMessage({ type: 'error', text: response.data.message || 'Failed to add unit' });
             }
         } catch (error) {
             console.error('Failed to add unit:', error);
+            
+            // Better error messages
+            let errorMessage = 'Server error. Please try again.';
+            if (error.code === 'ECONNABORTED') {
+                errorMessage = 'Request timeout. Please check your internet connection.';
+            } else if (error.response?.status === 409) {
+                errorMessage = 'This unit type already exists. Please choose a different type.';
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+            
             setMessage({
                 type: 'error',
-                text: error.response?.data?.message || 'Server error. Please try again.'
+                text: errorMessage
             });
         } finally {
             setLoading(false);
         }
+    };
+
+    const getUnitTypeCount = (typeValue) => {
+        return existingUnits.filter(unit => unit.unit_type === typeValue).length;
     };
 
     const unitTypes = [
@@ -262,12 +321,6 @@ export default function AddUnit() {
         { value: 'meeting_room', label: 'Meeting Room', icon: '📊', description: 'Conference room for meetings' }
     ];
 
-    // Check if a unit type is disabled (already exists)
-    const isUnitTypeDisabled = (typeValue) => {
-        return existingUnitTypes.includes(typeValue);
-    };
-
-    // Get pricing plan message based on unit type
     const getPricingMessage = () => {
         const unitType = formData.unit_type;
         if (!unitType) return 'Please select a unit type first to see available pricing options';
@@ -279,8 +332,41 @@ export default function AddUnit() {
         return '💡 Choose your preferred pricing plan. Only one plan will be active for this unit.';
     };
 
+    const SuccessModal = () => {
+        if (!showSuccessModal) return null;
+        
+        return (
+            <div className="au__modal-overlay" onClick={() => setShowSuccessModal(false)}>
+                <div className="au__modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="au__modal-icon">✅</div>
+                    <h3>Unit Added Successfully!</h3>
+                    <p>"{addedUnitName}" has been added to your space.</p>
+                    <div className="au__modal-actions">
+                        <button 
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                navigate(`/space/${spaceId}`);
+                            }}
+                            className="au__btn au__btn-primary"
+                        >
+                            View All Units
+                        </button>
+                        <button 
+                            onClick={() => setShowSuccessModal(false)}
+                            className="au__btn au__btn-secondary"
+                        >
+                            Add Another Unit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="au__container">
+            <SuccessModal />
+            
             <div className="au__header">
                 <button onClick={() => navigate(`/space/${spaceId}`)} className="au__back-button">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -294,18 +380,38 @@ export default function AddUnit() {
                 </div>
             </div>
 
+            {existingUnits.length > 0 && (
+                <div className="au__stats">
+                    <div className="au__stat-card">
+                        <span className="au__stat-label">Total Units</span>
+                        <span className="au__stat-value">{existingUnits.length}</span>
+                    </div>
+                    {unitTypes.map(type => {
+                        const count = getUnitTypeCount(type.value);
+                        if (count > 0) {
+                            return (
+                                <div key={type.value} className="au__stat-card">
+                                    <span className="au__stat-label">{type.label}</span>
+                                    <span className="au__stat-value">{count}</span>
+                                </div>
+                            );
+                        }
+                        return null;
+                    })}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit} className="au__form">
-                {/* Unit Type Selection */}
                 <div className="au__section">
                     <h2 className="au__section-title">Select Unit Type</h2>
-                    <p className="au__section-hint">Each unit type can only be created once per space.</p>
+                    <p className="au__section-hint">You can add multiple units of the same type. Each unit will have its own capacity and pricing.</p>
                     <div className="au__unit-types">
                         {unitTypes.map(type => {
-                            const isDisabled = isUnitTypeDisabled(type.value);
+                            const existingCount = getUnitTypeCount(type.value);
                             return (
                                 <label
                                     key={type.value}
-                                    className={`au__unit-card ${formData.unit_type === type.value ? 'au__unit-card-active' : ''} ${isDisabled ? 'au__unit-card-disabled' : ''}`}
+                                    className={`au__unit-card ${formData.unit_type === type.value ? 'au__unit-card-active' : ''}`}
                                 >
                                     <input
                                         type="radio"
@@ -314,13 +420,14 @@ export default function AddUnit() {
                                         checked={formData.unit_type === type.value}
                                         onChange={handleInputChange}
                                         className="au__radio"
-                                        disabled={isDisabled}
                                     />
                                     <div className="au__unit-icon">{type.icon}</div>
                                     <div className="au__unit-info">
                                         <h3>{type.label}</h3>
                                         <p>{type.description}</p>
-                                        {isDisabled && <span className="au__disabled-badge">Already Added</span>}
+                                        {existingCount > 0 && (
+                                            <span className="au__count-badge">{existingCount} already added</span>
+                                        )}
                                     </div>
                                 </label>
                             );
@@ -328,20 +435,21 @@ export default function AddUnit() {
                     </div>
                 </div>
 
-                {/* Basic Information */}
                 <div className="au__section">
                     <h2 className="au__section-title">Basic Information</h2>
                     <div className="au__form-grid">
                         <div className="au__field">
-                            <label className="au__label">Unit Name (Optional)</label>
+                            <label className="au__label">Unit Name *</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 className="au__input"
-                                placeholder="e.g., Premium Desk 101"
+                                placeholder="e.g., Premium Desk 101, Cabin A, Meeting Room 1"
+                                required
                             />
+                            <p className="au__field-hint">Give this unit a unique name to identify it easily</p>
                         </div>
 
                         <div className="au__field">
@@ -360,7 +468,6 @@ export default function AddUnit() {
                     </div>
                 </div>
 
-                {/* Pricing Plan Selection - Conditional based on unit type */}
                 {formData.unit_type && (
                     <div className="au__section">
                         <h2 className="au__section-title">Select Pricing Plan</h2>
@@ -393,7 +500,7 @@ export default function AddUnit() {
                                                     onChange={handleInputChange}
                                                     className="au__input"
                                                     placeholder={`Enter ${pricingType} rate`}
-                                                    step="1"
+                                                    step="100"
                                                     min="0"
                                                     disabled={!isActive}
                                                     onClick={(e) => e.stopPropagation()}
@@ -401,9 +508,6 @@ export default function AddUnit() {
                                                 />
                                                 <span className="au__per">{pricing.unit}</span>
                                             </div>
-                                            {!isActive && pricingType === 'monthly' && formData.unit_type === 'meeting_room' && (
-                                                <div className="au__disabled-info">Not available for meeting rooms</div>
-                                            )}
                                         </div>
                                     </div>
                                 );
@@ -412,24 +516,24 @@ export default function AddUnit() {
                     </div>
                 )}
 
-                {/* Images Section */}
                 <div className="au__section">
                     <h2 className="au__section-title">Images</h2>
                     <div className="au__image-upload">
                         <label className="au__upload-area">
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
                                 multiple
                                 onChange={handleImageUpload}
                                 className="au__file-input"
+                                disabled={imageUploading}
                             />
                             <div className="au__upload-content">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
                                 </svg>
-                                <p>Click or drag to upload images</p>
-                                <span>PNG, JPG, JPEG up to 5MB</span>
+                                <p>{imageUploading ? 'Uploading...' : 'Click or drag to upload images'}</p>
+                                <span>PNG, JPG, WEBP up to 5MB each</span>
                             </div>
                         </label>
                     </div>
@@ -455,7 +559,6 @@ export default function AddUnit() {
                     )}
                 </div>
 
-                {/* Duration & Status */}
                 <div className="au__section">
                     <h2 className="au__section-title">Additional Settings</h2>
                     <div className="au__form-grid">
@@ -487,25 +590,24 @@ export default function AddUnit() {
                     </div>
                 </div>
 
-                {/* Message */}
                 {message.text && (
                     <div className={`au__message au__message-${message.type}`}>
                         {message.type === 'success' ? '✅' : '⚠️'} {message.text}
                     </div>
                 )}
 
-                {/* Form Actions */}
                 <div className="au__actions">
                     <button
                         type="button"
                         onClick={() => navigate(`/space/${spaceId}`)}
                         className="au__btn au__btn-secondary"
+                        disabled={loading}
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || imageUploading}
                         className="au__btn au__btn-primary"
                     >
                         {loading ? 'Adding Unit...' : 'Add Unit'}
