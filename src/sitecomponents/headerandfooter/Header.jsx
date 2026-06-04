@@ -1,4 +1,4 @@
-// Navbar.jsx - Updated with My Favorites link
+// Navbar.jsx - Updated with My Favorites link and Become a Host check
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiHelpCircle, FiSettings, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart } from 'react-icons/fi';
@@ -26,6 +26,7 @@ const Navbar = () => {
     const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '' });
     const [isUpdating, setIsUpdating] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isCheckingHost, setIsCheckingHost] = useState(false);
     const [destination, setDestination] = useState('');
     const [dates, setDates] = useState('');
     const [guests, setGuests] = useState({ adults: 0, children: 0, infants: 0 });
@@ -48,6 +49,67 @@ const Navbar = () => {
         } else {
             setIsAuthenticated(false);
             setUser(null);
+        }
+    };
+
+    // NEW: Handle Become a Host click with existing request check
+    const handleBecomeHostClick = async () => {
+        setIsMenuDropdownOpen(false);
+        
+        // Check if user is logged in
+        if (!isAuthenticated) {
+            alert('Please login to become a host');
+            navigate('/login');
+            return;
+        }
+        
+        setIsCheckingHost(true);
+        
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Check if user already has a request using the can-submit endpoint
+            const response = await axios.get(`${BaseUrl}api/host-requests/can-submit`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.data.success) {
+                if (!response.data.canSubmit) {
+                    // User cannot submit - redirect based on status
+                    alert(response.data.message);
+                    if (response.data.redirectTo) {
+                        navigate(response.data.redirectTo);
+                    }
+                } else if (response.data.warning) {
+                    // Previous request was rejected - ask for confirmation
+                    const confirmSubmit = window.confirm(
+                        `${response.data.message}\n\nClick OK to submit a new request or Cancel to view your previous request.`
+                    );
+                    if (confirmSubmit) {
+                        navigate('/become-host');
+                    } else if (response.data.previousRequestId) {
+                        navigate(`/host-requests/status/${response.data.previousRequestId}`);
+                    }
+                } else {
+                    // Can submit - show the form
+                    navigate('/become-host');
+                }
+            } else {
+                // If API fails, still allow navigation
+                navigate('/become-host');
+            }
+        } catch (error) {
+            console.error('Error checking host eligibility:', error);
+            
+            // If error occurs (like no requests found), allow navigation to form
+            if (error.response?.status === 404 || error.response?.data?.message === "No host requests found") {
+                navigate('/become-host');
+            } else {
+                alert('Unable to verify your request status. Please try again.');
+                navigate('/become-host');
+            }
+        } finally {
+            setIsCheckingHost(false);
         }
     };
 
@@ -81,8 +143,6 @@ const Navbar = () => {
         }
     };
 
-
-
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
         setIsUpdating(true);
@@ -101,31 +161,7 @@ const Navbar = () => {
             setIsUpdating(false);
         }
     };
-    // const handleLogout = async () => {
-    //     const confirmLogout = window.confirm('Are you sure you want to logout?');
-    //     if (!confirmLogout) return;
 
-    //     // Show loading state (optional)
-    //     const logoutBtn = document.activeElement;
-    //     const originalText = logoutBtn?.innerText;
-    //     if (logoutBtn) logoutBtn.innerText = 'Logging out...';
-
-    //     try {
-    //         await logout(); // This now handles both backend call and local cleanup
-    //         setIsAuthenticated(false);
-    //         setUser(null);
-    //         setIsMenuDropdownOpen(false);
-    //         navigate('/', { replace: true });
-    //     } catch (error) {
-    //         console.error('Logout error:', error);
-    //         // Force cleanup and redirect even on error
-    //         localStorage.removeItem('token');
-    //         localStorage.removeItem('user');
-    //         navigate('/', { replace: true });
-    //     } finally {
-    //         if (logoutBtn) logoutBtn.innerText = originalText;
-    //     }
-    // };
     const handleLogout = async () => {
         const confirmLogout = window.confirm('Are you sure you want to logout?');
         if (!confirmLogout) return;
@@ -265,7 +301,14 @@ const Navbar = () => {
                     </div>
 
                     <div className="Navbar-userActions">
-                        <Link to="/become-host" className="Navbar-hostBtn">Become a host</Link>
+                        {/* UPDATED: Changed from Link to button with click handler */}
+                        <button 
+                            onClick={handleBecomeHostClick} 
+                            className="Navbar-hostBtn"
+                            disabled={isCheckingHost}
+                        >
+                            {isCheckingHost ? 'Checking...' : 'Become a host'}
+                        </button>
 
                         <div className="Navbar-langBtn" onClick={toggleLangDropdown}>
                             <FiGlobe size={20} />
@@ -297,7 +340,6 @@ const Navbar = () => {
                                         </>
                                     ) : (
                                         <>
-                                            {/* <div className="Navbar-dropdownItem" onClick={openProfileModal} onClick={() => navigate('/register')}> */}
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/My-Profile')}>
                                                 <FiUserCheck size={16} /> My Profile
                                             </div>
@@ -305,7 +347,7 @@ const Navbar = () => {
                                                 <FiHome size={16} /> My Bookings
                                             </div>
 
-                                            {/* ✅ NEW: My Favorites link */}
+                                            {/* My Favorites link */}
                                             <div className="Navbar-dropdownItem Navbar-favoritesItem" onClick={() => { navigate('/my-favorites'); setIsMenuDropdownOpen(false); }}>
                                                 <FiHeart size={16} className="Navbar-favIcon" /> My Favorites
                                             </div>
@@ -314,13 +356,6 @@ const Navbar = () => {
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/')}>
                                                 <FiStar size={16} /> Cozones Home
                                             </div>
-                                            <div className="Navbar-dropdownDivider"></div>
-                                            {/* <div className="Navbar-dropdownItem" onClick={() => navigate('/help')}>
-                                                <FiHelpCircle size={16} /> Help
-                                            </div> */}
-                                            {/* <div className="Navbar-dropdownItem" onClick={() => navigate('/settings')}>
-                                                <FiSettings size={16} /> Settings
-                                            </div> */}
                                             <div className="Navbar-dropdownDivider"></div>
                                             <div className="Navbar-dropdownItem" onClick={handleLogout}>
                                                 <FiLogOut size={16} /> Log out

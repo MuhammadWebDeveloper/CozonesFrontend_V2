@@ -22,11 +22,25 @@ import UpdateUnit from './sellersitecomponents/utils/UpdateUnits';
 import MyBookings from './utils/MyBookings';
 import ForgotPassword from './utils/ForgotPassword';
 import ResetPassword from './utils/ResetPassword';
+import HostRequestForm from './sellersitecomponents/sellerdashboard/BecomeHost';
+import RequestStatus from './sellersitecomponents/sellerdashboard/Hoststatus';
 
-// Routes where Navbar should be hidden (these pages have their own navigation)
+// ── Admin imports ──────────────────────────────────────────────────────────
+import AdminLayout from './admin/components/AdminLayout';
+import AdminProtectedRoute from './admin/components/AdminProtectedRoute';
+import AdminLogin from './Admin/pages/AdminLogin.jsx';
+import AdminDashboard from './admin/pages/AdminDashboard';
+import AdminSpaces from './admin/pages/AdminSpaces';
+import AdminBookings from './admin/pages/AdminBookings';
+import AdminHostRequests from './admin/pages/AdminHostRequests';
+import AdminUsers from './admin/pages/AdminUsers';
+// ──────────────────────────────────────────────────────────────────────────
+
+// Routes where Navbar should be hidden
 const HIDE_NAVBAR_ROUTES = [
     '/seller-dashboard',
     '/create-space',
+    '/admin',          // hide navbar on all /admin/* routes
 ];
 
 function App() {
@@ -41,7 +55,6 @@ function AppContent() {
     const location = useLocation();
     const [isLoading, setIsLoading] = useState(false);
 
-    // Check if current path should hide navbar
     const shouldHideNavbar = HIDE_NAVBAR_ROUTES.some(route =>
         location.pathname === route || location.pathname.startsWith(route)
     );
@@ -62,73 +75,82 @@ function AppContent() {
 
     return (
         <>
-            {/* Conditionally render Navbar - hide on seller dashboard and protected routes */}
             {!shouldHideNavbar && <Navbar />}
 
             <Routes>
-                {/* Public Routes */}
+                {/* ── Public Routes ───────────────────────────────────── */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-
-                {/* Auth Routes - Forgot/Reset Password */}
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Public Space Detail Routes */}
+                {/* ── Public Space Detail Routes ───────────────────────── */}
                 <Route path="/spaces/:id" element={<SpaceDetail />} />
                 <Route path="/dedicated-desk/:id" element={<DedicatedDesksDetails />} />
                 <Route path="/private-cabins/:id" element={<PrivateCabinsDetail />} />
                 <Route path="/meeting-rooms/:id" element={<MeetingRoomsDetail />} />
 
-                {/* Protected Routes - User Profile & Favorites */}
+                {/* ── Protected User Routes ────────────────────────────── */}
                 <Route path="/My-Profile" element={
-                    <ProtectedRoute>
-                        <ProfileSidebar />
-                    </ProtectedRoute>
+                    <ProtectedRoute><ProfileSidebar /></ProtectedRoute>
                 } />
                 <Route path="/my-favorites" element={
-                    <ProtectedRoute>
-                        <MyFavorites />
-                    </ProtectedRoute>
+                    <ProtectedRoute><MyFavorites /></ProtectedRoute>
                 } />
                 <Route path="/my-bookings" element={
-                    <ProtectedRoute>
-                        <MyBookings />
-                    </ProtectedRoute>
+                    <ProtectedRoute><MyBookings /></ProtectedRoute>
                 } />
 
-                {/* Protected Routes - Seller/Owner Dashboard */}
+                {/* ── Protected Seller Routes ──────────────────────────── */}
                 <Route path="/seller-dashboard" element={
-                    <ProtectedRoute>
-                        <SellerDashboard />
-                    </ProtectedRoute>
+                    <ProtectedRoute><SellerDashboard /></ProtectedRoute>
                 } />
                 <Route path="/create-space" element={
-                    <ProtectedRoute>
-                        <CreateSpace />
-                    </ProtectedRoute>
+                    <ProtectedRoute><CreateSpace /></ProtectedRoute>
                 } />
                 <Route path="/space/:spaceId" element={
-                    <ProtectedRoute>
-                        <SpaceDetails />
-                    </ProtectedRoute>
+                    <ProtectedRoute><SpaceDetails /></ProtectedRoute>
                 } />
                 <Route path="/spaces/:spaceId/addunits" element={
-                    <ProtectedRoute>
-                        <AddUnit />
-                    </ProtectedRoute>
+                    <ProtectedRoute><AddUnit /></ProtectedRoute>
                 } />
                 <Route path="/space/update/:id" element={
-                    <ProtectedRoute>
-                        <UpdateSpace />
-                    </ProtectedRoute>
+                    <ProtectedRoute><UpdateSpace /></ProtectedRoute>
                 } />
                 <Route path="/spaces/:spaceId/units/:unitId/edit" element={
-                    <ProtectedRoute>
-                        <UpdateUnit />
-                    </ProtectedRoute>
+                    <ProtectedRoute><UpdateUnit /></ProtectedRoute>
                 } />
+                <Route path="/become-host" element={
+                    <ProtectedRoute><HostRequestForm /></ProtectedRoute>
+                } />
+                <Route path="/host-requests/status/:requestId?" element={
+                    <ProtectedRoute><RequestStatus /></ProtectedRoute>
+                } />
+
+
+
+
+
+
+                {/* ── Admin Routes ─────────────────────────────────────── */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+
+                <Route
+                    path="/admin"
+                    element={
+                        <AdminProtectedRoute>
+                            <AdminLayout />
+                        </AdminProtectedRoute>
+                    }
+                >
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="spaces" element={<AdminSpaces />} />
+                    <Route path="bookings" element={<AdminBookings />} />
+                    <Route path="hosts" element={<AdminHostRequests />} />
+                    <Route path="users" element={<AdminUsers />} />
+                </Route>
+                {/* ─────────────────────────────────────────────────────── */}
             </Routes>
         </>
     );
