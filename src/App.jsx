@@ -25,6 +25,11 @@ import ResetPassword from './utils/ResetPassword';
 import HostRequestForm from './sellersitecomponents/sellerdashboard/BecomeHost';
 import RequestStatus from './sellersitecomponents/sellerdashboard/Hoststatus';
 
+// ── Chat imports ───────────────────────────────────────────────────────────
+import ChatList from './chat-frontend/pages/ChatList.jsx';
+import ChatDetail from './chat-frontend/pages/ChatDetail.jsx';
+// ──────────────────────────────────────────────────────────────────────────
+
 // ── Admin imports ──────────────────────────────────────────────────────────
 import AdminLayout from './admin/components/AdminLayout';
 import AdminProtectedRoute from './admin/components/AdminProtectedRoute';
@@ -102,6 +107,15 @@ function AppContent() {
                     <ProtectedRoute><MyBookings /></ProtectedRoute>
                 } />
 
+                {/* ── Chat Routes ──────────────────────────────────────── */}
+                <Route path="/chats" element={
+                    <ProtectedRoute><ChatList /></ProtectedRoute>
+                } />
+                <Route path="/chats/:id" element={
+                    <ProtectedRoute><ChatDetail /></ProtectedRoute>
+                } />
+                {/* ─────────────────────────────────────────────────────── */}
+
                 {/* ── Protected Seller Routes ──────────────────────────── */}
                 <Route path="/seller-dashboard" element={
                     <ProtectedRoute><SellerDashboard /></ProtectedRoute>
@@ -127,11 +141,6 @@ function AppContent() {
                 <Route path="/host-requests/status/:requestId?" element={
                     <ProtectedRoute><RequestStatus /></ProtectedRoute>
                 } />
-
-
-
-
-
 
                 {/* ── Admin Routes ─────────────────────────────────────── */}
                 <Route path="/admin/login" element={<AdminLogin />} />

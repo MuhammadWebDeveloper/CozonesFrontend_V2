@@ -1,7 +1,7 @@
 // Navbar.jsx - Updated with My Favorites link and Become a Host check
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiHelpCircle, FiSettings, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart } from 'react-icons/fi';
+import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiHelpCircle, FiSettings, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart, FiMessageCircle } from 'react-icons/fi';
 import { MdOutlineLocationOn, MdOutlineDateRange, MdPeopleOutline } from 'react-icons/md';
 import { IoCloseOutline } from 'react-icons/io5';
 import axios from 'axios';
@@ -30,6 +30,7 @@ const Navbar = () => {
     const [destination, setDestination] = useState('');
     const [dates, setDates] = useState('');
     const [guests, setGuests] = useState({ adults: 0, children: 0, infants: 0 });
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
@@ -37,7 +38,19 @@ const Navbar = () => {
         headers: { 'Content-Type': 'application/json' }
     });
 
-    useEffect(() => { checkAuth(); }, []);
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    // Fetch unread message count when authenticated
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            fetchUnreadCount();
+            // Poll every 30 seconds for new messages
+            const interval = setInterval(fetchUnreadCount, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated, user]);
 
     const checkAuth = () => {
         const token = localStorage.getItem('token');
@@ -52,27 +65,74 @@ const Navbar = () => {
         }
     };
 
+    // const fetchUnreadCount = async () => {
+    //     try {
+    //         const token = localStorage.getItem('token');
+    //         const response = await axios.get(`${BaseUrl}api/chats/chat`, {
+    //             headers: { 'Authorization': `Bearer ${token}` }
+    //         });
+
+    //         const chats = response.data?.data || response.data?.chats || [];
+    //         const totalUnread = chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0);
+    //         setUnreadCount(totalUnread);
+    //     } catch (error) {
+    //         console.error('Failed to fetch unread count:', error);
+    //     }
+    // };
+    const fetchUnreadCount = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setUnreadCount(0);
+                return;
+            }
+
+            const response = await axios.get(`${BaseUrl}api/chats/chat`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Get chats array from response
+            const chats = response.data?.data || response.data?.chats || [];
+
+            // Calculate total unread messages
+            let totalUnread = 0;
+            chats.forEach(chat => {
+                // unread_count string mein aa raha hai, number mein convert karo
+                const unread = parseInt(chat.unread_count) || 0;
+                if (unread > 0) {
+                    totalUnread += unread;
+                }
+            });
+
+            console.log('Total unread messages:', totalUnread); // Debug
+            setUnreadCount(totalUnread);
+
+        } catch (error) {
+            console.error('Failed to fetch unread count:', error);
+            setUnreadCount(0); // Error pe 0 set karo, 99 nahi
+        }
+    };
     // NEW: Handle Become a Host click with existing request check
     const handleBecomeHostClick = async () => {
         setIsMenuDropdownOpen(false);
-        
+
         // Check if user is logged in
         if (!isAuthenticated) {
             alert('Please login to become a host');
             navigate('/login');
             return;
         }
-        
+
         setIsCheckingHost(true);
-        
+
         try {
             const token = localStorage.getItem('token');
-            
+
             // Check if user already has a request using the can-submit endpoint
             const response = await axios.get(`${BaseUrl}api/host-requests/can-submit`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            
+
             if (response.data.success) {
                 if (!response.data.canSubmit) {
                     // User cannot submit - redirect based on status
@@ -100,7 +160,7 @@ const Navbar = () => {
             }
         } catch (error) {
             console.error('Error checking host eligibility:', error);
-            
+
             // If error occurs (like no requests found), allow navigation to form
             if (error.response?.status === 404 || error.response?.data?.message === "No host requests found") {
                 navigate('/become-host');
@@ -302,8 +362,8 @@ const Navbar = () => {
 
                     <div className="Navbar-userActions">
                         {/* UPDATED: Changed from Link to button with click handler */}
-                        <button 
-                            onClick={handleBecomeHostClick} 
+                        <button
+                            onClick={handleBecomeHostClick}
                             className="Navbar-hostBtn"
                             disabled={isCheckingHost}
                         >
@@ -343,6 +403,16 @@ const Navbar = () => {
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/My-Profile')}>
                                                 <FiUserCheck size={16} /> My Profile
                                             </div>
+
+                                            {/* NEW: Messages/Chats link with unread badge */}
+                                            <div className="Navbar-dropdownItem Navbar-messagesItem" onClick={() => { navigate('/chats'); setIsMenuDropdownOpen(false); }}>
+                                                <FiMessageCircle size={16} className="Navbar-msgIcon" />
+                                                Messages
+                                                {unreadCount > 0 && (
+                                                    <span className="Navbar-unreadBadge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                                                )}
+                                            </div>
+
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/my-bookings')}>
                                                 <FiHome size={16} /> My Bookings
                                             </div>

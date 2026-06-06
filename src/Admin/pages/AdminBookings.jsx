@@ -8,7 +8,7 @@ const fmt = (n) => (n != null ? Number(n).toLocaleString() : "—");
 function StatusBadge({ status }) {
   const map = {
     confirmed: "badge-green",
-    pending:   "badge-amber",
+    pending: "badge-amber",
     cancelled: "badge-red",
     cancelled_by_owner: "badge-red",
     completed: "badge-blue",
@@ -21,14 +21,14 @@ function StatusBadge({ status }) {
 }
 
 export default function AdminBookings() {
-  const [bookings, setBookings]   = useState([]);
-  const [stats, setStats]         = useState({});
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState("");
-  const [search, setSearch]       = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatus] = useState("");
-  const [fromDate, setFrom]       = useState("");
-  const [toDate, setTo]           = useState("");
+  const [fromDate, setFrom] = useState("");
+  const [toDate, setTo] = useState("");
   const [selectedBooking, setSelected] = useState(null);
 
   const load = useCallback(() => {
@@ -156,9 +156,10 @@ export default function AdminBookings() {
             </thead>
             <tbody>
               {filtered.map((b) => (
-                <tr key={b.id}>
+                <tr key={b.booking_ref}>
                   <td style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>
-                    {b.id?.slice(0, 8)}…
+                    {/* {b.booking_ref?.slice(0, 20)} */}
+                    {b.booking_ref}
                   </td>
                   <td>
                     <div style={{ fontWeight: 500 }}>{b.buyer?.full_name || "—"}</div>
@@ -215,19 +216,19 @@ export default function AdminBookings() {
 
 function BookingDetail({ b }) {
   const rows = [
-    ["Booking ID",   b.id],
-    ["Status",       b.status?.replace(/_/g, " ")],
-    ["User",         b.buyer?.full_name],
-    ["User Email",   b.buyer?.email],
-    ["Owner",        b.owner?.full_name],
-    ["Space",        b.space?.name],
-    ["City",         b.space?.city],
-    ["Address",      b.space?.address],
-    ["Unit Type",    b.unit?.unit_type?.replace(/_/g, " ")],
-    ["Start",        b.start_time ? new Date(b.start_time).toLocaleString() : "—"],
-    ["End",          b.end_time   ? new Date(b.end_time).toLocaleString()   : "—"],
-    ["Total Price",  b.total_price ? `PKR ${Number(b.total_price).toLocaleString()}` : "—"],
-    ["Created",      b.created_at ? new Date(b.created_at).toLocaleString() : "—"],
+    ["Booking ID", b.id],
+    ["Status", b.status?.replace(/_/g, " ")],
+    ["User", b.buyer?.full_name],
+    ["User Email", b.buyer?.email],
+    ["Owner", b.owner?.full_name],
+    ["Space", b.space?.name],
+    ["City", b.space?.city],
+    ["Address", b.space?.address],
+    ["Unit Type", b.unit?.unit_type?.replace(/_/g, " ")],
+    ["Start", b.start_time ? new Date(b.start_time).toLocaleString() : "—"],
+    ["End", b.end_time ? new Date(b.end_time).toLocaleString() : "—"],
+    ["Total Price", b.total_price ? `PKR ${Number(b.total_price).toLocaleString()}` : "—"],
+    ["Created", b.created_at ? new Date(b.created_at).toLocaleString() : "—"],
   ];
 
   return (

@@ -134,7 +134,7 @@
 /* ── Shared page styles ── */
 .admin-page {
   padding: 28px 32px;
-  max-width: 1200px;
+  /* max-width: 1200px; */
 }
 
 .page-header {
