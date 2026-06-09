@@ -1,5 +1,5 @@
-// Dedicated_Desks.jsx - Updated with proper favorite functionality
-import React, { useState, useEffect } from 'react';
+// Dedicated_Desks.jsx - Updated with Swiper.js slider
+import React, { useState, useEffect, useRef } from 'react';
 import { FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
@@ -7,14 +7,25 @@ import './../../../componentstyles/homestyle/dedicatedDesks.css';
 import { useNavigate } from 'react-router-dom';
 import BaseUrl from '../../../utils/AppConstants.jsx';
 
+// Swiper imports
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Mousewheel, Autoplay } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/mousewheel';
+import 'swiper/css/autoplay';
+
 const Dedicated_Desks = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const swiperRef = useRef(null);
 
     // Axios instance
     const apiClient = axios.create({
-        baseURL:  BaseUrl ,
+        baseURL: BaseUrl,
         timeout: 10000,
         headers: {
             'Content-Type': 'application/json',
@@ -71,9 +82,8 @@ const Dedicated_Desks = ({ title }) => {
                     .map((unit) => {
                         const bestRate = getBestRate(unit);
                         return {
-                            // IMPORTANT: Use space_id for favorites
-                            id: unit.space_id,
-                            unit_id: unit.id,   // Keep unit_id for reference if needed
+                            id: unit.id,
+                            space_id: unit.space_id,
                             title: unit.name || "Dedicated Desk",
                             location: unit.city || "Coworking Space",
                             price: bestRate ? bestRate.display : "N/A",
@@ -84,11 +94,13 @@ const Dedicated_Desks = ({ title }) => {
                             rating: 4.5,
                             reviews: 0,
                             unit_type: unit.unit_type,
-                            is_active: unit.is_active
+                            is_active: unit.is_active,
+                            hourly_rate: unit.hourly_rate,
+                            daily_rate: unit.daily_rate
                         };
                     });
 
-                console.log('✅ Dedicated desks with SPACE IDs:', transformedSpaces.map(s => ({ id: s.id, title: s.title })));
+                // console.log('✅ Dedicated desks with IDs:', transformedSpaces.map(s => ({ id: s.id, title: s.title })));
                 setSpaces(transformedSpaces);
             } else {
                 console.warn('⚠️ No dedicated desks from API');
@@ -110,12 +122,25 @@ const Dedicated_Desks = ({ title }) => {
 
     const navigate = useNavigate();
     const handleCardClick = (id) => {
-        console.log('🖱️ Navigating to dedicated desk space:', id);
+        // console.log('🖱️ Navigating to dedicated desk:', id);
         navigate(`/dedicated-desk/${id}`);
     };
 
-    const handleFavoriteToggle = (spaceId, isLiked) => {
-        console.log(`❤️ Favorite toggled for SPACE ${spaceId}: ${isLiked ? 'LIKED' : 'UNLIKED'}`);
+    const handleFavoriteToggle = (unitId, isLiked) => {
+        // console.log(`❤️ Favorite toggled for UNIT ${unitId}: ${isLiked ? 'LIKED' : 'UNLIKED'}`);
+    };
+
+    // Pause autoplay on hover
+    const handleMouseEnter = () => {
+        if (swiperRef.current && swiperRef.current.autoplay) {
+            swiperRef.current.autoplay.stop();
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (swiperRef.current && swiperRef.current.autoplay) {
+            swiperRef.current.autoplay.start();
+        }
     };
 
     if (loading) {
@@ -165,24 +190,68 @@ const Dedicated_Desks = ({ title }) => {
                     </button>
                 </div>
 
-                <div className="Dedicated_Desks_grid">
-                    {spaces.map((space) => (
-                        <div key={space.id} className="Dedicated_Desks_card">
-                            <SpaceCard
-                                id={space.id}         // space_id for favorites
-                                unit_id={space.unit_id}  // unit_id for navigation
-                                image={space.images.length > 0 ? space.images : ['https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c']}
-                                title={space.title}
-                                location={space.location}
-                                rating={space.rating}
-                                reviews={space.reviews}
-                                price={space.price}
-                                nights={space.nights}
-                                onFavoriteClick={handleFavoriteToggle}
-                                onCardClick={handleCardClick}
-                            />
-                        </div>
-                    ))}
+                {/* Swiper Slider with Infinite Loop and Autoplay */}
+                <div 
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={{ overflow: 'hidden', width: '100%' }}
+                >
+                    <Swiper
+                        modules={[Navigation, Mousewheel, Autoplay]}
+                        spaceBetween={16}
+                        slidesPerView="auto"
+                        loop={true}
+                        autoplay={{
+                            delay: 20000,
+                            disableOnInteraction: false,
+                            pauseOnMouseEnter: true,
+                            stopOnLastSlide: false,
+                            waitForTransition: true,
+                        }}
+                        speed={800}
+                        mousewheel={{
+                            forceToAxis: true,
+                            releaseOnEdges: false,
+                            sensitivity: 1,
+                            enabled: true
+                        }}
+                        freeMode={{
+                            enabled: false,
+                            momentum: false
+                        }}
+                        grabCursor={true}
+                        simulateTouch={true}
+                        touchRatio={1}
+                        touchAngle={45}
+                        threshold={5}
+                        resistance={true}
+                        resistanceRatio={0.85}
+                        className="Dedicated_Desks_slider"
+                        style={{ overflow: 'hidden' }}
+                        onSwiper={(swiper) => {
+                            swiperRef.current = swiper;
+                        }}
+                    >
+                        {spaces.map((space) => (
+                            <SwiperSlide key={space.id} className="Dedicated_Desks_slide">
+                                <div className="Dedicated_Desks_card">
+                                    <SpaceCard
+                                        id={space.id}
+                                        unit_id={space.id}
+                                        image={space.images.length > 0 ? space.images : ['https://images.unsplash.com/photo-1497366754035-f2001d9f5d8c']}
+                                        title={space.title}
+                                        location={space.location}
+                                        rating={space.rating}
+                                        reviews={space.reviews}
+                                        price={space.price}
+                                        nights={space.nights}
+                                        onFavoriteClick={handleFavoriteToggle}
+                                        onCardClick={handleCardClick}
+                                    />
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
                 </div>
             </div>
         </section>

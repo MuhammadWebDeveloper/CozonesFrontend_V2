@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaEnvelope } from 'react-icons/fa';
 import '../componentstyles/authstyls/LoginRegister.css';
-import BaseUrl from '../../src/utils/AppConstants';
+import BaseUrl from './AppConstants';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');

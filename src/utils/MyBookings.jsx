@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/MyBookings.css';
-import BaseUrl from './AppConstants';
+import BaseUrl from './AppConstants.jsx';
 import ChatButton from '../chat-frontend/components/ChatButton.jsx';
 
 const MyBookings = () => {
@@ -83,7 +83,7 @@ const MyBookings = () => {
         try {
             setLoading(true);
             const response = await apiClient.get('api/bookings/my-bookings');
-            console.log('Bookings response:', response.data);
+            // console.log('Bookings response:', response.data);
 
             if (response.data.success) {
                 setBookings(response.data.bookings);

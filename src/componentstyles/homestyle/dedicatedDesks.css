@@ -1,9 +1,9 @@
- /* =========================
-   Dedicated_Desks Styles
-========================= */
+/* =========================
+   Dedicated_Desks Styles - FULLY RESPONSIVE
+   ========================= */
 
 .Dedicated_Desks_section {
-    padding: 20px 60px;
+    padding: 20px;
     background: #ffffff;
 }
 
@@ -54,39 +54,7 @@
 }
 
 /* =========================
-   Grid Layout
-========================= */
-
-.Dedicated_Desks_grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 16px;
-    padding-bottom: 0 10px;
-}
-
-@media (max-width: 1600px) {
-    .Dedicated_Desks_grid {
-        grid-template-columns: repeat(7, minmax(280px, 1fr));
-        overflow-x: auto;
-    }
-
-    .Dedicated_Desks_grid::-webkit-scrollbar {
-        height: 8px;
-    }
-
-    .Dedicated_Desks_grid::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .Dedicated_Desks_grid::-webkit-scrollbar-thumb {
-        background: #01095A;
-        border-radius: 10px;
-    }
-}
-
-/* =========================
-   Card
+   Card - FIXED GAP ISSUE
 ========================= */
 
 .Dedicated_Desks_card {
@@ -100,12 +68,72 @@
     opacity: 0;
 }
 
+/* Remove any margin that might be causing gaps */
+.Dedicated_Desks_card {
+    margin: 0;
+    padding: 0;
+}
+
 .Dedicated_Desks_card:hover .Dedicated_Desks_image {
     transform: scale(1.05);
 }
 
 /* =========================
-   Loading
+   Swiper Slider - FIXED GAP ISSUE
+========================= */
+
+.Dedicated_Desks_slider {
+    width: 100%;
+    overflow: hidden !important;
+    padding: 4px 2px 8px 2px;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    margin: 0;
+}
+
+.Dedicated_Desks_slider::-webkit-scrollbar {
+    display: none !important;
+}
+
+.Dedicated_Desks_slide {
+    width: auto !important;
+    max-width: 320px;
+    min-width: 260px;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* IMPORTANT: Fix for gap between cards */
+.Dedicated_Desks_slide .Dedicated_Desks_card {
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove any extra spacing from SpaceCard */
+.Dedicated_Desks_slide .SpaceCard {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Fix for Swiper wrapper spacing */
+.Dedicated_Desks_slider .swiper-wrapper {
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove gap from swiper slides */
+.Dedicated_Desks_slider .swiper-slide {
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================
+   Loading State
 ========================= */
 
 .Dedicated_Desks_loading {
@@ -141,6 +169,34 @@
 }
 
 /* =========================
+   Error State
+========================= */
+
+.Dedicated_Desks_error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #e74c3c;
+}
+
+.Dedicated_Desks_retryBtn {
+    background: #01095A;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+}
+
+.Dedicated_Desks_retryBtn:hover {
+    background: #000e8a;
+    transform: scale(1.02);
+}
+
+/* =========================
    Animations
 ========================= */
 
@@ -173,66 +229,299 @@
 .Dedicated_Desks_card:nth-child(7) { animation-delay: 0.35s; }
 
 /* =========================
-   Responsive
+   RESPONSIVE BREAKPOINTS
 ========================= */
 
+/* Large Desktop (1600px and above) */
+@media (min-width: 1601px) {
+    .Dedicated_Desks_title {
+        font-size: 38px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 300px;
+        max-width: 350px;
+    }
+}
+
+/* Desktop (1400px - 1600px) */
 @media (max-width: 1600px) {
-    .Dedicated_Desks_section {
-        padding: 48px 40px;
-    }
-
-    .Dedicated_Desks_grid {
-        grid-template-columns: repeat(7, minmax(260px, 1fr));
+    .Dedicated_Desks_title {
+        font-size: 34px;
     }
 }
 
-@media (max-width: 1400px) {
-    .Dedicated_Desks_grid {
-        grid-template-columns: repeat(7, minmax(240px, 1fr));
+/* Small Desktop (1200px - 1399px) */
+@media (max-width: 1399px) {
+    .Dedicated_Desks_title {
+        font-size: 30px;
+    }
+    .Dedicated_Desks_header {
+        margin-bottom: 24px;
+    }
+    .Dedicated_Desks_viewAll {
+        padding: 8px 20px;
+        font-size: 13px;
     }
 }
 
-@media (max-width: 1200px) {
-    .Dedicated_Desks_section {
-        padding: 40px 30px;
-    }
-
+/* Tablet Landscape (992px - 1199px) */
+@media (max-width: 1199px) {
     .Dedicated_Desks_title {
         font-size: 28px;
     }
+    .Dedicated_Desks_header {
+        margin-bottom: 20px;
+    }
 }
 
-@media (max-width: 768px) {
-    .Dedicated_Desks_section {
-        padding: 32px 20px;
-    }
-
+/* Tablet Portrait (768px - 991px) */
+@media (max-width: 991px) {
     .Dedicated_Desks_title {
-        font-size: 24px;
+        font-size: 26px;
     }
-
-    .Dedicated_Desks_grid {
-        grid-template-columns: repeat(7, minmax(220px, 1fr));
-        gap: 14px;
-    }
-
     .Dedicated_Desks_header {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 12px;
+    }
+    .Dedicated_Desks_viewAll {
+        padding: 8px 18px;
+        font-size: 12px;
+    }
+    .Dedicated_Desks_slider {
+        padding: 2px 1px 6px 1px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 240px;
+        max-width: 280px;
     }
 }
 
-@media (max-width: 480px) {
-    .Dedicated_Desks_section {
-        padding: 24px 16px;
+/* Mobile Large (576px - 767px) */
+@media (max-width: 767px) {
+    .Dedicated_Desks_title {
+        font-size: 24px;
     }
+    .Dedicated_Desks_header {
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+    .Dedicated_Desks_viewAll {
+        padding: 6px 16px;
+        font-size: 11px;
+        gap: 6px;
+    }
+    .Dedicated_Desks_slider {
+        padding: 0px 0px 4px 0px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 220px;
+        max-width: 260px;
+    }
+    .Dedicated_Desks_loading {
+        min-height: 300px;
+    }
+    .Dedicated_Desks_loading::after {
+        width: 40px;
+        height: 40px;
+    }
+    .Dedicated_Desks_empty {
+        padding: 40px 16px;
+    }
+    .Dedicated_Desks_empty p {
+        font-size: 14px;
+    }
+    .Dedicated_Desks_error {
+        padding: 40px 20px;
+    }
+    .Dedicated_Desks_retryBtn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
 
+/* Mobile Medium (375px - 575px) */
+@media (max-width: 575px) {
+    .Dedicated_Desks_title {
+        font-size: 22px;
+    }
+    .Dedicated_Desks_header {
+        margin-bottom: 14px;
+        gap: 8px;
+    }
+    .Dedicated_Desks_viewAll {
+        padding: 5px 14px;
+        font-size: 10px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+    .Dedicated_Desks_loading {
+        min-height: 250px;
+    }
+    .Dedicated_Desks_loading::after {
+        width: 35px;
+        height: 35px;
+    }
+    .Dedicated_Desks_empty {
+        padding: 30px 12px;
+    }
+    .Dedicated_Desks_empty p {
+        font-size: 13px;
+    }
+    .Dedicated_Desks_error {
+        padding: 30px 16px;
+    }
+    .Dedicated_Desks_retryBtn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile Small (up to 374px) */
+@media (max-width: 374px) {
     .Dedicated_Desks_title {
         font-size: 20px;
     }
-
-    .Dedicated_Desks_grid {
-        grid-template-columns: repeat(7, minmax(200px, 1fr));
-        gap: 12px;
+    .Dedicated_Desks_header {
+        margin-bottom: 12px;
+        gap: 6px;
     }
+    .Dedicated_Desks_viewAll {
+        padding: 4px 12px;
+        font-size: 9px;
+        gap: 4px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 180px;
+        max-width: 220px;
+    }
+}
+
+/* Very Small Devices */
+@media (max-width: 360px) {
+    .Dedicated_Desks_title {
+        font-size: 18px;
+    }
+    .Dedicated_Desks_viewAll {
+        padding: 3px 10px;
+        font-size: 8px;
+    }
+}
+
+/* Landscape Mode */
+@media (max-width: 768px) and (orientation: landscape) {
+    .Dedicated_Desks_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+}
+
+/* High Resolution Screens */
+@media (min-width: 1920px) {
+    .Dedicated_Desks_title {
+        font-size: 42px;
+    }
+    .Dedicated_Desks_slide {
+        min-width: 320px;
+        max-width: 380px;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .Dedicated_Desks_slide .Dedicated_Desks_card:hover {
+        transform: none;
+    }
+    .Dedicated_Desks_slide .Dedicated_Desks_card:active {
+        transform: scale(0.98);
+    }
+    .Dedicated_Desks_slider {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .Dedicated_Desks_card {
+        animation: none;
+        opacity: 1;
+    }
+    .Dedicated_Desks_slide .Dedicated_Desks_card:hover {
+        transform: none;
+    }
+    .Dedicated_Desks_loading::after {
+        animation: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .Dedicated_Desks_section {
+        padding: 20px;
+        background: white;
+    }
+    .Dedicated_Desks_viewAll {
+        display: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .Dedicated_Desks_section {
+        background: #ffffff;
+    }
+}
+
+/* Autoplay progress indicator */
+.Dedicated_Desks_slider .swiper-autoplay-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #01095A, #4a6eff);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Slide fade-in animation */
+@keyframes dedicatedSlideFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.Dedicated_Desks_slider .swiper-slide-active .Dedicated_Desks_card {
+    animation: dedicatedSlideFadeIn 0.5s ease forwards;
+}
+
+/* Hide scrollbar for all Swiper containers */
+.swiper,
+.swiper-container {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.swiper::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Hide navigation buttons */
+.Dedicated_Desks_slider .swiper-button-next,
+.Dedicated_Desks_slider .swiper-button-prev {
+    display: none !important;
+}
+
+/* Hide pagination */
+.Dedicated_Desks_slider .swiper-pagination {
+    display: none !important;
 }

@@ -173,7 +173,7 @@ export default function UpdateSpace() {
             if (formData.refund_policy) submitData.refund_policy = formData.refund_policy;
             if (formData.late_arrival_policy) submitData.late_arrival_policy = formData.late_arrival_policy;
 
-            console.log('Submitting data:', submitData);
+            // console.log('Submitting data:', submitData);
 
             const response = await axios.put(
                 `${BaseUrl}api/spaces/updating/${id}`,
@@ -190,7 +190,7 @@ export default function UpdateSpace() {
                 setError(response.data.message || 'Failed to update space');
             }
         } catch (err) {
-            console.error('Error updating space:', err);
+            // console.error('Error updating space:', err);
             setError(err.response?.data?.message || 'An error occurred while updating the space');
         } finally {
             setSubmitting(false);

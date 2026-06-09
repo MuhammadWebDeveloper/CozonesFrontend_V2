@@ -1,4 +1,4 @@
-/* PopularHomes.css - Updated for 7 cards in a row */
+/* Cozonessec_1.css - Responsive Text Sizes Only */
 
 .Cozonessec_1_popular-homes-section {
     width: 100%;
@@ -25,10 +25,10 @@
 }
 
 .Cozonessec_1_popular-homes-title {
-    font-size: 36px;
+    font-size: 42px;
     font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 8px 0;
+    color: #01095A;
+    margin: 0;
     letter-spacing: -0.5px;
 }
 
@@ -36,4 +36,143 @@
     font-size: 16px;
     color: #717171;
     margin: 0;
+}
+
+/* ============================================ */
+/* RESPONSIVE TEXT SIZES */
+/* ============================================ */
+
+/* Large Desktop (1400px and above) */
+@media (min-width: 1400px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 120px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 48px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 18px;
+    }
+}
+
+/* Desktop (1200px - 1399px) */
+@media (max-width: 1399px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 60px;
+    }
+}
+
+/* Small Desktop (992px - 1199px) */
+@media (max-width: 1199px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 40px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 36px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 15px;
+    }
+    
+    .Cozonessec_1_popular-homes-header {
+        margin-bottom: 40px;
+    }
+}
+
+/* Tablet Landscape (768px - 991px) */
+@media (max-width: 991px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 30px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 32px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 14px;
+    }
+    
+    .Cozonessec_1_popular-homes-header {
+        margin-bottom: 35px;
+    }
+}
+
+/* Tablet Portrait (576px - 767px) */
+@media (max-width: 767px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 20px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 28px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 13px;
+    }
+    
+    .Cozonessec_1_popular-homes-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        gap: 15px;
+    }
+}
+
+/* Mobile (375px - 575px) */
+@media (max-width: 575px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 16px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 24px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 12px;
+    }
+    
+    .Cozonessec_1_popular-homes-header {
+        margin-bottom: 25px;
+        gap: 12px;
+    }
+}
+
+/* Small Mobile (320px - 374px) */
+@media (max-width: 374px) {
+    .Cozonessec_1_popular-homes-section {
+        padding: 0px 12px;
+    }
+    
+    .Cozonessec_1_popular-homes-title {
+        font-size: 22px;
+    }
+    
+    .Cozonessec_1_popular-homes-subtitle {
+        font-size: 11px;
+    }
+    
+    .Cozonessec_1_popular-homes-header {
+        margin-bottom: 20px;
+        gap: 10px;
+    }
+}
+
+/* Ensure horizontal scroll works smoothly on mobile */
+@media (max-width: 768px) {
+    .Cozonessec_1_popular-homes-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    
+    .Cozonessec_1_popular-homes-container {
+        min-width: max-content;
+    }
 }

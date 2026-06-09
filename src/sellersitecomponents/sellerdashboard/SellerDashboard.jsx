@@ -6,7 +6,7 @@ import '../../../src/componentstyles/sellerdashboardstyles/SellerDashboard.css';
 import SellerViewAllBookedSpace from './sellerViewAllBookedSpace.jsx';
 import SellerCalendar from './SellerCalendar.jsx';
 import axios from 'axios';
-import BaseUrl from '../../utils/AppConstants';
+import BaseUrl from '../../utils/AppConstants.jsx';
 
 const navItems = [
   { id: 'home',     label: 'Home',     icon: '🏠' },
@@ -78,7 +78,7 @@ export default function SellerDashboard() {
       const response = await axios.get(`${BaseUrl}api/host-requests/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Latest host response:', response);
+      // console.log('Latest host response:', response);
 
       if (response.data.success && response.data.requests.length > 0) {
         const latest = response.data.requests[0];

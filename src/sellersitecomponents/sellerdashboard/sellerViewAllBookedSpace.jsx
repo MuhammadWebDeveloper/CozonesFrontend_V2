@@ -274,11 +274,11 @@ function SellerViewAllBookedSpace() {
             return;
         }
 
-        console.log('Cancelling booking:', {
-            id: selectedBooking.id,
-            reason: reason,
-            bookingRef: selectedBooking.booking_ref
-        });
+        // console.log('Cancelling booking:', {
+        //     id: selectedBooking.id,
+        //     reason: reason,
+        //     bookingRef: selectedBooking.booking_ref
+        // });
 
         setActionLoading(selectedBooking.id);
 
@@ -288,7 +288,7 @@ function SellerViewAllBookedSpace() {
                 reason
             );
 
-            console.log('Cancel response:', response);
+            // console.log('Cancel response:', response);
 
             if (response.success) {
                 toast.success('❌ Booking cancelled successfully. Customer has been notified.');
@@ -299,8 +299,8 @@ function SellerViewAllBookedSpace() {
                 throw new Error(response.message || 'Cancellation failed');
             }
         } catch (error) {
-            console.error('Cancel booking error:', error);
-            console.error('Error response details:', error.response?.data);
+            // console.error('Cancel booking error:', error);
+            // console.error('Error response details:', error.response?.data);
 
             const errorMessage = error.response?.data?.message || error.message || 'Failed to cancel booking';
             toast.error(errorMessage);
@@ -316,18 +316,18 @@ function SellerViewAllBookedSpace() {
             return;
         }
 
-        console.log('Deleting booking:', {
-            id: selectedBooking.id,
-            bookingRef: selectedBooking.booking_ref,
-            status: selectedBooking.status
-        });
+        // console.log('Deleting booking:', {
+        //     id: selectedBooking.id,
+        //     bookingRef: selectedBooking.booking_ref,
+        //     status: selectedBooking.status
+        // });
 
         setActionLoading(selectedBooking.id);
 
         try {
             const response = await bookingService.deleteBooking(selectedBooking.id);
 
-            console.log('Delete response:', response);
+            // console.log('Delete response:', response);
 
             if (response.success) {
                 toast.success('🗑️ Booking deleted permanently');
@@ -350,14 +350,14 @@ function SellerViewAllBookedSpace() {
 
     // Open cancel modal
     const openCancelModal = (booking) => {
-        console.log('Opening cancel modal for booking:', booking);
+        // console.log('Opening cancel modal for booking:', booking);
         setSelectedBooking(booking);
         setShowCancelModal(true);
     };
 
     // Open delete modal
     const openDeleteModal = (booking) => {
-        console.log('Opening delete modal for booking:', booking);
+        // console.log('Opening delete modal for booking:', booking);
         setSelectedBooking(booking);
         setShowDeleteModal(true);
     };

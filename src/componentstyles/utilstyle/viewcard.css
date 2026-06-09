@@ -1,9 +1,14 @@
-    /* Cozones_Spaces Main Wrapper */
+/* ============================================
+   Cozones SpaceCard — viewcard.css
+   SINGLE IMAGE ONLY - NO NAVIGATION BUTTONS
+   ============================================ */
+
+/* Base Styles - ALL CARDS WILL HAVE SAME SIZE */
 .Cozones_Spaces_main {
     width: 100%;
+    min-width: 0;
     cursor: pointer;
     transition: transform 0.2s ease;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,60 +16,67 @@
     gap: 0px;
 }
 
-/* IMAGE CONTAINER (IMPORTANT FIX) */
+/* Image Container - Fixed dimensions */
 .Cozones_Spaces_imageContainer {
     position: relative;
-    width: 240px;
+    width: 260px;
     height: 210px;
-    /* FIXED HEIGHT (IMPORTANT) */
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 10px;
+    flex-shrink: 0;
+    background: #f5f5f5;
 }
 
-/* IMAGE (for single image fallback) */
+/* Responsive sizes */
+@media (min-width: 640px) {
+    .Cozones_Spaces_imageContainer {
+        width: 280px;
+        height: 220px;
+    }
+}
+
+@media (min-width: 768px) {
+    .Cozones_Spaces_imageContainer {
+        width: 300px;
+        height: 240px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .Cozones_Spaces_imageContainer {
+        width: 320px;
+        height: 260px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .Cozones_Spaces_imageContainer {
+        width: 340px;
+        height: 280px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .Cozones_Spaces_imageContainer {
+        width: 350px;
+        height: 285px;
+    }
+}
+
+/* Image */
 .Cozones_Spaces_image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: filter 0.3s ease;
 }
 
-/* SWIPER FIX */
-.Cozones_Spaces_swiper {
-    width: 100%;
-    height: 100%;
-}
+/* ============================================
+   FAVORITE BUTTON
+   ============================================ */
 
-.Cozones_Spaces_swiper .swiper-wrapper,
-.Cozones_Spaces_swiper .swiper-slide {
-    width: 100%;
-    height: 100%;
-}
-
-.Cozones_Spaces_swiper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Badge */
-.Cozones_Spaces_badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: rgba(255, 255, 255, 0.95);
-    color: #222222;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 5;
-}
-
-/* Favorite Button */
 .Cozones_Spaces_favBtn {
     position: absolute;
     top: 12px;
@@ -75,41 +87,132 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 5;
+    z-index: 10;
+    padding: 0;
+    transition: transform 0.2s ease;
 }
 
-/* INFO SECTION */
+.Cozones_Spaces_favBtn:hover {
+    transform: scale(1.1);
+}
+
+.Cozones_Spaces_favBtn:active {
+    transform: scale(0.95);
+}
+
+.Cozones_Spaces_favBtn:disabled {
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .Cozones_Spaces_favBtn {
+        top: 8px;
+        right: 8px;
+    }
+    
+    .Cozones_Spaces_favBtn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* ============================================
+   CARD CONTENT SECTION
+   ============================================ */
+
 .Cozones_Spaces_info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     align-items: flex-start;
-    width: 100%;
+    width: 260px;
+    flex-shrink: 0;
 }
 
-/* TITLE */
+/* Responsive info width */
+@media (min-width: 640px) {
+    .Cozones_Spaces_info {
+        width: 280px;
+    }
+}
+
+@media (min-width: 768px) {
+    .Cozones_Spaces_info {
+        width: 300px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .Cozones_Spaces_info {
+        width: 320px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .Cozones_Spaces_info {
+        width: 340px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .Cozones_Spaces_info {
+        width: 350px;
+    }
+}
+
+/* Title */
 .Cozones_Spaces_title {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
     color: #222222;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 100%;
+    line-height: 1.4;
 }
 
-/* META */
+@media (max-width: 640px) {
+    .Cozones_Spaces_title {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 768px) {
+    .Cozones_Spaces_title {
+        font-size: 15px;
+    }
+}
+
+/* Meta information (price and rating) */
 .Cozones_Spaces_meta {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     color: #5e5e5e;
     font-size: 13px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+    .Cozones_Spaces_meta {
+        font-size: 12px;
+        gap: 4px;
+    }
+}
+
+@media (min-width: 768px) {
+    .Cozones_Spaces_meta {
+        font-size: 14px;
+        gap: 6px;
+    }
 }
 
 .Cozones_Spaces_divider {
     font-weight: bold;
     margin: 0 2px;
+    color: #cccccc;
 }
 
 .Cozones_Spaces_price {
@@ -120,62 +223,195 @@
 .Cozones_Spaces_ratingRow {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     color: #222222;
+    font-weight: 500;
 }
 
-/* HOVER EFFECT */
-.Cozones_Spaces_main:hover .Cozones_Spaces_image,
-.Cozones_Spaces_main:hover .Cozones_Spaces_swiper img {
-    filter: brightness(0.9);
+@media (max-width: 640px) {
+    .Cozones_Spaces_ratingRow svg {
+        width: 10px;
+        height: 10px;
+    }
 }
 
-/* ===== SWIPER ARROWS CUSTOM DESIGN ===== */
+/* ============================================
+   HOVER EFFECTS
+   ============================================ */
 
-.Cozones_Spaces_swiper .swiper-button-prev,
-.Cozones_Spaces_swiper .swiper-button-next {
-    width: 28px;
-    height: 30px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 5px;
-    color: #222;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-    padding: 10px 0;
+.Cozones_Spaces_main:hover .Cozones_Spaces_image {
+    filter: brightness(0.95);
 }
 
-/* remove default big arrow icon */
-.Cozones_Spaces_swiper .swiper-button-prev::after,
-.Cozones_Spaces_swiper .swiper-button-next::after {
-    font-size: 10px;
-    /* SMALL ICON */
-    font-weight: bold;
+.Cozones_Spaces_main:hover {
+    transform: translateY(-4px);
 }
 
-/* hover effect */
-.Cozones_Spaces_swiper .swiper-button-prev:hover,
-.Cozones_Spaces_swiper .swiper-button-next:hover {
-    background: white;
-    transform: scale(1.1);
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .Cozones_Spaces_main:hover {
+        transform: none;
+    }
+    
+    .Cozones_Spaces_favBtn:hover {
+        transform: none;
+    }
 }
 
-/* positioning refinement */
-.Cozones_Spaces_swiper .swiper-button-prev {
-    left: 8px;
+/* ============================================
+   RESPONSIVE BREAKPOINTS - EXTRA SMALL
+   ============================================ */
+
+/* Mobile Small (up to 374px) */
+@media (max-width: 374px) {
+    .Cozones_Spaces_imageContainer {
+        width: 220px;
+        height: 180px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 220px;
+    }
+    
+    .Cozones_Spaces_title {
+        font-size: 12px;
+    }
+    
+    .Cozones_Spaces_meta {
+        font-size: 11px;
+    }
 }
 
-.Cozones_Spaces_swiper .swiper-button-next {
-    right: 8px;
+/* Mobile Large (375px - 575px) */
+@media (min-width: 375px) and (max-width: 575px) {
+    .Cozones_Spaces_imageContainer {
+        width: 240px;
+        height: 195px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 240px;
+    }
 }
 
-.Cozones_Spaces_swiper .swiper-button-prev,
-.Cozones_Spaces_swiper .swiper-button-next {
-    opacity: 0;
-    pointer-events: none;
+/* Tablet Portrait (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .Cozones_Spaces_imageContainer {
+        width: 260px;
+        height: 210px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 260px;
+    }
 }
 
-.Cozones_Spaces_imageContainer:hover .swiper-button-prev,
-.Cozones_Spaces_imageContainer:hover .swiper-button-next {
-    opacity: 1;
-    pointer-events: auto;
+/* Tablet Landscape (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .Cozones_Spaces_imageContainer {
+        width: 280px;
+        height: 230px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 280px;
+    }
+}
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .Cozones_Spaces_imageContainer {
+        width: 300px;
+        height: 245px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 300px;
+    }
+}
+
+/* Large Desktop (1200px - 1599px) */
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .Cozones_Spaces_imageContainer {
+        width: 320px;
+        height: 260px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 320px;
+    }
+}
+
+/* Ultra Wide Desktop (1600px and above) */
+@media (min-width: 1600px) {
+    .Cozones_Spaces_imageContainer {
+        width: 350px;
+        height: 285px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 350px;
+    }
+}
+
+/* ============================================
+   LANDSCAPE MODE FOR MOBILE
+   ============================================ */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .Cozones_Spaces_imageContainer {
+        width: 200px;
+        height: 165px;
+    }
+    
+    .Cozones_Spaces_info {
+        width: 200px;
+    }
+    
+    .Cozones_Spaces_title {
+        font-size: 11px;
+    }
+    
+    .Cozones_Spaces_meta {
+        font-size: 10px;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .Cozones_Spaces_main,
+    .Cozones_Spaces_favBtn,
+    .Cozones_Spaces_image {
+        transition: none;
+    }
+    
+    .Cozones_Spaces_main:hover {
+        transform: none;
+    }
+    
+    .Cozones_Spaces_favBtn:hover {
+        transform: none;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .Cozones_Spaces_favBtn {
+        display: none !important;
+    }
+    
+    .Cozones_Spaces_imageContainer {
+        break-inside: avoid;
+        width: 200px;
+        height: 160px;
+    }
 }

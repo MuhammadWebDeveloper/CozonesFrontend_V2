@@ -60,7 +60,7 @@ const SpaceDetail = () => {
                 try {
                     const response = await apiClient.get('api/auth/profile');
                     setUser(response.data.user);
-                    console.log('Current user:', response.data.user);
+                    // console.log('Current user:', response.data.user);
                     success('Welcome back! 👋');
                 } catch (err) {
                     console.error('Error fetching user:', err);
@@ -85,15 +85,15 @@ const SpaceDetail = () => {
         const fetchSpace = async () => {
             try {
                 setLoading(true);
-                console.log('Fetching space with ID:', id);
+                // console.log('Fetching space with ID:', id);
 
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
-                console.log('API Response:', response.data);
+                // console.log('API Response:', response.data);
                 // Add this right after setting the transformedSpace, before setSpace:
 
                 if (response.data?.success && response.data?.unit) {
                     const unitData = response.data.unit;
-                    console.log('Unit Data:', unitData);
+                    // console.log('Unit Data:', unitData);
 
                     // Determine rate type based on available rates
                     let rateType = 'daily';
@@ -135,7 +135,7 @@ const SpaceDetail = () => {
                         ownerId = unitData.space_owner_id;
                     }
 
-                    console.log('Owner ID found:', ownerId);
+                    // console.log('Owner ID found:', ownerId);
 
                     const transformedSpace = {
                         // IDs
@@ -185,8 +185,8 @@ const SpaceDetail = () => {
                         owner_id: ownerId
                     };
 
-                    console.log('Transformed Space:', transformedSpace);
-                    console.log('Owner ID in transformed space:', transformedSpace.owner_id);
+                    // console.log('Transformed Space:', transformedSpace);
+                    // console.log('Owner ID in transformed space:', transformedSpace.owner_id);
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
@@ -223,11 +223,11 @@ const SpaceDetail = () => {
 
     const isOwnSpace = () => {
         if (!user || !space) {
-            console.log('isOwnSpace check failed - missing user or space');
+            // console.log('isOwnSpace check failed - missing user or space');
             return false;
         }
         const isOwner = user.id === space.owner_id;
-        console.log('isOwnSpace check:', { userId: user.id, ownerId: space.owner_id, isOwner });
+        // console.log('isOwnSpace check:', { userId: user.id, ownerId: space.owner_id, isOwner });
         return isOwner;
     };
 
@@ -353,7 +353,7 @@ const SpaceDetail = () => {
                 total_price: totalPrice
             };
 
-            console.log('Booking data:', bookingData);
+            // console.log('Booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData);
 

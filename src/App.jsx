@@ -39,6 +39,7 @@ import AdminSpaces from './admin/pages/AdminSpaces';
 import AdminBookings from './admin/pages/AdminBookings';
 import AdminHostRequests from './admin/pages/AdminHostRequests';
 import AdminUsers from './admin/pages/AdminUsers';
+import SearchResults from './utils/SearchResults.jsx';
 // ──────────────────────────────────────────────────────────────────────────
 
 // Routes where Navbar should be hidden
@@ -95,7 +96,7 @@ function AppContent() {
                 <Route path="/dedicated-desk/:id" element={<DedicatedDesksDetails />} />
                 <Route path="/private-cabins/:id" element={<PrivateCabinsDetail />} />
                 <Route path="/meeting-rooms/:id" element={<MeetingRoomsDetail />} />
-
+                <Route path="/search-results" element={<SearchResults />} />
                 {/* ── Protected User Routes ────────────────────────────── */}
                 <Route path="/My-Profile" element={
                     <ProtectedRoute><ProfileSidebar /></ProtectedRoute>

@@ -1,5 +1,5 @@
-// Meeting_Rooms.jsx - Updated with proper favorite functionality
-import React, { useState, useEffect } from 'react';
+// Meeting_Rooms.jsx - UPDATED with Swiper.js slider
+import React, { useState, useEffect, useRef } from 'react';
 import { FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
@@ -7,10 +7,21 @@ import './../../../componentstyles/homestyle/meetingRooms.css';
 import { useNavigate } from 'react-router-dom';
 import BaseUrl from '../../../utils/AppConstants.jsx';
 
+// Swiper imports
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Mousewheel, Autoplay } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/mousewheel';
+import 'swiper/css/autoplay';
+
 const Meeting_Rooms = ({ title }) => {
     const [spaces, setSpaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const swiperRef = useRef(null);
 
     // Helper function to determine the best rate to display
     const getBestRate = (unit) => {
@@ -41,7 +52,7 @@ const Meeting_Rooms = ({ title }) => {
 
     // Axios instance
     const apiClient = axios.create({
-        baseURL: BaseUrl ,
+        baseURL: BaseUrl,
         timeout: 10000,
         headers: {
             'Content-Type': 'application/json',
@@ -71,9 +82,8 @@ const Meeting_Rooms = ({ title }) => {
                     .map((unit) => {
                         const bestRate = getBestRate(unit);
                         return {
-                            // IMPORTANT: Use space_id for favorites
-                            id: unit.id,  // ← SPACE_ID for favorites
-                            unit_id: unit.id,   // Keep unit_id for reference
+                            id: unit.id,
+                            space_id: unit.space_id,
                             title: unit.name || "Meeting Room",
                             location: unit.city || "Coworking Space",
                             price: bestRate ? bestRate.display : "N/A",
@@ -92,7 +102,7 @@ const Meeting_Rooms = ({ title }) => {
                         };
                     });
 
-                console.log('✅ Meeting rooms with SPACE IDs:', transformedSpaces.map(s => ({ id: s.id, title: s.title })));
+                // console.log('✅ Meeting rooms with IDs:', transformedSpaces.map(s => ({ id: s.id, title: s.title })));
                 setSpaces(transformedSpaces);
             } else {
                 console.warn('⚠️ No meeting rooms from API');
@@ -114,12 +124,25 @@ const Meeting_Rooms = ({ title }) => {
 
     const navigate = useNavigate();
     const handleCardClick = (id) => {
-        console.log('🖱️ Navigating to meeting room space:', id);
+        // console.log('🖱️ Navigating to meeting room:', id);
         navigate(`/meeting-rooms/${id}`);
     };
 
-    const handleFavoriteToggle = (spaceId, isLiked) => {
-        console.log(`❤️ Favorite toggled for SPACE ${spaceId}: ${isLiked ? 'LIKED' : 'UNLIKED'}`);
+    const handleFavoriteToggle = (unitId, isLiked) => {
+        // console.log(`❤️ Favorite toggled for UNIT ${unitId}: ${isLiked ? 'LIKED' : 'UNLIKED'}`);
+    };
+
+    // Pause autoplay on hover
+    const handleMouseEnter = () => {
+        if (swiperRef.current && swiperRef.current.autoplay) {
+            swiperRef.current.autoplay.stop();
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (swiperRef.current && swiperRef.current.autoplay) {
+            swiperRef.current.autoplay.start();
+        }
     };
 
     if (loading) {
@@ -169,24 +192,68 @@ const Meeting_Rooms = ({ title }) => {
                     </button>
                 </div>
 
-                <div className="Meeting_Rooms_grid">
-                    {spaces.map((space) => (
-                        <div key={space.id} className="Meeting_Rooms_card">
-                            <SpaceCard
-                                id={space.id}         // space_id for favorites
-                                unit_id={space.unit_id}  // unit_id for navigation
-                                image={space.images.length > 0 ? space.images : ['https://images.unsplash.com/photo-1497366216548-37526070297c']}
-                                title={space.title}
-                                location={space.location}
-                                rating={space.rating}
-                                reviews={space.reviews}
-                                price={space.price}
-                                nights={space.days}
-                                onFavoriteClick={handleFavoriteToggle}
-                                onCardClick={handleCardClick}
-                            />
-                        </div>
-                    ))}
+                {/* Swiper Slider with Infinite Loop and Autoplay */}
+                <div 
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={{ overflow: 'hidden', width: '100%' }}
+                >
+                    <Swiper
+                        modules={[Navigation, Mousewheel, Autoplay]}
+                        spaceBetween={16}
+                        slidesPerView="auto"
+                        loop={true}
+                        autoplay={{
+                            delay: 3000,
+                            disableOnInteraction: false,
+                            pauseOnMouseEnter: true,
+                            stopOnLastSlide: false,
+                            waitForTransition: true,
+                        }}
+                        speed={800}
+                        mousewheel={{
+                            forceToAxis: true,
+                            releaseOnEdges: false,
+                            sensitivity: 1,
+                            enabled: true
+                        }}
+                        freeMode={{
+                            enabled: false,
+                            momentum: false
+                        }}
+                        grabCursor={true}
+                        simulateTouch={true}
+                        touchRatio={1}
+                        touchAngle={45}
+                        threshold={5}
+                        resistance={true}
+                        resistanceRatio={0.85}
+                        className="Meeting_Rooms_slider"
+                        style={{ overflow: 'hidden' }}
+                        onSwiper={(swiper) => {
+                            swiperRef.current = swiper;
+                        }}
+                    >
+                        {spaces.map((space) => (
+                            <SwiperSlide key={space.id} className="Meeting_Rooms_slide">
+                                <div className="Meeting_Rooms_card">
+                                    <SpaceCard
+                                        id={space.id}
+                                        unit_id={space.id}
+                                        image={space.images.length > 0 ? space.images : ['https://images.unsplash.com/photo-1497366216548-37526070297c']}
+                                        title={space.title}
+                                        location={space.location}
+                                        rating={space.rating}
+                                        reviews={space.reviews}
+                                        price={space.price}
+                                        nights={space.days}
+                                        onFavoriteClick={handleFavoriteToggle}
+                                        onCardClick={handleCardClick}
+                                    />
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
                 </div>
             </div>
         </section>

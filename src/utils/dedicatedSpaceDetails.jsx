@@ -952,11 +952,11 @@ const DedicatedDeskDetail = () => {
             try {
                 setLoading(true);
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
-                console.log('API Response:', response.data);
+                // console.log('API Response:', response.data);
 
                 if (response.data?.success && response.data?.unit) {
                     const unitData = response.data.unit;
-                    console.log('Unit Data:', unitData);
+                    // console.log('Unit Data:', unitData);
 
                     let rateType = 'daily';
                     if (unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0 && unitData.hourly_rate !== -999) {
@@ -1025,7 +1025,7 @@ const DedicatedDeskDetail = () => {
                         policies: unitData.policies
                     };
 
-                    console.log('Transformed Space:', transformedSpace);
+                    // console.log('Transformed Space:', transformedSpace);
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
@@ -1275,7 +1275,7 @@ const DedicatedDeskDetail = () => {
                 total_price: totalPrice
             };
 
-            console.log('Sending booking data:', bookingData);
+            // console.log('Sending booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData, {
                 timeout: 30000

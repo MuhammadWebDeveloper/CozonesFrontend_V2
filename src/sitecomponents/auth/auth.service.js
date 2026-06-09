@@ -19,7 +19,7 @@ export const logout = async () => {
             await axios.post(`${API_URL}/logout`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            console.log('✅ Token blacklisted on server');
+            // console.log('✅ Token blacklisted on server');
         } catch (error) {
             console.error('⚠️ Backend logout failed:', error);
         }

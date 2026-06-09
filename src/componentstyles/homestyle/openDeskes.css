@@ -1,9 +1,9 @@
 /* =========================
-   Cozones_Spaces Styles
-========================= */
+   Cozones_Spaces Styles - FULLY RESPONSIVE
+   ========================= */
 
 .Cozones_Spaces_section {
-    padding: 20px 60px;
+    padding: 20px;
     background: #ffffff;
 }
 
@@ -15,6 +15,9 @@
 .Cozones_Space_title {
     font-size: 32px;
     font-weight: 700;
+    color: #01095A;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
 /* =========================
@@ -83,422 +86,113 @@
 }
 
 /* =========================
-   Card
-========================= */
+   RESPONSIVE BREAKPOINTS
+   ========================= */
 
-.Cozones_Spaces_card {
-    background: #ffffff;
-    /* border-radius: 20px; */
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    /* border: 1px solid #e8e8e8; */
-    position: relative;
-    min-width: 0;
-    animation: Cozones_Spaces_fadeInUp 0.6s ease forwards;
-    opacity: 0;
-}
+/* Large Desktop (1600px and above) */
+@media (min-width: 1601px) {
+    /* .Cozones_Spaces_section {
+        padding: 60px 100px;
+    } */
 
-/* .Cozones_Spaces_card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border-color: #011CCD;
-} */
-
-.Cozones_Spaces_card:hover .Cozones_Spaces_image {
-    transform: scale(1.05);
-}
-
-/* =========================
-   Image
-========================= */
-
-.Cozones_Spaces_imageWrapper {
-    position: relative;
-    width: 100%;
-    padding-top: 75%;
-    overflow: hidden;
-    background: #f5f5f5;
-}
-
-.Cozones_Spaces_image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-/* =========================
-   Badge
-========================= */
-
-.Cozones_Spaces_type {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
-    z-index: 2;
-}
-
-/* =========================
-   Favorite Button
-========================= */
-
-.Cozones_Spaces_favorite {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 2;
-}
-
-.Cozones_Spaces_favorite:hover {
-    transform: scale(1.1);
-}
-
-.Cozones_Spaces_favorite.active svg {
-    fill: #ff385c;
-    stroke: #ff385c;
-}
-
-/* =========================
-   Content
-========================= */
-
-.Cozones_Spaces_content {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.Cozones_Spaces_cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.Cozones_Spaces_cardTitle {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-    line-height: 1.3;
-    flex: 1;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-
-    overflow: hidden;
-}
-
-.Cozones_Spaces_rating {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    flex-shrink: 0;
-    background: #f5f5f5;
-    padding: 3px 6px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.Cozones_Spaces_location {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #717171;
-    font-size: 11px;
-}
-
-.Cozones_Spaces_price {
-    margin-top: 2px;
-}
-
-.Cozones_Spaces_priceAmount {
-    font-size: 15px;
-    font-weight: 700;
-    color: #011CCD;
-}
-
-.Cozones_Spaces_pricePeriod {
-    font-size: 11px;
-    color: #717171;
-}
-
-.Cozones_Spaces_reviews {
-    font-size: 11px;
-    color: #717171;
-}
-
-.Cozones_Spaces_bookBtn {
-    background: #011CCD;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 6px;
-    width: 100%;
-}
-
-.Cozones_Spaces_bookBtn:hover {
-    background: #000e8a;
-    transform: scale(1.02);
-}
-
-/* =========================
-   Loading
-========================= */
-
-.Cozones_Spaces_loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-}
-
-.Cozones_Spaces_loading::after {
-    content: '';
-    width: 50px;
-    height: 50px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #011CCD;
-    border-radius: 50%;
-    animation: Cozones_Spaces_spin 1s linear infinite;
-}
-
-.Cozones_Spaces_loadingText {
-    text-align: center;
-    margin-top: 20px;
-    color: #717171;
-    font-size: 14px;
-}
-
-/* =========================
-   Empty State
-========================= */
-
-.Cozones_Spaces_empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: #717171;
-}
-
-.Cozones_Spaces_emptyIcon {
-    font-size: 64px;
-    margin-bottom: 16px;
-}
-
-.Cozones_Spaces_emptyTitle {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
-}
-
-.Cozones_Spaces_emptySubtitle {
-    font-size: 14px;
-    color: #717171;
-}
-
-/* =========================
-   Error State
-========================= */
-
-.Cozones_Spaces_error {
-    text-align: center;
-    padding: 60px 20px;
-    color: #e74c3c;
-}
-
-.Cozones_Spaces_errorIcon {
-    font-size: 64px;
-    margin-bottom: 16px;
-}
-
-.Cozones_Spaces_errorTitle {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.Cozones_Spaces_errorSubtitle {
-    font-size: 14px;
-    color: #717171;
-    margin-bottom: 20px;
-}
-
-.Cozones_Spaces_retryBtn {
-    background: #011CCD;
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 24px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.Cozones_Spaces_retryBtn:hover {
-    background: #000e8a;
-    transform: scale(1.02);
-}
-
-/* =========================
-   API Status
-========================= */
-
-.Cozones_Spaces_apiStatus {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #011CCD;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    z-index: 1000;
-}
-
-.Cozones_Spaces_apiStatus.online {
-    background: #4caf50;
-}
-
-.Cozones_Spaces_apiStatus.offline {
-    background: #f44336;
-}
-
-/* =========================
-   Animations
-========================= */
-
-@keyframes Cozones_Spaces_spin {
-    0% {
-        transform: rotate(0deg);
+    .Cozones_Space_title {
+        font-size: 38px;
     }
 
-    100% {
-        transform: rotate(360deg);
+    .Cozones_Spaces_slide {
+        min-width: 300px;
+        max-width: 350px;
     }
 }
 
-@keyframes Cozones_Spaces_fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.Cozones_Spaces_card:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.Cozones_Spaces_card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.Cozones_Spaces_card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.Cozones_Spaces_card:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.Cozones_Spaces_card:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.Cozones_Spaces_card:nth-child(6) {
-    animation-delay: 0.3s;
-}
-
-.Cozones_Spaces_card:nth-child(7) {
-    animation-delay: 0.35s;
-}
-
-/* =========================
-   Responsive
-========================= */
-
+/* Desktop (1400px - 1600px) */
 @media (max-width: 1600px) {
-    .Cozones_Spaces_section {
-        padding: 48px 40px;
-    }
+    /* .Cozones_Spaces_section {
+        padding: 48px 50px;
+    } */
 
-    .Cozones_Spaces_grid {
-        grid-template-columns: repeat(7, minmax(260px, 1fr));
-    }
-}
-
-@media (max-width: 1400px) {
-    .Cozones_Spaces_grid {
-        grid-template-columns: repeat(7, minmax(240px, 1fr));
+    .Cozones_Space_title {
+        font-size: 34px;
     }
 }
 
-@media (max-width: 1200px) {
-    .Cozones_Spaces_section {
-        padding: 40px 30px;
+/* Small Desktop (1200px - 1399px) */
+@media (max-width: 1399px) {
+    /* .Cozones_Spaces_section {
+        padding: 40px 40px;
+    } */
+
+    .Cozones_Space_title {
+        font-size: 30px;
     }
 
-    .Cozones_Spaces_title {
+    .Cozones_Spaces_header {
+        margin-bottom: 24px;
+    }
+
+    .Cozones_Spaces_viewAll {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Tablet Landscape (992px - 1199px) */
+@media (max-width: 1199px) {
+    /* .Cozones_Spaces_section {
+        padding: 35px 30px;
+    } */
+
+    .Cozones_Space_title {
         font-size: 28px;
     }
+
+    .Cozones_Spaces_header {
+        margin-bottom: 20px;
+    }
 }
 
-@media (max-width: 768px) {
-    .Cozones_Spaces_section {
-        padding: 32px 20px;
-    }
+/* Tablet Portrait (768px - 991px) */
+@media (max-width: 991px) {
+    /* .Cozones_Spaces_section {
+        padding: 30px 24px;
+    } */
 
-    .Cozones_Spaces_title {
-        font-size: 24px;
-    }
-
-    .Cozones_Spaces_subtitle {
-        font-size: 14px;
-    }
-
-    .Cozones_Spaces_grid {
-        grid-template-columns: repeat(7, minmax(220px, 1fr));
-        gap: 14px;
+    .Cozones_Space_title {
+        font-size: 26px;
     }
 
     .Cozones_Spaces_header {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 12px;
+    }
+
+    .Cozones_Spaces_viewAll {
+        padding: 8px 18px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile Large (576px - 767px) */
+@media (max-width: 767px) {
+    /* .Cozones_Spaces_section {
+        padding: 25px 16px;
+    } */
+
+    .Cozones_Space_title {
+        font-size: 24px;
+    }
+
+    .Cozones_Spaces_header {
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+
+    .Cozones_Spaces_viewAll {
+        padding: 6px 16px;
+        font-size: 11px;
+        gap: 6px;
     }
 
     .Cozones_Spaces_cardTitle {
@@ -515,17 +209,447 @@
     }
 }
 
-@media (max-width: 480px) {
-    .Cozones_Spaces_section {
-        padding: 24px 16px;
+/* Mobile Medium (375px - 575px) */
+@media (max-width: 575px) {
+    /* .Cozones_Spaces_section {
+        padding: 20px 12px;
+    } */
+
+    .Cozones_Space_title {
+        font-size: 22px;
     }
 
-    .Cozones_Spaces_title {
+    .Cozones_Spaces_header {
+        margin-bottom: 14px;
+        gap: 8px;
+    }
+
+    .Cozones_Spaces_viewAll {
+        padding: 5px 14px;
+        font-size: 10px;
+    }
+}
+
+/* Mobile Small (up to 374px) */
+@media (max-width: 374px) {
+    /* .Cozones_Spaces_section {
+        padding: 16px 10px;
+    } */
+
+    .Cozones_Space_title {
         font-size: 20px;
     }
 
-    .Cozones_Spaces_grid {
-        grid-template-columns: repeat(7, minmax(200px, 1fr));
-        gap: 12px;
+    .Cozones_Spaces_header {
+        margin-bottom: 12px;
+        gap: 6px;
+    }
+
+    .Cozones_Spaces_viewAll {
+        padding: 4px 12px;
+        font-size: 9px;
+        gap: 4px;
+    }
+}
+
+/* =========================
+   SWIPER SLIDER STYLES
+   ========================= */
+
+.Cozones_Spaces_slider {
+    width: 100%;
+    overflow: hidden !important;
+    padding: 4px 2px 8px 2px;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.Cozones_Spaces_slider::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* Hide scrollbar for all Swiper containers */
+.swiper,
+.swiper-container,
+.Cozones_Spaces_slider .swiper,
+.Cozones_Spaces_slider .swiper-container {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.swiper::-webkit-scrollbar,
+.swiper-container::-webkit-scrollbar,
+.Cozones_Spaces_slider .swiper::-webkit-scrollbar,
+.Cozones_Spaces_slider .swiper-container::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Hide Swiper's scrollbar component */
+.Cozones_Spaces_slider .swiper-scrollbar,
+.swiper-scrollbar {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Ensure swiper wrapper doesn't show scrollbar */
+.Cozones_Spaces_slider .swiper-wrapper,
+.swiper-wrapper {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    align-items: stretch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.Cozones_Spaces_slider .swiper-wrapper::-webkit-scrollbar,
+.swiper-wrapper::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Slide styles */
+.Cozones_Spaces_slide,
+.swiper-slide {
+    width: auto !important;
+    max-width: 320px;
+    min-width: 260px;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Card styles */
+.Cozones_Spaces_slide .Cozones_Spaces_card {
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.Cozones_Spaces_slide .Cozones_Spaces_card:hover {
+    transform: translateY(-8px);
+}
+
+/* Remove navigation buttons */
+.Cozones_Spaces_slider .swiper-button-next,
+.Cozones_Spaces_slider .swiper-button-prev,
+.swiper-button-next,
+.swiper-button-prev {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Remove pagination */
+.Cozones_Spaces_slider .swiper-pagination,
+.swiper-pagination {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Hide overflow from parent containers */
+.Cozones_Spaces_container,
+.Cozones_Spaces_section {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Autoplay progress indicator */
+.Cozones_Spaces_slider .swiper-autoplay-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #011CCD, #4a6eff);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Swiper responsive adjustments */
+@media (max-width: 991px) {
+    .Cozones_Spaces_slider {
+        padding: 2px 1px 6px 1px;
+    }
+
+    .Cozones_Spaces_slide {
+        min-width: 240px;
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 767px) {
+    .Cozones_Spaces_slider {
+        padding: 0px 0px 4px 0px;
+    }
+
+    .Cozones_Spaces_slide {
+        min-width: 220px;
+        max-width: 260px;
+    }
+}
+
+@media (max-width: 575px) {
+    .Cozones_Spaces_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+}
+
+@media (max-width: 374px) {
+    .Cozones_Spaces_slide {
+        min-width: 180px;
+        max-width: 220px;
+    }
+}
+
+/* Slide fade-in animation */
+@keyframes slideFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.Cozones_Spaces_slider .swiper-slide-active .Cozones_Spaces_card {
+    animation: slideFadeIn 0.5s ease forwards;
+}
+
+/* =========================
+   LOADING STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Cozones_Spaces_loading {
+        min-height: 300px;
+    }
+
+    .Cozones_Spaces_loading::after {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Cozones_Spaces_loading {
+        min-height: 250px;
+    }
+
+    .Cozones_Spaces_loading::after {
+        width: 35px;
+        height: 35px;
+    }
+
+    .Cozones_Spaces_loadingText {
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   EMPTY STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Cozones_Spaces_empty {
+        padding: 40px 16px;
+    }
+
+    .Cozones_Spaces_emptyIcon {
+        font-size: 48px;
+    }
+
+    .Cozones_Spaces_emptyTitle {
+        font-size: 18px;
+    }
+
+    .Cozones_Spaces_emptySubtitle {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Cozones_Spaces_empty {
+        padding: 30px 12px;
+    }
+
+    .Cozones_Spaces_emptyIcon {
+        font-size: 40px;
+    }
+
+    .Cozones_Spaces_emptyTitle {
+        font-size: 16px;
+    }
+
+    .Cozones_Spaces_emptySubtitle {
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   ERROR STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Cozones_Spaces_error {
+        padding: 40px 20px;
+    }
+
+    .Cozones_Spaces_errorIcon {
+        font-size: 48px;
+    }
+
+    .Cozones_Spaces_errorTitle {
+        font-size: 18px;
+    }
+
+    .Cozones_Spaces_errorSubtitle {
+        font-size: 13px;
+    }
+
+    .Cozones_Spaces_retryBtn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Cozones_Spaces_error {
+        padding: 30px 16px;
+    }
+
+    .Cozones_Spaces_errorIcon {
+        font-size: 36px;
+    }
+
+    .Cozones_Spaces_errorTitle {
+        font-size: 16px;
+    }
+
+    .Cozones_Spaces_errorSubtitle {
+        font-size: 12px;
+    }
+
+    .Cozones_Spaces_retryBtn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   TOUCH DEVICE OPTIMIZATIONS
+   ========================= */
+
+@media (hover: none) and (pointer: coarse) {
+    .Cozones_Spaces_slider {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .Cozones_Spaces_slide .Cozones_Spaces_card:hover {
+        transform: none;
+    }
+
+    .Cozones_Spaces_slide .Cozones_Spaces_card:active {
+        transform: scale(0.98);
+    }
+}
+
+/* =========================
+   LANDSCAPE MODE FOR MOBILE
+   ========================= */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    /* .Cozones_Spaces_section {
+        padding: 20px 20px;
+    } */
+
+    .Cozones_Spaces_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+}
+
+/* =========================
+   HIGH RESOLUTION SCREENS
+   ========================= */
+
+@media (min-width: 1920px) {
+    /* .Cozones_Spaces_section {
+        padding: 80px 150px;
+    } */
+
+    .Cozones_Space_title {
+        font-size: 42px;
+    }
+
+    .Cozones_Spaces_slide {
+        min-width: 320px;
+        max-width: 380px;
+    }
+}
+
+/* =========================
+   REDUCED MOTION SUPPORT
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .Cozones_Spaces_card {
+        animation: none;
+        opacity: 1;
+    }
+
+    .Cozones_Spaces_slide .Cozones_Spaces_card:hover {
+        transform: none;
+    }
+
+    .Cozones_Spaces_loading::after {
+        animation: none;
+    }
+
+    .Cozones_Spaces_slider .swiper-slide-active .Cozones_Spaces_card {
+        animation: none;
+    }
+}
+
+/* =========================
+   PRINT STYLES
+   ========================= */
+
+@media print {
+    .Cozones_Spaces_section {
+        padding: 20px;
+        background: white;
+    }
+
+    .Cozones_Spaces_viewAll,
+    .Cozones_Spaces_bookBtn,
+    .Cozones_Spaces_favorite {
+        display: none;
+    }
+
+    .Cozones_Spaces_slider .swiper-button-next,
+    .Cozones_Spaces_slider .swiper-button-prev {
+        display: none !important;
+    }
+}
+
+/* =========================
+   DARK MODE SUPPORT (Preserves your colors)
+   ========================= */
+
+@media (prefers-color-scheme: dark) {
+    .Cozones_Spaces_section {
+        background: #ffffff;
     }
 }

@@ -32,11 +32,11 @@ const MyFavorites = () => {
         try {
             setLoading(true);
             const response = await apiClient.get('api/favorites/my-favorites');
-            console.log('API Response:', response.data);
+            // console.log('API Response:', response.data);
 
             if (response.data.success) {
                 setFavorites(response.data.favorites);
-                console.log('Favorites data:', response.data.favorites);
+                // console.log('Favorites data:', response.data.favorites);
             }
         } catch (err) {
             console.error('Error fetching favorites:', err);
@@ -49,13 +49,13 @@ const MyFavorites = () => {
     // ✅ FIXED: Access unit.id from nested structure
     const removeFavorite = async (unitId) => {
         try {
-            console.log('Removing favorite for unit:', unitId);
+            // console.log('Removing favorite for unit:', unitId);
             const response = await apiClient.post(`api/favorites/toggle/${unitId}`);
             
             if (response.data.success) {
                 // Filter by unit.id from nested structure
                 setFavorites(prev => prev.filter(fav => fav.unit?.id !== unitId));
-                console.log('Favorite removed successfully');
+                // console.log('Favorite removed successfully');
             }
         } catch (err) {
             console.error('Failed to remove favorite:', err);

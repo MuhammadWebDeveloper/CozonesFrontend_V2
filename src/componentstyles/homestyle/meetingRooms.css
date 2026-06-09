@@ -1,9 +1,9 @@
-/* =========================
-   Meeting_Rooms Styles
-========================= */
+ /* =========================
+   Meeting_Rooms Styles - FULLY RESPONSIVE
+   ========================= */
 
 .Meeting_Rooms_section {
-    padding: 20px 60px;
+    padding: 20px;
     background: #ffffff;
 }
 
@@ -54,481 +54,544 @@
 }
 
 /* =========================
-   Grid Layout
-========================= */
+   RESPONSIVE BREAKPOINTS
+   ========================= */
 
-.Meeting_Rooms_grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 16px;
-    padding-bottom: 0 10px;
+/* Large Desktop (1600px and above) */
+@media (min-width: 1601px) {
+    .Meeting_Rooms_title {
+        font-size: 38px;
+    }
+    
+    .Meeting_Rooms_slide {
+        min-width: 300px;
+        max-width: 350px;
+    }
 }
 
+/* Desktop (1400px - 1600px) */
 @media (max-width: 1600px) {
-    .Meeting_Rooms_grid {
-        grid-template-columns: repeat(7, minmax(280px, 1fr));
-        overflow-x: auto;
-    }
-
-    .Meeting_Rooms_grid::-webkit-scrollbar {
-        height: 8px;
-    }
-
-    .Meeting_Rooms_grid::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .Meeting_Rooms_grid::-webkit-scrollbar-thumb {
-        background: #01095A;
-        border-radius: 10px;
+    .Meeting_Rooms_title {
+        font-size: 34px;
     }
 }
 
-/* =========================
-   Card
-========================= */
-
-.Meeting_Rooms_card {
-    background: #ffffff;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    position: relative;
-    min-width: 0;
-    animation: Meeting_Rooms_fadeInUp 0.6s ease forwards;
-    opacity: 0;
-}
-
-.Meeting_Rooms_card:hover .Meeting_Rooms_image {
-    transform: scale(1.05);
-}
-
-/* Rate Badge Styles */
-.Meeting_Rooms_rate_badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 10;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-}
-
-.Meeting_Rooms_rate_badge.rate_hourly {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.Meeting_Rooms_rate_badge.rate_daily {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.Meeting_Rooms_rate_badge.rate_monthly {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-/* Other Rates Info */
-.Meeting_Rooms_other_rates {
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border-top: 1px solid #e8e8e8;
-    font-size: 11px;
-}
-
-.Meeting_Rooms_other_rates_label {
-    color: #666;
-    margin-right: 8px;
-}
-
-.Meeting_Rooms_other_rate {
-    display: inline-block;
-    background: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    margin: 0 4px;
-    font-size: 10px;
-    font-weight: 500;
-    color: #01095A;
-    border: 1px solid #e0e0e0;
-}
-
-/* Capacity Info */
-.Meeting_Rooms_capacity {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-    color: white;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 12px;
-}
-
-/* =========================
-   Image
-========================= */
-
-.Meeting_Rooms_imageWrapper {
-    position: relative;
-    width: 100%;
-    padding-top: 75%;
-    overflow: hidden;
-    background: #f5f5f5;
-}
-
-.Meeting_Rooms_image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-/* =========================
-   Badge
-========================= */
-
-.Meeting_Rooms_type {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 20px;
-    z-index: 2;
-}
-
-/* =========================
-   Favorite Button
-========================= */
-
-.Meeting_Rooms_favorite {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 2;
-}
-
-.Meeting_Rooms_favorite:hover {
-    transform: scale(1.1);
-}
-
-.Meeting_Rooms_favorite.active svg {
-    fill: #ff385c;
-    stroke: #ff385c;
-}
-
-/* =========================
-   Content
-========================= */
-
-.Meeting_Rooms_content {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.Meeting_Rooms_cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.Meeting_Rooms_cardTitle {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-    line-height: 1.3;
-    flex: 1;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.Meeting_Rooms_rating {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    flex-shrink: 0;
-    background: #f5f5f5;
-    padding: 3px 6px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.Meeting_Rooms_location {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #717171;
-    font-size: 11px;
-}
-
-.Meeting_Rooms_price {
-    margin-top: 2px;
-}
-
-.Meeting_Rooms_priceAmount {
-    font-size: 15px;
-    font-weight: 700;
-    color: #01095A;
-}
-
-.Meeting_Rooms_pricePeriod {
-    font-size: 11px;
-    color: #717171;
-}
-
-.Meeting_Rooms_reviews {
-    font-size: 11px;
-    color: #717171;
-}
-
-.Meeting_Rooms_bookBtn {
-    background: #01095A;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 6px;
-    width: 100%;
-}
-
-.Meeting_Rooms_bookBtn:hover {
-    background: #000e8a;
-    transform: scale(1.02);
-}
-
-/* =========================
-   Loading
-========================= */
-
-.Meeting_Rooms_loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-}
-
-.Meeting_Rooms_loading::after {
-    content: '';
-    width: 50px;
-    height: 50px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #01095A;
-    border-radius: 50%;
-    animation: Meeting_Rooms_spin 1s linear infinite;
-}
-
-.Meeting_Rooms_loadingText {
-    text-align: center;
-    margin-top: 20px;
-    color: #717171;
-    font-size: 14px;
-}
-
-/* =========================
-   Empty State
-========================= */
-
-.Meeting_Rooms_empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: #717171;
-}
-
-.Meeting_Rooms_empty p {
-    font-size: 16px;
-    color: #666;
-}
-
-/* =========================
-   Error State
-========================= */
-
-.Meeting_Rooms_error {
-    text-align: center;
-    padding: 60px 20px;
-    color: #e74c3c;
-}
-
-.Meeting_Rooms_retryBtn {
-    background: #01095A;
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 24px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.Meeting_Rooms_retryBtn:hover {
-    background: #000e8a;
-    transform: scale(1.02);
-}
-
-/* =========================
-   Animations
-========================= */
-
-@keyframes Meeting_Rooms_spin {
-    0% {
-        transform: rotate(0deg);
+/* Small Desktop (1200px - 1399px) */
+@media (max-width: 1399px) {
+    .Meeting_Rooms_title {
+        font-size: 30px;
     }
-
-    100% {
-        transform: rotate(360deg);
+    
+    .Meeting_Rooms_header {
+        margin-bottom: 24px;
+    }
+    
+    .Meeting_Rooms_viewAll {
+        padding: 8px 20px;
+        font-size: 13px;
     }
 }
 
-@keyframes Meeting_Rooms_fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.Meeting_Rooms_card:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.Meeting_Rooms_card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.Meeting_Rooms_card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.Meeting_Rooms_card:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.Meeting_Rooms_card:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.Meeting_Rooms_card:nth-child(6) {
-    animation-delay: 0.3s;
-}
-
-.Meeting_Rooms_card:nth-child(7) {
-    animation-delay: 0.35s;
-}
-
-/* =========================
-   Responsive
-========================= */
-
-@media (max-width: 1600px) {
-    .Meeting_Rooms_section {
-        padding: 48px 40px;
-    }
-
-    .Meeting_Rooms_grid {
-        grid-template-columns: repeat(7, minmax(260px, 1fr));
-    }
-}
-
-@media (max-width: 1400px) {
-    .Meeting_Rooms_grid {
-        grid-template-columns: repeat(7, minmax(240px, 1fr));
-    }
-}
-
-@media (max-width: 1200px) {
-    .Meeting_Rooms_section {
-        padding: 40px 30px;
-    }
-
+/* Tablet Landscape (992px - 1199px) */
+@media (max-width: 1199px) {
     .Meeting_Rooms_title {
         font-size: 28px;
     }
+    
+    .Meeting_Rooms_header {
+        margin-bottom: 20px;
+    }
 }
 
-@media (max-width: 768px) {
-    .Meeting_Rooms_section {
-        padding: 32px 20px;
-    }
-
+/* Tablet Portrait (768px - 991px) */
+@media (max-width: 991px) {
     .Meeting_Rooms_title {
-        font-size: 24px;
+        font-size: 26px;
     }
-
-    .Meeting_Rooms_grid {
-        grid-template-columns: repeat(7, minmax(220px, 1fr));
-        gap: 14px;
-    }
-
+    
     .Meeting_Rooms_header {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 12px;
     }
+    
+    .Meeting_Rooms_viewAll {
+        padding: 8px 18px;
+        font-size: 12px;
+    }
+}
 
+/* Mobile Large (576px - 767px) */
+@media (max-width: 767px) {
+    .Meeting_Rooms_title {
+        font-size: 24px;
+    }
+    
+    .Meeting_Rooms_header {
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+    
+    .Meeting_Rooms_viewAll {
+        padding: 6px 16px;
+        font-size: 11px;
+        gap: 6px;
+    }
+    
     .Meeting_Rooms_cardTitle {
         font-size: 12px;
     }
-
+    
     .Meeting_Rooms_priceAmount {
         font-size: 13px;
     }
-
+    
     .Meeting_Rooms_bookBtn {
         padding: 6px 10px;
         font-size: 10px;
     }
 }
 
-@media (max-width: 480px) {
-    .Meeting_Rooms_section {
-        padding: 24px 16px;
+/* Mobile Medium (375px - 575px) */
+@media (max-width: 575px) {
+    .Meeting_Rooms_title {
+        font-size: 22px;
     }
+    
+    .Meeting_Rooms_header {
+        margin-bottom: 14px;
+        gap: 8px;
+    }
+    
+    .Meeting_Rooms_viewAll {
+        padding: 5px 14px;
+        font-size: 10px;
+    }
+}
 
+/* Mobile Small (up to 374px) */
+@media (max-width: 374px) {
     .Meeting_Rooms_title {
         font-size: 20px;
     }
-
-    .Meeting_Rooms_grid {
-        grid-template-columns: repeat(7, minmax(200px, 1fr));
-        gap: 12px;
+    
+    .Meeting_Rooms_header {
+        margin-bottom: 12px;
+        gap: 6px;
+    }
+    
+    .Meeting_Rooms_viewAll {
+        padding: 4px 12px;
+        font-size: 9px;
+        gap: 4px;
     }
 }
+
+/* =========================
+   SWIPER SLIDER RESPONSIVE
+   ========================= */
+
+.Meeting_Rooms_slider {
+    width: 100%;
+    overflow: hidden !important;
+    padding: 4px 2px 8px 2px;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.Meeting_Rooms_slider::-webkit-scrollbar {
+    display: none !important;
+}
+
+.Meeting_Rooms_slide {
+    width: auto !important;
+    max-width: 320px;
+    min-width: 260px;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Hide all scrollbars */
+.swiper,
+.swiper-container,
+.Meeting_Rooms_slider .swiper,
+.Meeting_Rooms_slider .swiper-container {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.swiper::-webkit-scrollbar,
+.swiper-container::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Hide scrollbar component */
+.Meeting_Rooms_slider .swiper-scrollbar,
+.swiper-scrollbar {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Hide navigation buttons */
+.Meeting_Rooms_slider .swiper-button-next,
+.Meeting_Rooms_slider .swiper-button-prev,
+.swiper-button-next,
+.swiper-button-prev {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Hide pagination */
+.Meeting_Rooms_slider .swiper-pagination,
+.swiper-pagination {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Card hover effects */
+.Meeting_Rooms_slide .Meeting_Rooms_card {
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.Meeting_Rooms_slide .Meeting_Rooms_card:hover {
+    transform: translateY(-8px);
+}
+
+/* Hide overflow from parent containers */
+.Meeting_Rooms_container,
+.Meeting_Rooms_section {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Autoplay progress indicator */
+.Meeting_Rooms_slider .swiper-autoplay-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #01095A, #4a6eff);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Slide fade-in animation */
+@keyframes meetingRoomsSlideFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.Meeting_Rooms_slider .swiper-slide-active .Meeting_Rooms_card {
+    animation: meetingRoomsSlideFadeIn 0.5s ease forwards;
+}
+
+/* Swiper responsive adjustments */
+@media (max-width: 991px) {
+    .Meeting_Rooms_slider {
+        padding: 2px 1px 6px 1px;
+    }
+    
+    .Meeting_Rooms_slide {
+        min-width: 240px;
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 767px) {
+    .Meeting_Rooms_slider {
+        padding: 0px 0px 4px 0px;
+    }
+    
+    .Meeting_Rooms_slide {
+        min-width: 220px;
+        max-width: 260px;
+    }
+}
+
+@media (max-width: 575px) {
+    .Meeting_Rooms_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+}
+
+@media (max-width: 374px) {
+    .Meeting_Rooms_slide {
+        min-width: 180px;
+        max-width: 220px;
+    }
+}
+
+/* =========================
+   LOADING STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Meeting_Rooms_loading {
+        min-height: 300px;
+    }
+    
+    .Meeting_Rooms_loading::after {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Meeting_Rooms_loading {
+        min-height: 250px;
+    }
+    
+    .Meeting_Rooms_loading::after {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .Meeting_Rooms_loadingText {
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   EMPTY STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Meeting_Rooms_empty {
+        padding: 40px 16px;
+    }
+    
+    .Meeting_Rooms_empty p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Meeting_Rooms_empty {
+        padding: 30px 12px;
+    }
+    
+    .Meeting_Rooms_empty p {
+        font-size: 13px;
+    }
+}
+
+/* =========================
+   ERROR STATE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Meeting_Rooms_error {
+        padding: 40px 20px;
+    }
+    
+    .Meeting_Rooms_retryBtn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Meeting_Rooms_error {
+        padding: 30px 16px;
+    }
+    
+    .Meeting_Rooms_retryBtn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   RATE BADGE RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .Meeting_Rooms_rate_badge {
+        padding: 3px 8px;
+        font-size: 9px;
+        top: 8px;
+        left: 8px;
+    }
+    
+    .Meeting_Rooms_other_rates {
+        padding: 6px 10px;
+        font-size: 9px;
+    }
+    
+    .Meeting_Rooms_other_rate {
+        padding: 1px 6px;
+        font-size: 8px;
+    }
+    
+    .Meeting_Rooms_capacity {
+        font-size: 8px;
+        padding: 3px 6px;
+        bottom: 8px;
+        right: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .Meeting_Rooms_rate_badge {
+        padding: 2px 6px;
+        font-size: 8px;
+    }
+    
+    .Meeting_Rooms_other_rates {
+        padding: 4px 8px;
+        font-size: 8px;
+    }
+    
+    .Meeting_Rooms_capacity {
+        font-size: 7px;
+        padding: 2px 5px;
+    }
+}
+
+/* =========================
+   TOUCH DEVICE OPTIMIZATIONS
+   ========================= */
+
+@media (hover: none) and (pointer: coarse) {
+    .Meeting_Rooms_slider {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .Meeting_Rooms_slide .Meeting_Rooms_card:hover {
+        transform: none;
+    }
+    
+    .Meeting_Rooms_slide .Meeting_Rooms_card:active {
+        transform: scale(0.98);
+    }
+    
+    .Meeting_Rooms_bookBtn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* =========================
+   LANDSCAPE MODE FOR MOBILE
+   ========================= */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .Meeting_Rooms_slide {
+        min-width: 200px;
+        max-width: 240px;
+    }
+}
+
+/* =========================
+   HIGH RESOLUTION SCREENS
+   ========================= */
+
+@media (min-width: 1920px) {
+    .Meeting_Rooms_title {
+        font-size: 42px;
+    }
+    
+    .Meeting_Rooms_slide {
+        min-width: 320px;
+        max-width: 380px;
+    }
+}
+
+/* =========================
+   REDUCED MOTION SUPPORT
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .Meeting_Rooms_card {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .Meeting_Rooms_slide .Meeting_Rooms_card:hover {
+        transform: none;
+    }
+    
+    .Meeting_Rooms_loading::after {
+        animation: none;
+    }
+    
+    .Meeting_Rooms_slider .swiper-slide-active .Meeting_Rooms_card {
+        animation: none;
+    }
+}
+
+/* =========================
+   PRINT STYLES
+   ========================= */
+
+@media print {
+    .Meeting_Rooms_section {
+        padding: 20px;
+        background: white;
+    }
+    
+    .Meeting_Rooms_viewAll,
+    .Meeting_Rooms_bookBtn,
+    .Meeting_Rooms_favorite {
+        display: none;
+    }
+    
+    .Meeting_Rooms_slider .swiper-button-next,
+    .Meeting_Rooms_slider .swiper-button-prev {
+        display: none !important;
+    }
+}
+
+/* =========================
+   DARK MODE SUPPORT (Preserves your colors)
+   ========================= */
+
+@media (prefers-color-scheme: dark) {
+    .Meeting_Rooms_section {
+        background: #ffffff;
+    }
+}
+
+/* =========================
+   ADDITIONAL RESPONSIVE FIXES FOR CARDS
+   ========================= */
+
+/* Ensure cards don't overflow on very small screens */
+@media (max-width: 360px) {
+    .Meeting_Rooms_cardTitle {
+        font-size: 11px;
+    }
+    
+    .Meeting_Rooms_priceAmount {
+        font-size: 11px;
+    }
+    
+    .Meeting_Rooms_location {
+        font-size: 9px;
+    }
+    
+    .Meeting_Rooms_rating {
+        font-size: 9px;
+        padding: 2px 4px;
+    }
+}
+
+/* Fix for SpaceCard integration */
+.Meeting_Rooms_card .SpaceCard {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+} 

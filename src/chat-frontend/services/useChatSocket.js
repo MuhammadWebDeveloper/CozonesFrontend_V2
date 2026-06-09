@@ -13,10 +13,10 @@ export const useChatSocket = (chatId, onMessage) => {
     const token = localStorage.getItem('token');
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     
-    console.log('=== Socket Debug Info ===');
-    console.log('Chat ID:', chatId);
-    console.log('Current User ID:', currentUser?.id);
-    console.log('Token exists:', !!token);
+    // console.log('=== Socket Debug Info ===');
+    // console.log('Chat ID:', chatId);
+    // console.log('Current User ID:', currentUser?.id);
+    // console.log('Token exists:', !!token);
     
     if (!token) {
       console.error('No token found for socket connection');
@@ -34,16 +34,16 @@ export const useChatSocket = (chatId, onMessage) => {
 
     // Connection events
     socket.on('connect', () => {
-      console.log('✅ Socket.IO connected');
+      // console.log('✅ Socket.IO connected');
       setIsConnected(true);
       
       // Join the chat room
-      console.log('📡 Attempting to join chat:', chatId);
+      // console.log('📡 Attempting to join chat:', chatId);
       socket.emit('join_chat', { chatId });
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ Socket.IO disconnected');
+      // console.log('❌ Socket.IO disconnected');
       setIsConnected(false);
     });
 
@@ -54,7 +54,7 @@ export const useChatSocket = (chatId, onMessage) => {
 
     // Listen for new messages
     socket.on('new_message', (message) => {
-      console.log('💬 New message received:', message);
+      // console.log('💬 New message received:', message);
       if (onMessage) {
         onMessage(message);
       }
@@ -62,7 +62,7 @@ export const useChatSocket = (chatId, onMessage) => {
 
     // Listen for typing indicators
     socket.on('typing_start', ({ chatId: typingChatId, userId }) => {
-      console.log('⌨️ Typing started:', { typingChatId, userId });
+      // console.log('⌨️ Typing started:', { typingChatId, userId });
       if (typingChatId === chatId) {
         setTypingUsers((prev) => {
           if (!prev.includes('Someone')) {
@@ -74,7 +74,7 @@ export const useChatSocket = (chatId, onMessage) => {
     });
 
     socket.on('typing_stop', ({ chatId: typingChatId, userId }) => {
-      console.log('⌨️ Typing stopped:', { typingChatId, userId });
+      // console.log('⌨️ Typing stopped:', { typingChatId, userId });
       if (typingChatId === chatId) {
         setTypingUsers([]);
       }
@@ -82,7 +82,7 @@ export const useChatSocket = (chatId, onMessage) => {
 
     // Listen for join confirmation
     socket.on('joined_chat', ({ chatId: joinedChatId }) => {
-      console.log(`✅ Successfully joined chat: ${joinedChatId}`);
+      // console.log(`✅ Successfully joined chat: ${joinedChatId}`);
     });
 
     // Handle errors
@@ -93,7 +93,7 @@ export const useChatSocket = (chatId, onMessage) => {
     // Cleanup on unmount
     return () => {
       if (socketRef.current) {
-        console.log('👋 Leaving chat and disconnecting');
+        // console.log('👋 Leaving chat and disconnecting');
         socketRef.current.emit('leave_chat', { chatId });
         socketRef.current.disconnect();
       }

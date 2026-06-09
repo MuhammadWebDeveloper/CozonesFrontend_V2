@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../componentstyles/authstyls/LoginRegister.css';
-import BaseUrl from '../../src/utils/AppConstants';
+import BaseUrl from './AppConstants';
 
 const ResetPassword = () => {
     const navigate = useNavigate();

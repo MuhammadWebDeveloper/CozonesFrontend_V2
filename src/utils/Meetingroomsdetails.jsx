@@ -471,7 +471,7 @@ const MeetingRoomsDetail = () => {
                 total_price: totalPrice
             };
 
-            console.log('Sending booking data:', bookingData);
+            // console.log('Sending booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData, {
                 timeout: 30000

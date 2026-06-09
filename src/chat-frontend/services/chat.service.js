@@ -3,7 +3,7 @@ import { ChatUrl } from "../utils/chatconstants";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  console.log('Token being used:', token ? `${token.substring(0, 20)}...` : 'No token'); // Debug
+  // console.log('Token being used:', token ? `${token.substring(0, 20)}...` : 'No token'); // Debug
   return {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,

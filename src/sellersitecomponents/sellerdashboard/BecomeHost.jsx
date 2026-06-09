@@ -78,7 +78,7 @@ const HostRequestForm = () => {
                 navigate('/login');
             } else if (error.response?.status === 404) {
                 // No requests found - this is fine, allow form
-                console.log('No existing requests found');
+                // console.log('No existing requests found');
             } else {
                 alert('Unable to verify your request status. Please try again.');
             }
