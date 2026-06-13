@@ -258,6 +258,7 @@
         opacity: 0;
         transform: translateY(-8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -338,6 +339,7 @@
     from {
         transform: translateX(100%);
     }
+
     to {
         transform: translateX(0);
     }
@@ -549,6 +551,7 @@
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -843,6 +846,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1096,7 +1100,7 @@
     .Navbar-container {
         padding: 16px 40px;
     }
-    
+
     .Navbar-searchPill {
         max-width: 620px;
     }
@@ -1106,15 +1110,15 @@
     .Navbar-container {
         padding: 16px 32px;
     }
-    
+
     .Navbar-row {
         padding: 0 40px;
     }
-    
+
     .Navbar-searchPill {
         max-width: 520px;
     }
-    
+
     .Navbar-searchField {
         padding: 0 16px;
     }
@@ -1124,7 +1128,7 @@
     .Navbar-searchPill {
         max-width: 420px;
     }
-    
+
     .Navbar-hostBtn {
         padding: 8px 14px;
         font-size: 13px;
@@ -1135,25 +1139,25 @@
     .Navbar-container {
         padding: 12px 16px;
     }
-    
+
     .Navbar-row {
         padding: 0 12px;
         gap: 12px;
     }
-    
+
     .Navbar-logo {
         width: 120px;
         height: 45px;
     }
-    
+
     .Navbar-userActions {
         gap: 4px;
     }
-    
+
     .Navbar-menuBtn {
         padding: 4px 8px 4px 12px;
     }
-    
+
     .Navbar-avatar {
         width: 28px;
         height: 28px;
@@ -1164,17 +1168,17 @@
     .Navbar-container {
         padding: 10px 12px;
     }
-    
+
     .Navbar-logo {
         width: 100px;
         height: 38px;
     }
-    
+
     .Navbar-mobileSearchContainer {
         margin: 20px 16px;
         border-radius: 24px;
     }
-    
+
     .Navbar-mobileMenu {
         width: 85%;
     }
@@ -1185,7 +1189,7 @@
     .Navbar-mobileMenu {
         width: 60%;
     }
-    
+
     .Navbar-mobileSearchContainer {
         margin: 20px 16px;
         max-height: 85vh;
@@ -1195,6 +1199,7 @@
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
+
     .Navbar-mobileMenu,
     .Navbar-mobileSearchContainer,
     .Navbar-dropdown,
@@ -1206,4 +1211,31 @@
 /* Prevent body scroll when menus are open */
 body.menu-open {
     overflow: hidden;
+}
+
+/* Logo layout */
+.Navbar-logo {
+    display: flex;
+    align-items: center;
+    /* gap: 8px; */
+    text-decoration: none;
+}
+
+.Navbar-logoIcon {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.Navbar-logoText {
+    height: 22px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Mobile menu logo */
+.Navbar-mobileMenuLogo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }

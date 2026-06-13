@@ -140,3 +140,25 @@ export default function AdminLogin() {
 // i have created below
 // admin@cozones.com
 // Admin@123
+
+
+
+
+
+
+// INSERT INTO users (id, full_name, email, phone, password_hash, role, is_verified, created_at, updated_at)
+// VALUES (
+//   gen_random_uuid(),
+//   'Muhammad',
+//   'admin@cozones.com',
+//   '03274097597',
+//   '$2b$10$hgtoEeUSfKfk.Vc9t4CDleV63dVmxQTiXw8M4OLAuRVLN1EzuUXdm',
+//   'admin',
+//   true,
+//   NOW(),
+//   NOW()
+// );
+
+// i have created below
+// admin@cozones.com
+// Admin@123

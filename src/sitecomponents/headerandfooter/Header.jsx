@@ -1,4 +1,4 @@
-// Header.jsx - Fully Responsive with Perfect Hamburger Menu
+// Header.jsx - Fully Responsive with Perfect Hamburger Menu & Latest Logo
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart, FiMessageCircle, FiCalendar, FiX, FiChevronDown } from 'react-icons/fi';
@@ -6,7 +6,8 @@ import { MdOutlineLocationOn, MdOutlineDateRange } from 'react-icons/md';
 import { IoCloseOutline } from 'react-icons/io5';
 import axios from 'axios';
 import '../../componentstyles/headerandfooterstyles/header.css';
-import logo from '../../assets/logo.png';
+import favicon from '../../assets/favicon.png';
+import logoText from '../../assets/logo.png';
 import { logout } from '../auth/auth.service';
 import BaseUrl from '../../utils/AppConstants';
 
@@ -57,17 +58,16 @@ const Header = () => {
         const handleResize = () => {
             const newIsMobile = window.innerWidth <= 768;
             const newIsTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-            
+
             setIsMobile(newIsMobile);
             setIsTablet(newIsTablet);
-            
-            // Close mobile menus on resize to desktop
+
             if (!newIsMobile) {
                 setIsMobileMenuOpen(false);
                 setIsMobileSearchOpen(false);
             }
         };
-        
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -79,7 +79,7 @@ const Header = () => {
                 setIsMobileMenuOpen(false);
             }
         };
-        
+
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [isMobileMenuOpen]);
@@ -91,7 +91,7 @@ const Header = () => {
         } else {
             document.body.style.overflow = 'unset';
         }
-        
+
         return () => {
             document.body.style.overflow = 'unset';
         };
@@ -240,7 +240,6 @@ const Header = () => {
             setAllSpacesCache(allSpaces);
             setLocationsList(Array.from(uniqueLocations).sort());
             setIsCacheLoaded(true);
-            // console.log(`✅ Loaded ${allSpaces.length} spaces for search`);
 
         } catch (error) {
             console.error('Error fetching spaces:', error);
@@ -278,10 +277,7 @@ const Header = () => {
     };
 
     const performSearch = useCallback(async () => {
-        if (!allSpacesCache.length) {
-            // console.log('Waiting for spaces to load...');
-            return;
-        }
+        if (!allSpacesCache.length) return;
 
         try {
             let filteredSpaces = [...allSpacesCache];
@@ -310,8 +306,6 @@ const Header = () => {
                 if (b.rating !== a.rating) return (b.rating || 0) - (a.rating || 0);
                 return (a.priceValue || 0) - (b.priceValue || 0);
             });
-
-            const limitedResults = filteredSpaces.slice(0, 20);
 
             const params = new URLSearchParams();
             if (destination) params.append('destination', destination);
@@ -397,32 +391,32 @@ const Header = () => {
         }
     };
 
-    const toggleLangDropdown = () => { 
-        setIsLangDropdownOpen(!isLangDropdownOpen); 
-        setIsMenuDropdownOpen(false); 
-        setIsSearchOpen(false); 
+    const toggleLangDropdown = () => {
+        setIsLangDropdownOpen(!isLangDropdownOpen);
+        setIsMenuDropdownOpen(false);
+        setIsSearchOpen(false);
     };
-    
-    const toggleMenuDropdown = () => { 
+
+    const toggleMenuDropdown = () => {
         if (isMobile) {
             setIsMobileMenuOpen(!isMobileMenuOpen);
         } else {
             setIsMenuDropdownOpen(!isMenuDropdownOpen);
         }
-        setIsLangDropdownOpen(false); 
-        setIsSearchOpen(false); 
+        setIsLangDropdownOpen(false);
+        setIsSearchOpen(false);
     };
-    
-    const openSearch = (field) => { 
-        setActiveSearchField(field); 
-        setIsSearchOpen(true); 
-        setIsLangDropdownOpen(false); 
-        setIsMenuDropdownOpen(false); 
+
+    const openSearch = (field) => {
+        setActiveSearchField(field);
+        setIsSearchOpen(true);
+        setIsLangDropdownOpen(false);
+        setIsMenuDropdownOpen(false);
     };
-    
-    const closeSearch = () => { 
-        setIsSearchOpen(false); 
-        setActiveSearchField(null); 
+
+    const closeSearch = () => {
+        setIsSearchOpen(false);
+        setActiveSearchField(null);
     };
 
     const openMobileSearch = () => {
@@ -437,13 +431,21 @@ const Header = () => {
 
     const popularDestinations = ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Multan', 'Faisalabad', 'Peshawar', 'Quetta'];
 
+    // ── Logo helper (updated for perfect responsive display) ──────────────────────
+    const LogoContent = () => (
+        <>
+            <img src={favicon} alt="Cozones icon" className="Navbar-logoIcon" />
+            <img src={logoText} alt="COZONES" className="Navbar-logoText" />
+        </>
+    );
+
     // Mobile Menu Component
     const MobileMenu = () => (
         <div className="Navbar-mobileMenuOverlay">
             <div className="Navbar-mobileMenu">
                 <div className="Navbar-mobileMenuHeader">
                     <div className="Navbar-mobileMenuLogo">
-                        <img src={logo} alt="logo" />
+                        <LogoContent />
                     </div>
                     <button className="Navbar-mobileMenuClose" onClick={() => setIsMobileMenuOpen(false)}>
                         <FiX size={24} />
@@ -464,14 +466,6 @@ const Header = () => {
                         </>
                     ) : (
                         <>
-                            {/* <div className="Navbar-mobileUserInfo">
-                                <div className="Navbar-mobileAvatar">
-                                    {user?.avatar ? <img src={user.avatar} alt="avatar" /> : <FiUser size={24} />}
-                                </div>
-                                <div className="Navbar-mobileUserName">
-                                    {user?.name || user?.email || 'User'}
-                                </div>
-                            </div> */}
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/My-Profile'); setIsMobileMenuOpen(false); }}>
                                 <FiUserCheck size={20} />
                                 My Profile
@@ -505,25 +499,8 @@ const Header = () => {
                             </button>
                         </>
                     )}
-                    
+
                     <div className="Navbar-mobileDivider"></div>
-                    
-                    {/* <button className="Navbar-mobileMenuItem" onClick={() => { setIsLangDropdownOpen(!isLangDropdownOpen); }}>
-                        <FiGlobe size={20} />
-                        Language
-                        <FiChevronDown size={16} className="Navbar-mobileChevron" />
-                    </button>
-                    
-                    {isLangDropdownOpen && (
-                        <div className="Navbar-mobileLangSubmenu">
-                            <button className="Navbar-mobileLangItem" onClick={() => setIsLangDropdownOpen(false)}>
-                                English (US)
-                            </button>
-                            <button className="Navbar-mobileLangItem" onClick={() => setIsLangDropdownOpen(false)}>
-                                اردو
-                            </button>
-                        </div>
-                    )} */}
                 </div>
             </div>
         </div>
@@ -539,9 +516,8 @@ const Header = () => {
                         <FiX size={24} />
                     </button>
                 </div>
-                
+
                 <div className="Navbar-mobileSearchFields">
-                    {/* Destination Field */}
                     <div className="Navbar-mobileSearchField">
                         <label>
                             <MdOutlineLocationOn className="Navbar-mobileFieldIcon" />
@@ -555,7 +531,6 @@ const Header = () => {
                         />
                     </div>
 
-                    {/* Space Type Field */}
                     <div className="Navbar-mobileSearchField">
                         <label>
                             <span className="Navbar-mobileFieldIcon">🏢</span>
@@ -574,7 +549,6 @@ const Header = () => {
                         </select>
                     </div>
 
-                    {/* Time Field */}
                     <div className="Navbar-mobileSearchField">
                         <label>
                             <FiCalendar className="Navbar-mobileFieldIcon" />
@@ -612,7 +586,6 @@ const Header = () => {
                     </button>
                 </div>
 
-                {/* Quick filters */}
                 <div className="Navbar-mobileQuickFilters">
                     <div className="Navbar-mobileQuickFilterTitle">Popular destinations:</div>
                     <div className="Navbar-mobileQuickFilterList">
@@ -777,7 +750,7 @@ const Header = () => {
                     {/* Logo */}
                     <div className="Navbar-leftSection">
                         <Link to="/" className="Navbar-logo">
-                            <img src={logo} alt="logo" />
+                            <LogoContent />
                         </Link>
                     </div>
 
@@ -851,18 +824,6 @@ const Header = () => {
                                 {isCheckingHost ? 'Checking...' : 'Become a host'}
                             </button>
                         )}
-                        
-                        {!isMobile && (
-                            <div className="Navbar-langBtn" onClick={toggleLangDropdown}>
-                                <FiGlobe size={20} />
-                                {isLangDropdownOpen && (
-                                    <div className="Navbar-dropdown">
-                                        <div className="Navbar-dropdownItem">English (US)</div>
-                                        <div className="Navbar-dropdownItem">اردو</div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
 
                         {/* Mobile Search Button */}
                         {isMobile && (
@@ -871,13 +832,13 @@ const Header = () => {
                             </button>
                         )}
 
-                        {/* User Menu Button - Works perfectly on mobile */}
+                        {/* User Menu Button */}
                         <div className="Navbar-menuBtn" onClick={toggleMenuDropdown}>
                             <FiMenu size={18} />
                             <div className="Navbar-avatar">
                                 {user?.avatar ? <img src={user.avatar} alt="avatar" /> : <FiUser size={18} />}
                             </div>
-                            
+
                             {/* Desktop Dropdown Menu */}
                             {!isMobile && isMenuDropdownOpen && (
                                 <div className="Navbar-dropdown Navbar-menuDropdown">

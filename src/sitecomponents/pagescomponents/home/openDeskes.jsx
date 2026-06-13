@@ -50,7 +50,7 @@ const Open_Deskes = ({ title }) => {
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 10000,
+        timeout: 30000,
         headers: { 'Content-Type': 'application/json' }
     });
 

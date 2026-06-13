@@ -3,7 +3,7 @@
    SINGLE IMAGE ONLY - NO NAVIGATION BUTTONS
    ============================================ */
 
-/* Base Styles - ALL CARDS WILL HAVE SAME SIZE */
+/* Base Styles - ALL CARDS WILL HAVE SAME f.SIZE */
 .Cozones_Spaces_main {
     width: 100%;
     min-width: 0;
@@ -243,9 +243,9 @@
     filter: brightness(0.95);
 }
 
-.Cozones_Spaces_main:hover {
+/* .Cozones_Spaces_main:hover {
     transform: translateY(-4px);
-}
+} */
 
 /* ============================================
    TOUCH DEVICE OPTIMIZATIONS

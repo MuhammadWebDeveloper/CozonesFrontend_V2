@@ -53,7 +53,7 @@ const Meeting_Rooms = ({ title }) => {
     // Axios instance
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 10000,
+        timeout: 30000,
         headers: {
             'Content-Type': 'application/json',
         }
@@ -193,7 +193,7 @@ const Meeting_Rooms = ({ title }) => {
                 </div>
 
                 {/* Swiper Slider with Infinite Loop and Autoplay */}
-                <div 
+                <div
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                     style={{ overflow: 'hidden', width: '100%' }}
