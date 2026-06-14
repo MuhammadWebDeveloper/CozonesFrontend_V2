@@ -650,3 +650,20 @@
         opacity: 1;
     }
 }
+
+/* Add to your AddUnit.css file */
+.au__upload-area-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.au__section-hint {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.au__upload-area-disabled .au__upload-content {
+    filter: grayscale(0.3);
+}

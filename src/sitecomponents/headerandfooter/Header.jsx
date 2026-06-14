@@ -1,4 +1,4 @@
-// Header.jsx - Fully Responsive with Perfect Hamburger Menu & Latest Logo
+// Header.jsx - Updated with search only on button click
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart, FiMessageCircle, FiCalendar, FiX, FiChevronDown } from 'react-icons/fi';
@@ -49,7 +49,7 @@ const Header = () => {
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 10000,
+        timeout: 60000,
         headers: { 'Content-Type': 'application/json' }
     });
 
@@ -269,61 +269,32 @@ const Header = () => {
         return spaceType ? spaceType.icon : "🏢";
     };
 
-    const isTimeInOperatingHours = (spaceOperatingHours, startTime, endTime) => {
-        if (!startTime || !endTime) return true;
-        const operatingStart = spaceOperatingHours?.start || "09:00";
-        const operatingEnd = spaceOperatingHours?.end || "18:00";
-        return startTime >= operatingStart && endTime <= operatingEnd;
-    };
-
+    // Perform search - ONLY called when search button is clicked
     const performSearch = useCallback(async () => {
-        if (!allSpacesCache.length) return;
-
         try {
-            let filteredSpaces = [...allSpacesCache];
-
-            if (destination && destination.trim() !== '') {
-                const searchTerm = destination.toLowerCase().trim();
-                filteredSpaces = filteredSpaces.filter(space =>
-                    space.location.toLowerCase().includes(searchTerm) ||
-                    space.title.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            if (selectedSpaceType && selectedSpaceType !== '') {
-                filteredSpaces = filteredSpaces.filter(space =>
-                    space.unit_type === selectedSpaceType
-                );
-            }
-
-            if (timeSlot.startTime && timeSlot.endTime) {
-                filteredSpaces = filteredSpaces.filter(space =>
-                    isTimeInOperatingHours(space.operatingHours, timeSlot.startTime, timeSlot.endTime)
-                );
-            }
-
-            filteredSpaces.sort((a, b) => {
-                if (b.rating !== a.rating) return (b.rating || 0) - (a.rating || 0);
-                return (a.priceValue || 0) - (b.priceValue || 0);
-            });
-
             const params = new URLSearchParams();
             if (destination) params.append('destination', destination);
             if (selectedSpaceType) params.append('type', selectedSpaceType);
-            if (timeSlot.startTime) params.append('startTime', timeSlot.startTime);
-            if (timeSlot.endTime) params.append('endTime', timeSlot.endTime);
 
-            navigate(`/search-results?${params.toString()}`);
+            const response = await apiClient.get(`api/spaces/search?${params.toString()}`);
+
+            if (response.data.success) {
+                navigate(`/search-results?${params.toString()}`, {
+                    state: { results: response.data.units }
+                });
+            }
+
             closeSearch();
             setIsMobileSearchOpen(false);
             setIsMobileMenuOpen(false);
 
         } catch (error) {
             console.error('Search error:', error);
-            alert('An error occurred while searching. Please try again.');
+            alert('Search failed. Please try again.');
         }
-    }, [destination, selectedSpaceType, timeSlot, allSpacesCache, navigate]);
+    }, [destination, selectedSpaceType, navigate]);
 
+    // Search handler - ONLY called when search button is clicked
     const handleSearch = async () => {
         if (!destination.trim() && !selectedSpaceType && !timeSlot.startTime) {
             alert('Please enter at least one search criteria (destination, space type, or time)');
@@ -332,7 +303,9 @@ const Header = () => {
         await performSearch();
     };
 
-    const handleQuickSearch = (type, value) => {
+    // REMOVED: handleQuickSearch - no longer auto-searching
+    // Instead, just set values without searching
+    const handleQuickSearchValue = (type, value) => {
         switch (type) {
             case 'destination':
                 setDestination(value);
@@ -344,7 +317,8 @@ const Header = () => {
                 setTimeSlot({ startTime: "09:00", endTime: "17:00" });
                 break;
         }
-        setTimeout(() => handleSearch(), 100);
+        // Do NOT call handleSearch() here - wait for button click
+        closeSearch(); // Just close the modal
     };
 
     const applyTime = () => {
@@ -354,7 +328,7 @@ const Header = () => {
             setTimeSlot({ startTime: tempTimeSlot.startTime, endTime: '' });
         }
         closeSearch();
-        handleSearch();
+        // Do NOT call handleSearch() here - wait for button click
     };
 
     const clearFilters = () => {
@@ -362,6 +336,7 @@ const Header = () => {
         setSelectedSpaceType('');
         setTimeSlot({ startTime: '', endTime: '' });
         setTempTimeSlot({ startTime: '', endTime: '' });
+        // Do NOT call handleSearch() here
     };
 
     const handleBecomeHostClick = async () => {
@@ -431,7 +406,7 @@ const Header = () => {
 
     const popularDestinations = ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Multan', 'Faisalabad', 'Peshawar', 'Quetta'];
 
-    // ── Logo helper (updated for perfect responsive display) ──────────────────────
+    // ── Logo helper ──────────────────────────────────────────────────────────────
     const LogoContent = () => (
         <>
             <img src={favicon} alt="Cozones icon" className="Navbar-logoIcon" />
@@ -506,7 +481,7 @@ const Header = () => {
         </div>
     );
 
-    // Mobile Search Component
+    // Mobile Search Component - Updated to NOT auto-search
     const MobileSearchModal = () => (
         <div className="Navbar-mobileSearchOverlay">
             <div className="Navbar-mobileSearchContainer">
@@ -548,29 +523,6 @@ const Header = () => {
                             ))}
                         </select>
                     </div>
-
-                    <div className="Navbar-mobileSearchField">
-                        <label>
-                            <FiCalendar className="Navbar-mobileFieldIcon" />
-                            When
-                        </label>
-                        <div className="Navbar-mobileTimeRange">
-                            <input
-                                type="time"
-                                placeholder="Start time"
-                                value={timeSlot.startTime}
-                                onChange={(e) => setTimeSlot({ ...timeSlot, startTime: e.target.value })}
-                            />
-                            <span>to</span>
-                            <input
-                                type="time"
-                                placeholder="End time"
-                                value={timeSlot.endTime}
-                                onChange={(e) => setTimeSlot({ ...timeSlot, endTime: e.target.value })}
-                                disabled={!timeSlot.startTime}
-                            />
-                        </div>
-                    </div>
                 </div>
 
                 <div className="Navbar-mobileSearchActions">
@@ -578,7 +530,7 @@ const Header = () => {
                         Clear all
                     </button>
                     <button className="Navbar-mobileSearchBtn" onClick={() => {
-                        handleSearch();
+                        handleSearch(); // Only search on button click
                         closeMobileSearch();
                     }}>
                         <FiSearch size={20} />
@@ -594,9 +546,7 @@ const Header = () => {
                                 key={city}
                                 className="Navbar-mobileQuickFilter"
                                 onClick={() => {
-                                    setDestination(city);
-                                    handleSearch();
-                                    closeMobileSearch();
+                                    setDestination(city); // Only set value, don't search
                                 }}
                             >
                                 {city}
@@ -608,7 +558,7 @@ const Header = () => {
         </div>
     );
 
-    // Desktop Search Modal
+    // Desktop Search Modal - Updated to NOT auto-search
     const DesktopSearchModal = () => (
         <div className="Navbar-searchModal">
             <div className="Navbar-searchModalContent">
@@ -637,14 +587,22 @@ const Header = () => {
                             <h4>Popular destinations in Pakistan</h4>
                             <div className="Navbar-destinationList">
                                 {popularDestinations.map(city => (
-                                    <div key={city} className="Navbar-destinationItem" onClick={() => handleQuickSearch('destination', city)}>
+                                    <div
+                                        key={city}
+                                        className="Navbar-destinationItem"
+                                        onClick={() => {
+                                            setDestination(city); // Only set value, don't search
+                                            closeSearch(); // Just close the modal
+                                        }}
+                                    >
                                         {city}
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <button className="Navbar-searchConfirmBtn" onClick={() => { closeSearch(); handleSearch(); }}>
-                            Search {destination && `"${destination}"`}
+                        {/* No auto-search button - just close */}
+                        <button className="Navbar-searchConfirmBtn" onClick={closeSearch}>
+                            Done
                         </button>
                     </div>
                 )}
@@ -657,8 +615,8 @@ const Header = () => {
                                     key={spaceType.value}
                                     className={`Navbar-spaceTypeItem ${selectedSpaceType === spaceType.value ? 'Navbar-selected' : ''}`}
                                     onClick={() => {
-                                        setSelectedSpaceType(spaceType.value);
-                                        handleQuickSearch('spaceType', spaceType.value);
+                                        setSelectedSpaceType(spaceType.value); // Only set value, don't search
+                                        closeSearch(); // Just close the modal
                                     }}
                                 >
                                     <span className="Navbar-spaceTypeIcon">{spaceType.icon}</span>
@@ -720,7 +678,7 @@ const Header = () => {
         </div>
     );
 
-    // Compact search for tablet
+    // Compact search for tablet - Updated to NOT auto-search
     const TabletSearchBar = () => (
         <div className="Navbar-tabletSearch">
             <div className="Navbar-tabletSearchFields">
@@ -790,21 +748,6 @@ const Header = () => {
                                 </div>
                                 <div className="Navbar-divider"></div>
 
-                                <div className={`Navbar-searchField ${activeSearchField === 'when' ? 'Navbar-active' : ''}`} onClick={() => openSearch('when')}>
-                                    <span className="Navbar-label">When</span>
-                                    <div className="Navbar-inputWrapper">
-                                        <FiCalendar className="Navbar-fieldIcon" />
-                                        <input
-                                            className="Navbar-input"
-                                            type="text"
-                                            placeholder="Select time"
-                                            value={formatTimeDisplay()}
-                                            readOnly
-                                            onFocus={() => openSearch('when')}
-                                        />
-                                    </div>
-                                </div>
-
                                 <button className="Navbar-searchSubmit" onClick={handleSearch}>
                                     <FiSearch size={20} color="white" />
                                 </button>
@@ -814,7 +757,7 @@ const Header = () => {
                         </div>
                     )}
 
-                    {/* Tablet Search (visible on 769px-1024px) */}
+                    {/* Tablet Search */}
                     {isTablet && <TabletSearchBar />}
 
                     {/* User Actions */}

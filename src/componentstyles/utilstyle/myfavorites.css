@@ -281,3 +281,122 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Add these styles for the loading skeleton */
+.MF_image_skeleton {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    z-index: 2;
+    border-radius: 12px 12px 0 0;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.MF_spinner_small {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #01095a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+/* Make card position relative for absolute positioned button */
+.MF_card {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.MF_card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.MF_image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.MF_info {
+    padding: 16px;
+    position: relative;
+}
+
+.MF_spaceName {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #333;
+}
+
+.MF_location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.MF_price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #01095a;
+    margin-bottom: 8px;
+}
+
+.MF_savedDate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #999;
+    font-size: 12px;
+}
+
+.MF_removeBtn {
+    background: #ff4757;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.MF_removeBtn:hover {
+    transform: scale(1.1);
+}

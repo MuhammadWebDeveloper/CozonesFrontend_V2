@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// SpaceDetail.jsx - Optimized version with lazy loading images and fixed image containers
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../componentstyles/utilstyle/SpaceDetail.css';
@@ -7,6 +8,193 @@ import ToastContainer from './Tostercontainer';
 import DateTimePicker from './DateTimePicker';
 import BaseUrl from './AppConstants';
 
+// Image Component with lazy loading, skeleton, and FIXED dimensions
+const LazyImage = ({ src, alt, className, onError }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const imgRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = new Image();
+                        img.src = src;
+                        img.onload = () => {
+                            setIsLoading(false);
+                            if (imgRef.current) {
+                                imgRef.current.src = src;
+                            }
+                        };
+                        img.onerror = () => {
+                            setIsLoading(false);
+                            setError(true);
+                            if (onError) onError();
+                        };
+                        observer.disconnect();
+                    }
+                });
+            },
+            { rootMargin: '50px' }
+        );
+
+        if (imgRef.current) {
+            observer.observe(imgRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [src, onError]);
+
+    return (
+        <div className="lazy-image-container" style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            minHeight: '400px',
+            maxHeight: '500px',
+            backgroundColor: '#f5f5f5',
+            overflow: 'hidden'
+        }}>
+            {isLoading && (
+                <div className="image-skeleton" style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    minHeight: '400px',
+                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 1.5s infinite',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '12px'
+                }}>
+                    <div className="skeleton-content" style={{
+                        textAlign: 'center',
+                        color: '#999'
+                    }}>
+                        <div className="loading-spinner-small"></div>
+                        <span style={{ marginTop: '8px', fontSize: '12px' }}>Loading image...</span>
+                    </div>
+                </div>
+            )}
+            <img
+                ref={imgRef}
+                alt={alt}
+                className={className}
+                style={{
+                    opacity: isLoading ? 0 : 1,
+                    transition: 'opacity 0.3s ease-in-out',
+                    width: '100%',
+                    height: '100%',
+                    minHeight: '400px',
+                    maxHeight: '500px',
+                    objectFit: 'cover',
+                    objectPosition: 'center'
+                }}
+                onError={(e) => {
+                    setError(true);
+                    setIsLoading(false);
+                    if (onError) onError(e);
+                }}
+            />
+            {error && !isLoading && (
+                <div className="image-error-fallback" style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    minHeight: '400px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#f5f5f5',
+                    borderRadius: '12px'
+                }}>
+                    <span>📷 Failed to load</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Thumbnail component with FIXED dimensions
+const LazyThumbnail = ({ src, alt, className, onClick, isActive }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const imgRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = () => {
+                        setIsLoading(false);
+                        if (imgRef.current) {
+                            imgRef.current.src = src;
+                        }
+                    };
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: '20px' }
+        );
+
+        if (imgRef.current) {
+            observer.observe(imgRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [src]);
+
+    return (
+        <div
+            className={`thumbnail-wrapper ${isActive ? 'active' : ''}`}
+            onClick={onClick}
+            style={{
+                position: 'relative',
+                width: '80px',
+                height: '80px',
+                flexShrink: 0,
+                cursor: 'pointer'
+            }}
+        >
+            {isLoading && (
+                <div className="thumbnail-skeleton" style={{
+                    width: '80px',
+                    height: '80px',
+                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 1.5s infinite',
+                    borderRadius: '8px'
+                }} />
+            )}
+            <img
+                ref={imgRef}
+                src={isLoading ? undefined : src}
+                alt={alt}
+                className={className}
+                style={{
+                    opacity: isLoading ? 0 : 1,
+                    transition: 'opacity 0.2s ease',
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    borderRadius: '8px',
+                    border: isActive ? '2px solid #01095A' : '2px solid transparent',
+                    boxSizing: 'border-box'
+                }}
+            />
+        </div>
+    );
+};
+
 const SpaceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -14,6 +202,8 @@ const SpaceDetail = () => {
     const { toasts, addToast, removeToast, success, error, warning, info } = useToast();
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [imagesLoading, setImagesLoading] = useState(true);
+    const [images, setImages] = useState([]);
     const [currentImage, setCurrentImage] = useState(0);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -21,23 +211,10 @@ const SpaceDetail = () => {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
 
-    // Image navigation functions
-    const nextImage = () => {
-        if (space?.images && space.images.length > 0) {
-            setCurrentImage((prev) => (prev + 1) % space.images.length);
-        }
-    };
-
-    const prevImage = () => {
-        if (space?.images && space.images.length > 0) {
-            setCurrentImage((prev) => (prev - 1 + space.images.length) % space.images.length);
-        }
-    };
-
     // Axios instance
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 30000,
+        timeout: 60000,
         headers: {
             'Content-Type': 'application/json',
         }
@@ -60,7 +237,6 @@ const SpaceDetail = () => {
                 try {
                     const response = await apiClient.get('api/auth/profile');
                     setUser(response.data.user);
-                    // console.log('Current user:', response.data.user);
                     success('Welcome back! 👋');
                 } catch (err) {
                     console.error('Error fetching user:', err);
@@ -70,6 +246,7 @@ const SpaceDetail = () => {
         getUser();
     }, []);
 
+    // Load dates from location state
     useEffect(() => {
         const { state } = location;
         if (state?.prefillStartDate && state?.prefillEndDate) {
@@ -81,21 +258,17 @@ const SpaceDetail = () => {
         }
     }, [location]);
 
+    // Load space details first (without images)
     useEffect(() => {
-        const fetchSpace = async () => {
+        const fetchSpaceDetails = async () => {
             try {
                 setLoading(true);
-                // console.log('Fetching space with ID:', id);
-
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
-                // console.log('API Response:', response.data);
-                // Add this right after setting the transformedSpace, before setSpace:
 
                 if (response.data?.success && response.data?.unit) {
                     const unitData = response.data.unit;
-                    // console.log('Unit Data:', unitData);
 
-                    // Determine rate type based on available rates
+                    // Determine rate type
                     let rateType = 'daily';
                     const hasHourly = unitData.hourly_rate && parseFloat(unitData.hourly_rate) > 0 && unitData.hourly_rate !== -999;
                     const hasDaily = unitData.daily_rate && parseFloat(unitData.daily_rate) > 0 && unitData.daily_rate !== -999;
@@ -105,27 +278,7 @@ const SpaceDetail = () => {
                     else if (hasDaily) rateType = 'daily';
                     else if (hasMonthly) rateType = 'monthly';
 
-                    // Handle images - images are objects with image_base64
-                    let imagesArray = [];
-                    if (unitData.images && Array.isArray(unitData.images)) {
-                        imagesArray = unitData.images
-                            .filter(img => img.image_base64)
-                            .map(img => img.image_base64);
-                    }
-
-                    // If no images, use fallback based on unit type
-                    if (imagesArray.length === 0) {
-                        const fallbackImages = {
-                            'open_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
-                            'dedicated_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
-                            'private_cabin': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
-                            'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
-                        };
-                        imagesArray = [fallbackImages[unitData.unit_type] || fallbackImages.open_desk];
-                    }
-
-                    // Get owner_id - check both possible locations
-                    // Some APIs have owner_id directly, others have it in space object
+                    // Get owner_id
                     let ownerId = null;
                     if (unitData.owner_id) {
                         ownerId = unitData.owner_id;
@@ -135,43 +288,28 @@ const SpaceDetail = () => {
                         ownerId = unitData.space_owner_id;
                     }
 
-                    // console.log('Owner ID found:', ownerId);
-
                     const transformedSpace = {
-                        // IDs
                         id: unitData.id,
                         space_id: unitData.space_id,
-
-                        // Basic Info - directly from unitData
                         title: unitData.name || unitData.unit_type?.replace('_', ' ') || "Workspace",
                         description: unitData.space_description || "A comfortable workspace with all necessary amenities",
                         unit_type: unitData.unit_type,
                         total_capacity: unitData.total_capacity,
                         is_active: unitData.is_active !== false,
-
-                        // Location Info - directly from unitData
                         city: unitData.city || 'City not specified',
                         area: unitData.area,
                         address: unitData.address || 'Address not specified',
                         latitude: unitData.latitude,
                         longitude: unitData.longitude,
-
-                        // Working Hours - directly from unitData
                         opening_time: unitData.opening_time,
                         closing_time: unitData.closing_time,
                         working_days: unitData.working_days || [],
-
-                        // Space names - directly from unitData
                         space_name: unitData.space_name,
                         space_description: unitData.space_description,
-
-                        // Rates
                         rateType: rateType,
                         hourly_rate: unitData.hourly_rate && unitData.hourly_rate !== -999 ? parseFloat(unitData.hourly_rate) : null,
                         daily_rate: unitData.daily_rate && unitData.daily_rate !== -999 ? parseFloat(unitData.daily_rate) : null,
                         monthly_rate: unitData.monthly_rate && unitData.monthly_rate !== -999 ? parseFloat(unitData.monthly_rate) : null,
-
-                        // Amenities - directly from unitData
                         has_wifi: unitData.has_wifi || false,
                         has_ac: unitData.has_ac || false,
                         has_coffee: unitData.has_coffee || false,
@@ -179,21 +317,19 @@ const SpaceDetail = () => {
                         has_parking: unitData.has_parking || false,
                         has_security: unitData.has_security || false,
                         has_backup_power: unitData.has_backup_power || false,
-
-                        // Images
-                        images: imagesArray,
                         owner_id: ownerId
                     };
-
-                    // console.log('Transformed Space:', transformedSpace);
-                    // console.log('Owner ID in transformed space:', transformedSpace.owner_id);
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     success('Space details loaded successfully! 🎉');
+
+                    // After space details are loaded, fetch images separately
+                    fetchImages();
                 } else {
                     console.error('Invalid response structure:', response.data);
                     error('Space not found or invalid data structure');
+                    setLoading(false);
                 }
             } catch (err) {
                 console.error('Error fetching space:', err);
@@ -208,41 +344,85 @@ const SpaceDetail = () => {
                     errorMessage = 'Network error. Please check if the server is running.';
                 }
                 error(errorMessage);
+                setLoading(false);
+            }
+        };
+
+        // Fetch images separately
+        const fetchImages = async () => {
+            try {
+                setImagesLoading(true);
+                const response = await apiClient.get(`api/spaces/unit/${id}/images`);
+
+                if (response.data?.success && response.data?.images) {
+                    let imagesArray = response.data.images
+                        .filter(img => img.image_base64)
+                        .map(img => img.image_base64);
+
+                    // If no images, use fallback
+                    if (imagesArray.length === 0 && space) {
+                        const fallbackImages = {
+                            'open_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'dedicated_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'private_cabin': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                            'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
+                        };
+                        imagesArray = [fallbackImages[space?.unit_type] || fallbackImages.open_desk];
+                    }
+
+                    setImages(imagesArray);
+                }
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                // Set fallback images
+                if (space) {
+                    const fallbackImages = {
+                        'open_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                        'dedicated_desk': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                        'private_cabin': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+                        'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
+                    };
+                    setImages([fallbackImages[space.unit_type] || fallbackImages.open_desk]);
+                }
             } finally {
+                setImagesLoading(false);
                 setLoading(false);
             }
         };
 
         if (id) {
-            fetchSpace();
+            fetchSpaceDetails();
         } else {
             error('No space ID provided');
             setLoading(false);
         }
     }, [id]);
 
-    const isOwnSpace = () => {
-        if (!user || !space) {
-            // console.log('isOwnSpace check failed - missing user or space');
-            return false;
+    // Image navigation functions
+    const nextImage = () => {
+        if (images.length > 0) {
+            setCurrentImage((prev) => (prev + 1) % images.length);
         }
-        const isOwner = user.id === space.owner_id;
-        // console.log('isOwnSpace check:', { userId: user.id, ownerId: space.owner_id, isOwner });
-        return isOwner;
+    };
+
+    const prevImage = () => {
+        if (images.length > 0) {
+            setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+        }
+    };
+
+    const isOwnSpace = () => {
+        if (!user || !space) return false;
+        return user.id === space.owner_id;
     };
 
     const getRateDisplay = () => {
         if (!space) return { rate: 0, unit: 'day', value: 0 };
-
         switch (selectedRateType) {
-            case 'hourly':
-                return { rate: space.hourly_rate, unit: 'hour', value: space.hourly_rate || 0 };
-            case 'daily':
-                return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
-            case 'monthly':
-                return { rate: space.monthly_rate, unit: 'month', value: space.monthly_rate || 0 };
-            default:
-                return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
+            case 'hourly': return { rate: space.hourly_rate, unit: 'hour', value: space.hourly_rate || 0 };
+            case 'daily': return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
+            case 'monthly': return { rate: space.monthly_rate, unit: 'month', value: space.monthly_rate || 0 };
+            default: return { rate: space.daily_rate, unit: 'day', value: space.daily_rate || 0 };
         }
     };
 
@@ -268,54 +448,38 @@ const SpaceDetail = () => {
 
     const calculateTotal = () => {
         if (!startDate || !endDate) return 0;
-
         switch (selectedRateType) {
-            case 'hourly':
-                return calcHours() * (space?.hourly_rate || 0);
-            case 'daily':
-                return calcDays() * (space?.daily_rate || 0);
-            case 'monthly':
-                return calcMonths() * (space?.monthly_rate || 0);
-            default:
-                return calcDays() * (space?.daily_rate || 0);
+            case 'hourly': return calcHours() * (space?.hourly_rate || 0);
+            case 'daily': return calcDays() * (space?.daily_rate || 0);
+            case 'monthly': return calcMonths() * (space?.monthly_rate || 0);
+            default: return calcDays() * (space?.daily_rate || 0);
         }
     };
 
     const getQuantity = () => {
         if (!startDate || !endDate) return 0;
-
         switch (selectedRateType) {
-            case 'hourly':
-                return calcHours();
-            case 'daily':
-                return calcDays();
-            case 'monthly':
-                return calcMonths();
-            default:
-                return calcDays();
+            case 'hourly': return calcHours();
+            case 'daily': return calcDays();
+            case 'monthly': return calcMonths();
+            default: return calcDays();
         }
     };
 
     const getUnitLabel = () => {
         const qty = getQuantity();
         switch (selectedRateType) {
-            case 'hourly':
-                return qty === 1 ? 'hour' : 'hours';
-            case 'daily':
-                return qty === 1 ? 'night' : 'nights';
-            case 'monthly':
-                return qty === 1 ? 'month' : 'months';
-            default:
-                return qty === 1 ? 'night' : 'nights';
+            case 'hourly': return qty === 1 ? 'hour' : 'hours';
+            case 'daily': return qty === 1 ? 'night' : 'nights';
+            case 'monthly': return qty === 1 ? 'month' : 'months';
+            default: return qty === 1 ? 'night' : 'nights';
         }
     };
 
     const handleBooking = async () => {
         if (!user) {
             warning('Please login to book this space');
-            setTimeout(() => {
-                navigate('/login', { state: { from: `/space/${id}` } });
-            }, 1500);
+            setTimeout(() => navigate('/login', { state: { from: `/space/${id}` } }), 1500);
             return;
         }
 
@@ -353,61 +517,31 @@ const SpaceDetail = () => {
                 total_price: totalPrice
             };
 
-            // console.log('Booking data:', bookingData);
-
             const response = await apiClient.post('api/bookings/createbooking', bookingData);
 
             if (response.data.success) {
                 success(`Booking successful! Reference: ${response.data.booking.booking_ref}`, 5000);
-                setTimeout(() => {
-                    navigate('/my-bookings');
-                }, 2000);
+                setTimeout(() => navigate('/my-bookings'), 2000);
             } else {
                 throw new Error(response.data.message || 'Booking failed');
             }
-
         } catch (err) {
             console.error('Booking error:', err);
             let errorMessage = 'Failed to create booking. Please try again.';
-
-            if (err.response) {
-                if (err.response.status === 401) {
-                    errorMessage = 'Session expired. Please login again';
-                    setTimeout(() => navigate('/login'), 2000);
-                } else if (err.response.data?.message) {
-                    errorMessage = err.response.data.message;
-                }
+            if (err.response?.status === 401) {
+                errorMessage = 'Session expired. Please login again';
+                setTimeout(() => navigate('/login'), 2000);
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
             }
-
             error(errorMessage);
         } finally {
             setBookingLoading(false);
         }
     };
 
-    const handleStartDateChange = (e) => {
-        const newStartDate = e.target.value;
-        setStartDate(newStartDate);
-
-        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
-            warning('End date should be after start date');
-            setEndDate('');
-        }
-    };
-
-    const handleEndDateChange = (e) => {
-        const newEndDate = e.target.value;
-        setEndDate(newEndDate);
-
-        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
-            warning('End date must be after start date');
-            setEndDate('');
-        }
-    };
-
     const renderAmenities = () => {
         if (!space) return [];
-
         const amenities = [];
         if (space.has_wifi) amenities.push('WiFi');
         if (space.has_ac) amenities.push('Air Conditioning');
@@ -416,7 +550,6 @@ const SpaceDetail = () => {
         if (space.has_parking) amenities.push('Parking');
         if (space.has_security) amenities.push('24/7 Security');
         if (space.has_backup_power) amenities.push('Backup Power');
-
         return amenities;
     };
 
@@ -438,7 +571,33 @@ const SpaceDetail = () => {
     const availableRateTypes = getAvailableRateTypes();
     const isOwner = isOwnSpace();
 
-    if (loading) return (
+    // Add CSS animations
+    React.useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+            .loading-spinner-small {
+                width: 24px;
+                height: 24px;
+                border: 2px solid #f3f3f3;
+                border-top: 2px solid #01095A;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        return () => document.head.removeChild(style);
+    }, []);
+
+    if (loading && !space) return (
         <div className="SpaceDetail_loading">
             <div className="SpaceDetail_spinner"></div>
             <p>Loading space details...</p>
@@ -458,12 +617,11 @@ const SpaceDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="SpaceDetail_page">
                 <button className="SpaceDetail_back-btn" onClick={() => navigate(-1)}>
-                    Back to spaces
+                     Back to spaces
                 </button>
 
                 <h2 className="SpaceDetail_page-title">Space Details</h2>
 
-                {/* Owner Warning - Prominent and Clear */}
                 {isOwner && (
                     <div className="SpaceDetail_owner_warning" style={{
                         backgroundColor: '#fff3cd',
@@ -560,14 +718,13 @@ const SpaceDetail = () => {
                             )}
                         </div>
 
-                        {/* Date & Time Selection Section - Disabled for owner */}
                         <div className="SpaceDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="SpaceDetail_section_title">Select Date & Time</h3>
                             <div className="SpaceDetail_datetime_grid">
                                 <DateTimePicker
                                     label="Start Date & Time"
                                     value={startDate}
-                                    onChange={handleStartDateChange}
+                                    onChange={(e) => setStartDate(e.target.value)}
                                     minDate={new Date().toISOString()}
                                     placeholder="Select start date and time"
                                     disabled={isOwner}
@@ -575,7 +732,7 @@ const SpaceDetail = () => {
                                 <DateTimePicker
                                     label="End Date & Time"
                                     value={endDate}
-                                    onChange={handleEndDateChange}
+                                    onChange={(e) => setEndDate(e.target.value)}
                                     minDate={startDate || new Date().toISOString()}
                                     placeholder="Select end date and time"
                                     disabled={isOwner}
@@ -629,7 +786,6 @@ const SpaceDetail = () => {
                             )}
                         </button>
 
-                        {/* Owner action buttons */}
                         {isOwner && (
                             <div style={{ marginTop: '16px', textAlign: 'center' }}>
                                 <button
@@ -652,10 +808,15 @@ const SpaceDetail = () => {
                     </div>
 
                     <div className="SpaceDetail_right">
-                        <div className="SpaceDetail_gallery">
-                            {space.images && space.images.length > 0 ? (
-                                <img
-                                    src={space.images[currentImage]}
+                        <div className="SpaceDetail_gallery" style={{
+                            position: 'relative',
+                            width: '100%',
+                            maxWidth: '600px',
+                            margin: '0 auto'
+                        }}>
+                            {images.length > 0 ? (
+                                <LazyImage
+                                    src={images[currentImage]}
                                     alt={space.title}
                                     className="SpaceDetail_main-img"
                                     onError={(e) => {
@@ -663,32 +824,88 @@ const SpaceDetail = () => {
                                     }}
                                 />
                             ) : (
-                                <div className="SpaceDetail_no-img">No image available</div>
+                                <div className="SpaceDetail_no-img" style={{
+                                    width: '100%',
+                                    minHeight: '400px',
+                                    maxHeight: '500px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: '#f5f5f5',
+                                    borderRadius: '12px'
+                                }}>
+                                    {imagesLoading ? (
+                                        <div className="image-skeleton" style={{
+                                            width: '100%',
+                                            height: '400px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: '#f5f5f5'
+                                        }}>
+                                            <div className="loading-spinner-small"></div>
+                                        </div>
+                                    ) : 'No image available'}
+                                </div>
                             )}
 
-                            {space.images && space.images.length > 1 && (
+                            {images.length > 1 && (
                                 <>
-                                    <button className="SpaceDetail_img-nav SpaceDetail_prev" onClick={prevImage}>‹</button>
-                                    <button className="SpaceDetail_img-nav SpaceDetail_next" onClick={nextImage}>›</button>
-                                    <div className="SpaceDetail_img-counter">
-                                        {currentImage + 1} / {space.images.length}
+                                    <button
+                                        className="SpaceDetail_img-nav SpaceDetail_prev"
+                                        onClick={prevImage}
+                                        style={{
+                                            position: 'absolute',
+                                            left: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            zIndex: 10
+                                        }}
+                                    >‹</button>
+                                    <button
+                                        className="SpaceDetail_img-nav SpaceDetail_next"
+                                        onClick={nextImage}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            zIndex: 10
+                                        }}
+                                    >›</button>
+                                    <div className="SpaceDetail_img-counter" style={{
+                                        position: 'absolute',
+                                        bottom: '10px',
+                                        right: '10px',
+                                        background: 'rgba(0,0,0,0.6)',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        zIndex: 10
+                                    }}>
+                                        {currentImage + 1} / {images.length}
                                     </div>
                                 </>
                             )}
                         </div>
 
-                        {space.images && space.images.length > 1 && (
-                            <div className="SpaceDetail_thumbnails">
-                                {space.images.slice(0, 5).map((img, i) => (
-                                    <img
+                        {images.length > 1 && (
+                            <div className="SpaceDetail_thumbnails" style={{
+                                display: 'flex',
+                                gap: '10px',
+                                marginTop: '16px',
+                                justifyContent: 'center',
+                                flexWrap: 'wrap'
+                            }}>
+                                {images.slice(0, 5).map((img, i) => (
+                                    <LazyThumbnail
                                         key={i}
                                         src={img}
                                         alt={`view-${i}`}
-                                        className={`SpaceDetail_thumb ${i === currentImage ? 'active' : ''}`}
+                                        className="SpaceDetail_thumb"
+                                        isActive={i === currentImage}
                                         onClick={() => setCurrentImage(i)}
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                                        }}
                                     />
                                 ))}
                             </div>
@@ -704,7 +921,6 @@ const SpaceDetail = () => {
                         </p>
                     </div>
 
-                    {/* Working Hours Section */}
                     {(space.opening_time && space.closing_time) && (
                         <div className="SpaceDetail_section">
                             <h3 className="SpaceDetail_section-title">Working Hours</h3>
@@ -719,7 +935,6 @@ const SpaceDetail = () => {
                         </div>
                     )}
 
-                    {/* Amenities Section */}
                     {amenities.length > 0 && (
                         <div className="SpaceDetail_section">
                             <h3 className="SpaceDetail_section-title">Amenities</h3>
@@ -731,7 +946,6 @@ const SpaceDetail = () => {
                         </div>
                     )}
 
-                    {/* Space Information Section */}
                     <div className="SpaceDetail_section">
                         <h3 className="SpaceDetail_section-title">Space Information</h3>
                         <div className="SpaceDetail_space_info">

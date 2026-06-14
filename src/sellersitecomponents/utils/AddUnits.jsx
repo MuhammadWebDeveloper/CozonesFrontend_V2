@@ -114,13 +114,32 @@ export default function AddUnit() {
     }, [formData.unit_type]);
 
     // Improved image upload with compression and validation
+    // Updated handleImageUpload function with 5 image limit
     const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
-        
+
+        // CHECK CURRENT IMAGE COUNT
+        const currentImageCount = formData.images.length;
+        const remainingSlots = 5 - currentImageCount;
+
+        // Check if already have 5 images
+        if (currentImageCount >= 5) {
+            setMessage({ type: 'error', text: 'Maximum 5 images allowed. Please remove some images before adding more.' });
+            e.target.value = ''; // Clear the input
+            return;
+        }
+
+        // Limit new files to remaining slots
+        if (files.length > remainingSlots) {
+            setMessage({ type: 'error', text: `You can only add ${remainingSlots} more image(s). Maximum 5 images total.` });
+            e.target.value = ''; // Clear the input
+            return;
+        }
+
         // Validate file sizes and types
         const MAX_SIZE = 5 * 1024 * 1024; // 5MB
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        
+
         const invalidFiles = files.filter(file => {
             if (!validTypes.includes(file.type)) {
                 setMessage({ type: 'error', text: `${file.name} is not a valid image type. Use JPG, PNG, or WEBP.` });
@@ -132,11 +151,14 @@ export default function AddUnit() {
             }
             return false;
         });
-        
-        if (invalidFiles.length > 0) return;
-        
+
+        if (invalidFiles.length > 0) {
+            e.target.value = ''; // Clear the input
+            return;
+        }
+
         setImageUploading(true);
-        
+
         try {
             const imagePromises = files.map(file => {
                 return new Promise((resolve) => {
@@ -149,13 +171,22 @@ export default function AddUnit() {
 
             const images = await Promise.all(imagePromises);
             const validImages = images.filter(img => img !== null);
-            
+
             if (validImages.length > 0) {
+                // Double-check we won't exceed 5 images
+                const newTotal = formData.images.length + validImages.length;
+                if (newTotal > 5) {
+                    setMessage({ type: 'error', text: 'Cannot exceed maximum of 5 images. Please remove some images first.' });
+                    e.target.value = '';
+                    setImageUploading(false);
+                    return;
+                }
+
                 setFormData(prev => ({
                     ...prev,
                     images: [...prev.images, ...validImages]
                 }));
-                setMessage({ type: 'success', text: `${validImages.length} image(s) uploaded successfully!` });
+                setMessage({ type: 'success', text: `${validImages.length} image(s) uploaded successfully! (${newTotal}/5 images)` });
                 setTimeout(() => setMessage({ type: '', text: '' }), 3000);
             }
         } catch (error) {
@@ -163,14 +194,20 @@ export default function AddUnit() {
             setMessage({ type: 'error', text: 'Failed to upload images. Please try again.' });
         } finally {
             setImageUploading(false);
+            e.target.value = ''; // Clear the input
         }
     };
-
     const removeImage = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            images: prev.images.filter((_, i) => i !== index)
-        }));
+        setFormData(prev => {
+            const newImages = prev.images.filter((_, i) => i !== index);
+            const remainingCount = newImages.length;
+            setMessage({ type: 'info', text: `Image removed. ${remainingCount}/5 images remaining.` });
+            setTimeout(() => setMessage({ type: '', text: '' }), 2000);
+            return {
+                ...prev,
+                images: newImages
+            };
+        });
     };
 
     const resetForm = () => {
@@ -272,15 +309,15 @@ export default function AddUnit() {
                 const unitDisplayName = formData.name || `${formData.unit_type.replace('_', ' ')}`;
                 setAddedUnitName(unitDisplayName);
                 setShowSuccessModal(true);
-                
+
                 // Refresh existing units list
                 await fetchExistingUnits();
-                
+
                 // Reset form after successful addition
                 resetForm();
-                
+
                 setMessage({ type: 'success', text: 'Unit added successfully!' });
-                
+
                 // Auto-hide success message after 3 seconds
                 setTimeout(() => {
                     setMessage({ type: '', text: '' });
@@ -290,7 +327,7 @@ export default function AddUnit() {
             }
         } catch (error) {
             console.error('Failed to add unit:', error);
-            
+
             // Better error messages
             let errorMessage = 'Server error. Please try again.';
             if (error.code === 'ECONNABORTED') {
@@ -300,7 +337,7 @@ export default function AddUnit() {
             } else if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             }
-            
+
             setMessage({
                 type: 'error',
                 text: errorMessage
@@ -334,7 +371,7 @@ export default function AddUnit() {
 
     const SuccessModal = () => {
         if (!showSuccessModal) return null;
-        
+
         return (
             <div className="au__modal-overlay" onClick={() => setShowSuccessModal(false)}>
                 <div className="au__modal-content" onClick={(e) => e.stopPropagation()}>
@@ -342,7 +379,7 @@ export default function AddUnit() {
                     <h3>Unit Added Successfully!</h3>
                     <p>"{addedUnitName}" has been added to your space.</p>
                     <div className="au__modal-actions">
-                        <button 
+                        <button
                             onClick={() => {
                                 setShowSuccessModal(false);
                                 navigate(`/space/${spaceId}`);
@@ -351,7 +388,7 @@ export default function AddUnit() {
                         >
                             View All Units
                         </button>
-                        <button 
+                        <button
                             onClick={() => setShowSuccessModal(false)}
                             className="au__btn au__btn-secondary"
                         >
@@ -363,10 +400,287 @@ export default function AddUnit() {
         );
     };
 
+    // return (
+    //     <div className="au__container">
+    //         <SuccessModal />
+
+    //         <div className="au__header">
+    //             <button onClick={() => navigate(`/space/${spaceId}`)} className="au__back-button">
+    //                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    //                     <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    //                 </svg>
+    //                 Back to Space
+    //             </button>
+    //             <div className="au__header-title">
+    //                 <h1>Add New Unit</h1>
+    //                 <p>to {spaceName || 'your space'}</p>
+    //             </div>
+    //         </div>
+
+    //         {existingUnits.length > 0 && (
+    //             <div className="au__stats">
+    //                 <div className="au__stat-card">
+    //                     <span className="au__stat-label">Total Units</span>
+    //                     <span className="au__stat-value">{existingUnits.length}</span>
+    //                 </div>
+    //                 {unitTypes.map(type => {
+    //                     const count = getUnitTypeCount(type.value);
+    //                     if (count > 0) {
+    //                         return (
+    //                             <div key={type.value} className="au__stat-card">
+    //                                 <span className="au__stat-label">{type.label}</span>
+    //                                 <span className="au__stat-value">{count}</span>
+    //                             </div>
+    //                         );
+    //                     }
+    //                     return null;
+    //                 })}
+    //             </div>
+    //         )}
+
+    //         <form onSubmit={handleSubmit} className="au__form">
+    //             <div className="au__section">
+    //                 <h2 className="au__section-title">Select Unit Type</h2>
+    //                 <p className="au__section-hint">You can add multiple units of the same type. Each unit will have its own capacity and pricing.</p>
+    //                 <div className="au__unit-types">
+    //                     {unitTypes.map(type => {
+    //                         const existingCount = getUnitTypeCount(type.value);
+    //                         return (
+    //                             <label
+    //                                 key={type.value}
+    //                                 className={`au__unit-card ${formData.unit_type === type.value ? 'au__unit-card-active' : ''}`}
+    //                             >
+    //                                 <input
+    //                                     type="radio"
+    //                                     name="unit_type"
+    //                                     value={type.value}
+    //                                     checked={formData.unit_type === type.value}
+    //                                     onChange={handleInputChange}
+    //                                     className="au__radio"
+    //                                 />
+    //                                 <div className="au__unit-icon">{type.icon}</div>
+    //                                 <div className="au__unit-info">
+    //                                     <h3>{type.label}</h3>
+    //                                     <p>{type.description}</p>
+    //                                     {existingCount > 0 && (
+    //                                         <span className="au__count-badge">{existingCount} already added</span>
+    //                                     )}
+    //                                 </div>
+    //                             </label>
+    //                         );
+    //                     })}
+    //                 </div>
+    //             </div>
+
+
+
+
+
+
+    //             {/* <div className="au__section">
+    //                 <h2 className="au__section-title">Basic Information</h2>
+    //                 <div className="au__form-grid">
+    //                     <div className="au__field">
+    //                         <label className="au__label">Unit Name *</label>
+    //                         <input
+    //                             type="text"
+    //                             name="name"
+    //                             value={formData.name}
+    //                             onChange={handleInputChange}
+    //                             className="au__input"
+    //                             placeholder="e.g., Premium Desk 101, Cabin A, Meeting Room 1"
+    //                             required
+    //                         />
+    //                         <p className="au__field-hint">Give this unit a unique name to identify it easily</p>
+    //                     </div>
+
+    //                     <div className="au__field">
+    //                         <label className="au__label">Total Capacity *</label>
+    //                         <input
+    //                             type="number"
+    //                             name="total_capacity"
+    //                             value={formData.total_capacity}
+    //                             onChange={handleInputChange}
+    //                             className="au__input"
+    //                             placeholder="Number of people"
+    //                             min="1"
+    //                             required
+    //                         />
+    //                     </div>
+    //                 </div>
+    //             </div> */}
+
+
+
+
+
+
+
+
+
+
+
+
+    //             {formData.unit_type && (
+    //                 <div className="au__section">
+    //                     <h2 className="au__section-title">Select Pricing Plan</h2>
+    //                     <p className="au__section-hint">{getPricingMessage()}</p>
+
+    //                     <div className="au__pricing-plans">
+    //                         {getAvailablePricingOptions().map(pricingType => {
+    //                             const pricing = getPricingLabel(pricingType);
+    //                             const isActive = activePricing === pricingType;
+
+    //                             return (
+    //                                 <div
+    //                                     key={pricingType}
+    //                                     className={`au__pricing-card ${isActive ? 'au__pricing-card-active' : ''}`}
+    //                                     onClick={() => handlePricingChange(pricingType)}
+    //                                 >
+    //                                     <div className="au__pricing-radio">
+    //                                         <div className={`au__radio-custom ${isActive ? 'au__radio-custom-active' : ''}`}>
+    //                                             {isActive && <div className="au__radio-dot"></div>}
+    //                                         </div>
+    //                                     </div>
+    //                                     <div className="au__pricing-content">
+    //                                         <h3>{pricing.title}</h3>
+    //                                         <p>{pricing.description}</p>
+    //                                         <div className="au__pricing-input">
+    //                                             <input
+    //                                                 type="number"
+    //                                                 name={`${pricingType}_rate`}
+    //                                                 value={formData[`${pricingType}_rate`]}
+    //                                                 onChange={handleInputChange}
+    //                                                 className="au__input"
+    //                                                 placeholder={`Enter ${pricingType} rate`}
+    //                                                 step="100"
+    //                                                 min="0"
+    //                                                 disabled={!isActive}
+    //                                                 onClick={(e) => e.stopPropagation()}
+    //                                                 required={isActive}
+    //                                             />
+    //                                             <span className="au__per">{pricing.unit}</span>
+    //                                         </div>
+    //                                     </div>
+    //                                 </div>
+    //                             );
+    //                         })}
+    //                     </div>
+    //                 </div>
+    //             )}
+
+    //             <div className="au__section">
+    //                 <h2 className="au__section-title">Images</h2>
+    //                 <div className="au__image-upload">
+    //                     <label className="au__upload-area">
+    //                         <input
+    //                             type="file"
+    //                             accept="image/jpeg,image/jpg,image/png,image/webp"
+    //                             multiple
+    //                             onChange={handleImageUpload}
+    //                             className="au__file-input"
+    //                             disabled={imageUploading}
+    //                         />
+    //                         <div className="au__upload-content">
+    //                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+    //                                 <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
+    //                             </svg>
+    //                             <p>{imageUploading ? 'Uploading...' : 'Click or drag to upload images'}</p>
+    //                             <span>PNG, JPG, WEBP up to 5MB each</span>
+    //                         </div>
+    //                     </label>
+    //                 </div>
+
+    //                 {formData.images.length > 0 && (
+    //                     <div className="au__image-preview">
+    //                         <h3>Uploaded Images ({formData.images.length})</h3>
+    //                         <div className="au__image-grid">
+    //                             {formData.images.map((img, index) => (
+    //                                 <div key={index} className="au__image-item">
+    //                                     <img src={img} alt={`Preview ${index + 1}`} />
+    //                                     <button
+    //                                         type="button"
+    //                                         onClick={() => removeImage(index)}
+    //                                         className="au__remove-image"
+    //                                     >
+    //                                         ×
+    //                                     </button>
+    //                                 </div>
+    //                             ))}
+    //                         </div>
+    //                     </div>
+    //                 )}
+    //             </div>
+
+    //             <div className="au__section">
+    //                 <h2 className="au__section-title">Additional Settings</h2>
+    //                 <div className="au__form-grid">
+    //                     <div className="au__field">
+    //                         <label className="au__label">Duration (Optional)</label>
+    //                         <input
+    //                             type="text"
+    //                             name="duration"
+    //                             value={formData.duration}
+    //                             onChange={handleInputChange}
+    //                             className="au__input"
+    //                             placeholder="e.g., Monthly, Yearly, or specific date"
+    //                         />
+    //                     </div>
+
+    //                     <div className="au__field au__checkbox-field">
+    //                         <label className="au__checkbox-label">
+    //                             <input
+    //                                 type="checkbox"
+    //                                 name="is_active"
+    //                                 checked={formData.is_active}
+    //                                 onChange={handleInputChange}
+    //                                 className="au__checkbox"
+    //                             />
+    //                             <span>Active Status</span>
+    //                         </label>
+    //                         <p className="au__checkbox-hint">Inactive units won't be visible to customers</p>
+    //                     </div>
+    //                 </div>
+    //             </div>
+
+    //             {message.text && (
+    //                 <div className={`au__message au__message-${message.type}`}>
+    //                     {message.type === 'success' ? '✅' : '⚠️'} {message.text}
+    //                 </div>
+    //             )}
+
+    //             <div className="au__actions">
+    //                 <button
+    //                     type="button"
+    //                     onClick={() => navigate(`/space/${spaceId}`)}
+    //                     className="au__btn au__btn-secondary"
+    //                     disabled={loading}
+    //                 >
+    //                     Cancel
+    //                 </button>
+    //                 <button
+    //                     type="submit"
+    //                     disabled={loading || imageUploading}
+    //                     className="au__btn au__btn-primary"
+    //                 >
+    //                     {loading ? 'Adding Unit...' : 'Add Unit'}
+    //                 </button>
+    //             </div>
+    //         </form>
+    //     </div>
+    // );
+
+
+
+
+
+
+
+
     return (
         <div className="au__container">
             <SuccessModal />
-            
+
             <div className="au__header">
                 <button onClick={() => navigate(`/space/${spaceId}`)} className="au__back-button">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -435,6 +749,7 @@ export default function AddUnit() {
                     </div>
                 </div>
 
+                {/* Basic Information Section - Uncommented */}
                 <div className="au__section">
                     <h2 className="au__section-title">Basic Information</h2>
                     <div className="au__form-grid">
@@ -518,29 +833,30 @@ export default function AddUnit() {
 
                 <div className="au__section">
                     <h2 className="au__section-title">Images</h2>
+                    <p className="au__section-hint">Upload up to 5 images (Maximum {formData.images.length}/5 uploaded)</p>
                     <div className="au__image-upload">
-                        <label className="au__upload-area">
+                        <label className={`au__upload-area ${formData.images.length >= 5 ? 'au__upload-area-disabled' : ''}`}>
                             <input
                                 type="file"
                                 accept="image/jpeg,image/jpg,image/png,image/webp"
                                 multiple
                                 onChange={handleImageUpload}
                                 className="au__file-input"
-                                disabled={imageUploading}
+                                disabled={imageUploading || formData.images.length >= 5}
                             />
                             <div className="au__upload-content">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
                                 </svg>
-                                <p>{imageUploading ? 'Uploading...' : 'Click or drag to upload images'}</p>
-                                <span>PNG, JPG, WEBP up to 5MB each</span>
+                                <p>{imageUploading ? 'Uploading...' : formData.images.length >= 5 ? 'Maximum 5 images reached' : 'Click or drag to upload images'}</p>
+                                <span>PNG, JPG, WEBP up to 5MB each (Max 5 images)</span>
                             </div>
                         </label>
                     </div>
 
                     {formData.images.length > 0 && (
                         <div className="au__image-preview">
-                            <h3>Uploaded Images ({formData.images.length})</h3>
+                            <h3>Uploaded Images ({formData.images.length}/5)</h3>
                             <div className="au__image-grid">
                                 {formData.images.map((img, index) => (
                                     <div key={index} className="au__image-item">

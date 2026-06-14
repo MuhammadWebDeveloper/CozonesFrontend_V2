@@ -1,5 +1,5 @@
-// PrivateCabinsDetail.jsx - Updated with SpaceDetail Design, DateTimePicker, and Complete Booking Features
-import React, { useState, useEffect, useCallback } from 'react';
+// PrivateCabinsDetail.jsx - COMPLETELY FIXED
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import DateTimePicker from './DateTimePicker';
@@ -7,6 +7,12 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/privateCabinsDetail.css';
 import BaseUrl from './AppConstants';
+
+// Local fallback images - USE RELIABLE URLs
+const FALLBACK_IMAGES = {
+    main: 'https://picsum.photos/id/20/800/500',
+    placeholder: 'https://picsum.photos/id/20/800/500'
+};
 
 const PrivateCabinsDetail = () => {
     const { id } = useParams();
@@ -16,24 +22,19 @@ const PrivateCabinsDetail = () => {
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
+    const [imageLoading, setImageLoading] = useState(true);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedRateType, setSelectedRateType] = useState('daily');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
-    const [imageLoading, setImageLoading] = useState(true);
-    const [loadedImages, setLoadedImages] = useState({});
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
-
-    // Cancel booking states
-    const [existingBooking, setExistingBooking] = useState(null);
-    const [cancelLoading, setCancelLoading] = useState(false);
-    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [images, setImages] = useState([]);
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 30000,
+        timeout: 60000,
         headers: { 'Content-Type': 'application/json' }
     });
 
@@ -45,6 +46,53 @@ const PrivateCabinsDetail = () => {
         }
         return config;
     });
+
+    // Helper function to validate and clean image URL
+    const validateImageUrl = (url) => {
+        if (!url) return FALLBACK_IMAGES.main;
+        if (typeof url !== 'string') return FALLBACK_IMAGES.main;
+
+        if (url.startsWith('data:image')) {
+            return url;
+        }
+
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+
+        if (url.length > 100 && /^[A-Za-z0-9+/=]+$/.test(url.substring(0, 100))) {
+            return `data:image/jpeg;base64,${url}`;
+        }
+
+        return FALLBACK_IMAGES.main;
+    };
+
+    // Helper function to extract image URL from object or string
+    const extractImageUrl = (img) => {
+        if (!img) return null;
+
+        if (typeof img === 'string') {
+            return validateImageUrl(img);
+        }
+
+        if (typeof img === 'object' && img !== null) {
+            if (img.image_base64 && typeof img.image_base64 === 'string') {
+                let base64 = img.image_base64;
+                if (base64.startsWith('data:application/octet-stream')) {
+                    base64 = base64.replace('data:application/octet-stream', 'data:image/jpeg');
+                }
+                return validateImageUrl(base64);
+            }
+            if (img.url && typeof img.url === 'string') {
+                return validateImageUrl(img.url);
+            }
+            if (img.src && typeof img.src === 'string') {
+                return validateImageUrl(img.src);
+            }
+        }
+
+        return null;
+    };
 
     // Get current user info
     useEffect(() => {
@@ -63,7 +111,7 @@ const PrivateCabinsDetail = () => {
         getUser();
     }, []);
 
-    // Check for pre-filled dates from "Book Again"
+    // Check for pre-filled dates from navigation state
     useEffect(() => {
         const { state } = location;
         if (state?.prefillStartDate && state?.prefillEndDate) {
@@ -75,55 +123,12 @@ const PrivateCabinsDetail = () => {
         }
     }, [location]);
 
-    // Fetch existing booking for this space
-    const fetchExistingBooking = async () => {
-        if (!user || !space) return;
-
-        try {
-            const response = await apiClient.get(`api/bookings/user`);
-            if (response.data.success && response.data.bookings) {
-                const booking = response.data.bookings.find(
-                    b => b.space_unit_id === parseInt(id) &&
-                        ['pending', 'confirmed', 'upcoming', 'active'].includes(b.status) &&
-                        new Date(b.start_time) > new Date()
-                );
-                setExistingBooking(booking);
-            }
-        } catch (err) {
-            console.error('Error fetching existing booking:', err);
-        }
-    };
-
-    // Cancel booking function
-    const handleCancelBooking = async () => {
-        if (!existingBooking) return;
-
-        setCancelLoading(true);
-        try {
-            const response = await apiClient.put(`api/bookings/${existingBooking.id}/cancel`);
-
-            if (response.data.success) {
-                success('Booking cancelled successfully!');
-                setExistingBooking(null);
-                setShowCancelConfirm(false);
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                throw new Error(response.data.message || 'Failed to cancel booking');
-            }
-        } catch (err) {
-            console.error('Cancel booking error:', err);
-            error(err.response?.data?.message || 'Failed to cancel booking. Please try again.');
-        } finally {
-            setCancelLoading(false);
-        }
-    };
-
+    // Load space and images
     useEffect(() => {
         const fetchPrivateCabin = async () => {
             try {
                 setLoading(true);
+                // First fetch space details
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
 
                 if (response.data?.success && response.data?.unit) {
@@ -138,76 +143,65 @@ const PrivateCabinsDetail = () => {
                         rateType = 'monthly';
                     }
 
-                    // ✅ FIXED: Parse images properly - handle image objects with image_base64
-                    let parsedImages = [];
-                    if (unitData.images) {
-                        if (typeof unitData.images === 'string') {
-                            try {
-                                const parsed = JSON.parse(unitData.images);
-                                if (Array.isArray(parsed)) {
-                                    parsedImages = parsed.map(img => extractImageUrl(img));
-                                } else {
-                                    parsedImages = [extractImageUrl(parsed)];
-                                }
-                            } catch (e) {
-                                parsedImages = [unitData.images];
-                            }
-                        } else if (Array.isArray(unitData.images)) {
-                            parsedImages = unitData.images.map(img => extractImageUrl(img));
-                        } else if (typeof unitData.images === 'object' && unitData.images !== null) {
-                            parsedImages = [extractImageUrl(unitData.images)];
-                        }
-                    }
-
-                    // Parse space amenities
-                    let parsedAmenities = unitData.space_amenities || {};
-                    if (typeof parsedAmenities === 'string') {
-                        try {
-                            parsedAmenities = JSON.parse(parsedAmenities);
-                        } catch (e) {
-                            parsedAmenities = {};
-                        }
-                    }
-
-                    // Parse policies
-                    let parsedPolicies = unitData.policies || {};
-                    if (typeof parsedPolicies === 'string') {
-                        try {
-                            parsedPolicies = JSON.parse(parsedPolicies);
-                        } catch (e) {
-                            parsedPolicies = {};
-                        }
-                    }
-
                     const transformedSpace = {
                         id: unitData.id,
                         name: unitData.name,
                         title: unitData.name || unitData.unit_type?.replace('_', ' ') || "Private Cabin",
-                        description: unitData.space?.description || "A premium private cabin in a professional coworking space",
-                        location: unitData.space?.city || "Coworking Space",
-                        area: unitData.space?.area,
-                        address: unitData.space?.address,
-                        city: unitData.space?.city,
+                        description: unitData.space_description || unitData.space?.description || "A premium private cabin in a professional coworking space",
+                        location: unitData.city || unitData.space?.city || "Coworking Space",
+                        area: unitData.area || unitData.space?.area,
+                        address: unitData.address || unitData.space?.address,
+                        city: unitData.city || unitData.space?.city,
                         rateType: rateType,
                         hourly_rate: unitData.hourly_rate && unitData.hourly_rate !== -999 ? parseFloat(unitData.hourly_rate) : null,
                         daily_rate: unitData.daily_rate && unitData.daily_rate !== -999 ? parseFloat(unitData.daily_rate) : null,
                         monthly_rate: unitData.monthly_rate && unitData.monthly_rate !== -999 ? parseFloat(unitData.monthly_rate) : null,
                         total_capacity: unitData.total_capacity,
                         unit_type: unitData.unit_type,
-                        images: parsedImages.filter(img => img !== null && img !== ''),
                         space: unitData.space,
-                        space_amenities: parsedAmenities,
-                        policies: parsedPolicies,
+                        space_amenities: unitData.space_amenities || {},
+                        policies: unitData.policies || {},
                         is_active: unitData.is_active,
-                        owner_id: unitData.space?.owner_id,
+                        owner_id: unitData.owner_id || unitData.space?.owner_id,
                         created_at: unitData.created_at,
-                        updated_at: unitData.updated_at
+                        updated_at: unitData.updated_at,
+                        opening_time: unitData.opening_time,
+                        closing_time: unitData.closing_time,
+                        working_days: unitData.working_days,
+                        space_name: unitData.space_name,
+                        space_description: unitData.space_description
                     };
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
-                    setLoadedImages({});
+                    
+                    // Now fetch images separately
+                    try {
+                        setImageLoading(true);
+                        const imagesResponse = await apiClient.get(`api/spaces/unit/${id}/images`);
+                        
+                        if (imagesResponse.data?.success && imagesResponse.data?.images) {
+                            const parsedImages = imagesResponse.data.images
+                                .map(img => extractImageUrl(img))
+                                .filter(img => img !== null);
+                            
+                            if (parsedImages.length > 0) {
+                                setImages(parsedImages);
+                                console.log('Images loaded:', parsedImages.length);
+                            } else {
+                                setImages([FALLBACK_IMAGES.main]);
+                            }
+                        } else {
+                            setImages([FALLBACK_IMAGES.main]);
+                        }
+                    } catch (imgErr) {
+                        console.error('Error fetching images:', imgErr);
+                        setImages([FALLBACK_IMAGES.main]);
+                    } finally {
+                        setImageLoading(false);
+                    }
+                    
                     success('Private cabin details loaded successfully! 🎉');
                 } else {
                     error('Private cabin not found');
@@ -225,163 +219,32 @@ const PrivateCabinsDetail = () => {
         }
     }, [id]);
 
-    // Helper function to extract image URL from object or string
-    const extractImageUrl = (img) => {
-        if (!img) return null;
-
-        // If it's a string, return as is
-        if (typeof img === 'string') {
-            return img;
-        }
-
-        // If it's an object with image_base64
-        if (typeof img === 'object' && img !== null) {
-            if (img.image_base64 && typeof img.image_base64 === 'string') {
-                return img.image_base64;
-            }
-            if (img.url && typeof img.url === 'string') {
-                return img.url;
-            }
-            if (img.src && typeof img.src === 'string') {
-                return img.src;
-            }
-            if (img.path && typeof img.path === 'string') {
-                return img.path;
-            }
-        }
-
-        console.warn('Could not extract image URL from:', img);
-        return null;
-    };
-
-    // Fetch existing booking after user and space are loaded
-    useEffect(() => {
-        if (user && space) {
-            fetchExistingBooking();
-        }
-    }, [user, space]);
-
-    const isOwnSpace = () => {
+    const isOwnSpace = useCallback(() => {
         if (!user || !space) return false;
         return user.id === space.owner_id;
-    };
-
-    // Get images - now properly handles string URLs
-    const getImages = useCallback(() => {
-        if (space?.images && space.images.length > 0) {
-            return space.images
-                .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
-                .map(img => {
-                    // If it's already a valid URL (http/https)
-                    if (typeof img === 'string') {
-                        if (img.startsWith('http://') || img.startsWith('https://')) {
-                            return img;
-                        }
-                        // If it's a Base64 data URL
-                        if (img.startsWith('data:image')) {
-                            return img;
-                        }
-                        // If it's a raw Base64 string
-                        if (!img.startsWith('http') && !img.startsWith('/') && img.length > 100) {
-                            if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
-                                return `data:image/jpeg;base64,${img}`;
-                            }
-                            return img;
-                        }
-                        // If it's a relative path starting with /
-                        if (img.startsWith('/')) {
-                            return `${BaseUrl.replace(/\/$/, '')}${img}`;
-                        }
-                        // If it's a relative path without leading slash
-                        if (!img.startsWith('http') && !img.startsWith('data:')) {
-                            return `${BaseUrl.replace(/\/$/, '')}/uploads/${img}`;
-                        }
-                        return img;
-                    }
-                    return 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
-                });
-        }
-
-        // Fallback images
-        const fallbackImages = {
-            'private_cabin': 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a',
-            'private_office': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
-        };
-        return [fallbackImages[space?.unit_type] || 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a'];
-    }, [space]);
-
-    const images = getImages();
-
-    // Preload images efficiently
-    useEffect(() => {
-        if (images && images.length > 0) {
-            images.forEach((src, index) => {
-                if (src && typeof src === 'string') {
-                    const img = new Image();
-                    img.onload = () => {
-                        setLoadedImages(prev => ({ ...prev, [index]: true }));
-                    };
-                    img.onerror = () => {
-                        console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
-                        setLoadedImages(prev => ({ ...prev, [index]: false }));
-                    };
-                    img.src = src;
-                } else {
-                    setLoadedImages(prev => ({ ...prev, [index]: false }));
-                }
-            });
-        }
-    }, [images]);
-
-    const preloadAdjacentImages = useCallback((currentIdx) => {
-        if (images.length === 0) return;
-        const nextIdx = (currentIdx + 1) % images.length;
-        const prevIdx = (currentIdx - 1 + images.length) % images.length;
-
-        [nextIdx, prevIdx].forEach(idx => {
-            if (!loadedImages[idx] && images[idx] && typeof images[idx] === 'string') {
-                const img = new Image();
-                img.src = images[idx];
-                img.onload = () => {
-                    setLoadedImages(prev => ({ ...prev, [idx]: true }));
-                };
-            }
-        });
-    }, [images, loadedImages]);
-
-    useEffect(() => {
-        if (images.length > 0) {
-            preloadAdjacentImages(currentImage);
-        }
-    }, [currentImage, preloadAdjacentImages, images.length]);
+    }, [user, space]);
 
     const nextImage = useCallback(() => {
         if (images.length === 0) return;
         setImageLoading(true);
         const nextIdx = (currentImage + 1) % images.length;
         setCurrentImage(nextIdx);
-        if (loadedImages[nextIdx]) {
-            setTimeout(() => setImageLoading(false), 100);
-        }
-    }, [currentImage, images.length, loadedImages]);
+        setTimeout(() => setImageLoading(false), 200);
+    }, [currentImage, images.length]);
 
     const prevImage = useCallback(() => {
         if (images.length === 0) return;
         setImageLoading(true);
         const prevIdx = (currentImage - 1 + images.length) % images.length;
         setCurrentImage(prevIdx);
-        if (loadedImages[prevIdx]) {
-            setTimeout(() => setImageLoading(false), 100);
-        }
-    }, [currentImage, images.length, loadedImages]);
+        setTimeout(() => setImageLoading(false), 200);
+    }, [currentImage, images.length]);
 
     const goToImage = (index) => {
         if (index >= 0 && index < images.length && index !== currentImage) {
             setImageLoading(true);
             setCurrentImage(index);
-            if (loadedImages[index]) {
-                setTimeout(() => setImageLoading(false), 100);
-            }
+            setTimeout(() => setImageLoading(false), 200);
         }
     };
 
@@ -515,8 +378,6 @@ const PrivateCabinsDetail = () => {
                 end_time: new Date(endDate).toISOString(),
                 total_price: totalPrice
             };
-
-            // console.log('Sending booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData, {
                 timeout: 30000
@@ -656,47 +517,6 @@ const PrivateCabinsDetail = () => {
                     </div>
                 )}
 
-                {/* Existing Booking Alert with Cancel Option */}
-                {existingBooking && (
-                    <div className="PrivateCabinsDetail_existing_booking">
-                        <div className="PrivateCabinsDetail_booking_info">
-                            <h4>📅 You have an existing booking for this space</h4>
-                            <p>
-                                <strong>Booking Reference:</strong> {existingBooking.booking_ref}<br />
-                                <strong>Date:</strong> {new Date(existingBooking.start_time).toLocaleString()} - {new Date(existingBooking.end_time).toLocaleString()}<br />
-                                <strong>Status:</strong> {existingBooking.status}
-                            </p>
-                            {!showCancelConfirm ? (
-                                <button
-                                    className="PrivateCabinsDetail_cancel_booking_btn"
-                                    onClick={() => setShowCancelConfirm(true)}
-                                >
-                                    Cancel Booking
-                                </button>
-                            ) : (
-                                <div className="PrivateCabinsDetail_cancel_confirm">
-                                    <p>Are you sure you want to cancel this booking?</p>
-                                    <div className="PrivateCabinsDetail_cancel_actions">
-                                        <button
-                                            className="PrivateCabinsDetail_confirm_cancel_btn"
-                                            onClick={handleCancelBooking}
-                                            disabled={cancelLoading}
-                                        >
-                                            {cancelLoading ? 'Cancelling...' : 'Yes, Cancel Booking'}
-                                        </button>
-                                        <button
-                                            className="PrivateCabinsDetail_keep_booking_btn"
-                                            onClick={() => setShowCancelConfirm(false)}
-                                        >
-                                            No, Keep It
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
                 {space.unit_type && (
                     <div className="PrivateCabinsDetail_unit_badge">
                         {space.unit_type.replace('_', ' ').toUpperCase()}
@@ -708,7 +528,8 @@ const PrivateCabinsDetail = () => {
                         <h1 className="PrivateCabinsDetail_title">{space.title}</h1>
 
                         <p className="PrivateCabinsDetail_meta">
-                            📍 {space.city}, {space.area}
+                            📍 {space.city || space.location}
+                            {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
@@ -764,41 +585,27 @@ const PrivateCabinsDetail = () => {
                         </div>
 
                         {/* Date & Time Selection Section with DateTimePicker */}
-                        {!existingBooking && (
-                            <div className="PrivateCabinsDetail_datetime_section">
-                                <h3 className="PrivateCabinsDetail_section_title">Select Date & Time</h3>
-                                <div className="PrivateCabinsDetail_datetime_grid">
-                                    <DateTimePicker
-                                        label="Start Date & Time"
-                                        value={startDate}
-                                        onChange={handleStartDateChange}
-                                        minDate={new Date().toISOString()}
-                                        placeholder="Select start date and time"
-                                    />
-                                    <DateTimePicker
-                                        label="End Date & Time"
-                                        value={endDate}
-                                        onChange={handleEndDateChange}
-                                        minDate={startDate || new Date().toISOString()}
-                                        placeholder="Select end date and time"
-                                    />
-                                </div>
+                        <div className="PrivateCabinsDetail_datetime_section">
+                            <h3 className="PrivateCabinsDetail_section_title">Select Date & Time</h3>
+                            <div className="PrivateCabinsDetail_datetime_grid">
+                                <DateTimePicker
+                                    label="Start Date & Time"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    minDate={new Date().toISOString()}
+                                    placeholder="Select start date and time"
+                                />
+                                <DateTimePicker
+                                    label="End Date & Time"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    minDate={startDate || new Date().toISOString()}
+                                    placeholder="Select end date and time"
+                                />
                             </div>
-                        )}
+                        </div>
 
-                        {existingBooking && (
-                            <div className="PrivateCabinsDetail_existing_booking_note">
-                                <p>📌 You already have a booking for this space. Please cancel your existing booking if you want to make a new reservation.</p>
-                                <button
-                                    className="PrivateCabinsDetail_view_booking_btn"
-                                    onClick={() => navigate('/my-bookings')}
-                                >
-                                    View My Bookings
-                                </button>
-                            </div>
-                        )}
-
-                        {startDate && endDate && !existingBooking && (
+                        {startDate && endDate && (
                             <div className="PrivateCabinsDetail_summary">
                                 <div className="PrivateCabinsDetail_summary-row">
                                     <span>Starting Date</span>
@@ -821,22 +628,20 @@ const PrivateCabinsDetail = () => {
                             </div>
                         )}
 
-                        {!existingBooking && (
-                            <button
-                                className="PrivateCabinsDetail_continue-btn"
-                                disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
-                                onClick={handleBooking}
-                            >
-                                {bookingLoading ? (
-                                    <>
-                                        <span className="spinner-small"></span>
-                                        Processing...
-                                    </>
-                                ) : (
-                                    'Confirm Booking'
-                                )}
-                            </button>
-                        )}
+                        <button
+                            className="PrivateCabinsDetail_continue-btn"
+                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            onClick={handleBooking}
+                        >
+                            {bookingLoading ? (
+                                <>
+                                    <span className="spinner-small"></span>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Confirm Booking'
+                            )}
+                        </button>
                     </div>
 
                     {/* IMAGE SLIDER SECTION */}
@@ -846,27 +651,56 @@ const PrivateCabinsDetail = () => {
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
+                            style={{
+                                position: 'relative',
+                                width: '100%',
+                                maxWidth: '550px',
+                                margin: '0 auto',
+                                minHeight: '400px',
+                                maxHeight: '450px',
+                                overflow: 'hidden',
+                                borderRadius: '16px',
+                                backgroundColor: '#f5f5f5'
+                            }}
                         >
-                            {images.length > 0 && images[0] ? (
+                            {images.length > 0 ? (
                                 <>
-                                    {imageLoading && !loadedImages[currentImage] && (
-                                        <div className="PrivateCabinsDetail_image_loader">
+                                    {imageLoading && (
+                                        <div className="PrivateCabinsDetail_image_loader" style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: '#f5f5f5',
+                                            zIndex: 5,
+                                            borderRadius: '16px'
+                                        }}>
                                             <div className="PrivateCabinsDetail_spinner_small"></div>
                                         </div>
                                     )}
 
                                     <img
                                         key={currentImage}
-                                        src={images[currentImage]}
+                                        src={images[currentImage] || FALLBACK_IMAGES.main}
                                         alt={`${space.title} - Image ${currentImage + 1}`}
-                                        className={`PrivateCabinsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
-                                        onLoad={() => {
-                                            setImageLoading(false);
-                                            setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            minHeight: '400px',
+                                            maxHeight: '450px',
+                                            objectFit: 'cover',
+                                            objectPosition: 'center',
+                                            transition: 'opacity 0.3s ease',
+                                            opacity: imageLoading ? 0 : 1
                                         }}
+                                        onLoad={() => setImageLoading(false)}
                                         onError={(e) => {
-                                            console.error('Image failed to load');
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
+                                            console.warn('Image failed to load, using fallback');
+                                            e.target.src = FALLBACK_IMAGES.main;
                                             setImageLoading(false);
                                         }}
                                     />
@@ -876,49 +710,121 @@ const PrivateCabinsDetail = () => {
                                             <button
                                                 className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_prev"
                                                 onClick={prevImage}
-                                                aria-label="Previous image"
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    zIndex: 10,
+                                                    background: 'rgba(0,0,0,0.5)',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    fontSize: '24px',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '50%',
+                                                    cursor: 'pointer'
+                                                }}
                                             >
                                                 ‹
                                             </button>
                                             <button
                                                 className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_next"
                                                 onClick={nextImage}
-                                                aria-label="Next image"
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    zIndex: 10,
+                                                    background: 'rgba(0,0,0,0.5)',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    fontSize: '24px',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '50%',
+                                                    cursor: 'pointer'
+                                                }}
                                             >
                                                 ›
                                             </button>
-                                            <div className="PrivateCabinsDetail_img-counter">
+                                            <div className="PrivateCabinsDetail_img-counter" style={{
+                                                position: 'absolute',
+                                                bottom: '10px',
+                                                right: '10px',
+                                                background: 'rgba(0,0,0,0.6)',
+                                                color: 'white',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '12px',
+                                                zIndex: 10
+                                            }}>
                                                 {currentImage + 1} / {images.length}
                                             </div>
                                         </>
                                     )}
                                 </>
                             ) : (
-                                <div className="PrivateCabinsDetail_no-img">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a"
-                                        alt="Fallback"
-                                        className="PrivateCabinsDetail_main-img"
+                                <div className="PrivateCabinsDetail_no-img" style={{
+                                    width: '100%',
+                                    minHeight: '400px',
+                                    maxHeight: '450px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: '#f5f5f5'
+                                }}>
+                                    <img 
+                                        src={FALLBACK_IMAGES.main} 
+                                        alt="No image available"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            minHeight: '400px',
+                                            maxHeight: '450px',
+                                            objectFit: 'cover'
+                                        }}
                                     />
                                 </div>
                             )}
                         </div>
 
                         {images.length > 1 && (
-                            <div className="PrivateCabinsDetail_thumbnails">
+                            <div className="PrivateCabinsDetail_thumbnails" style={{
+                                display: 'flex',
+                                gap: '12px',
+                                marginTop: '16px',
+                                justifyContent: 'center',
+                                flexWrap: 'wrap'
+                            }}>
                                 {images.slice(0, 6).map((img, i) => (
                                     <div
                                         key={i}
                                         className={`PrivateCabinsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
                                         onClick={() => goToImage(i)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            width: '70px',
+                                            height: '70px',
+                                            flexShrink: 0,
+                                            borderRadius: '8px',
+                                            overflow: 'hidden',
+                                            border: i === currentImage ? '2px solid #01095A' : '2px solid transparent'
+                                        }}
                                     >
                                         <img
-                                            src={img}
+                                            src={img || FALLBACK_IMAGES.main}
                                             alt={`Thumbnail ${i + 1}`}
-                                            className="PrivateCabinsDetail_thumb"
                                             loading="lazy"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                objectPosition: 'center'
+                                            }}
                                             onError={(e) => {
-                                                e.target.src = 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a';
+                                                e.target.src = FALLBACK_IMAGES.main;
                                             }}
                                         />
                                     </div>
@@ -937,15 +843,15 @@ const PrivateCabinsDetail = () => {
                     </div>
 
                     {/* Working Hours */}
-                    {space.space?.opening_time && space.space?.closing_time && (
+                    {(space.opening_time && space.closing_time) && (
                         <div className="PrivateCabinsDetail_section">
                             <h3 className="PrivateCabinsDetail_section-title">Working Hours</h3>
                             <p className="PrivateCabinsDetail_working_hours">
-                                {space.space.opening_time} - {space.space.closing_time}
+                                ⏰ {space.opening_time} - {space.closing_time}
                             </p>
-                            {space.space.working_days && (
+                            {space.working_days && space.working_days.length > 0 && (
                                 <p className="PrivateCabinsDetail_working_days">
-                                    {space.space.working_days.join(', ')}
+                                    📅 {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
@@ -964,17 +870,17 @@ const PrivateCabinsDetail = () => {
                     )}
 
                     {/* Space Information */}
-                    {space.space && (
-                        <div className="PrivateCabinsDetail_section">
-                            <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
-                            <div className="PrivateCabinsDetail_space_info">
-                                <p><strong>Space Name:</strong> {space.space.name}</p>
-                                <p><strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
-                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                            </div>
+                    <div className="PrivateCabinsDetail_section">
+                        <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
+                        <div className="PrivateCabinsDetail_space_info">
+                            {space.space_name && <p><strong>🏢 Space Name:</strong> {space.space_name}</p>}
+                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
+                            {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
+                            {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
+                            {isOwnSpace() && <p className="verified">👑 You are the owner of this space</p>}
                         </div>
-                    )}
+                    </div>
 
                     {/* Policies */}
                     {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (

@@ -23,17 +23,25 @@
 }
 
 .sh__spinner-icon {
-  font-size: 40px;
-  color: #011CCD;
-  animation: spin 1s linear infinite;
+  display: none;
+  /* hide the FaSpinner icon */
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
+.sh__loading::before {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #e8eaf0;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: #1e3a8a;
+  border-left-color: transparent;
+  animation: sh-spin 0.9s linear infinite;
+}
 
-  100% {
+@keyframes sh-spin {
+  to {
     transform: rotate(360deg);
   }
 }

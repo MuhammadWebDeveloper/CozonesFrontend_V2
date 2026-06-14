@@ -29,7 +29,7 @@ const MyBookings = () => {
     // Axios instance
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 10000,
+        timeout: 30000,
         headers: {
             'Content-Type': 'application/json',
         }
@@ -268,14 +268,14 @@ const MyBookings = () => {
 
     const filteredBookings = getFilteredBookings();
 
-    if (loading) {
-        return (
-            <div className="mybookings-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading your bookings...</p>
-            </div>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <div className="mybookings-loading">
+    //             <div className="loading-spinner"></div>
+    //             <p>Loading your bookings...</p>
+    //         </div>
+    //     );
+    // }
 
     return (
         <>

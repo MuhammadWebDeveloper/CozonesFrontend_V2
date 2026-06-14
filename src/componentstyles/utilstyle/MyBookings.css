@@ -1,9 +1,5 @@
 /* MyBookings.css - Professional Design */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+
 
 .mybookings-wrapper {
     min-height: 100vh;
@@ -334,7 +330,8 @@
     margin-left: 20px;
 }
 
-.btn-view, .btn-cancel {
+.btn-view,
+.btn-cancel {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -378,15 +375,20 @@
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid #e2e8f0;
-    border-top-color: #4f46e5;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    border: 3px solid #e8eaf0;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: #1e3a8a;
+    border-left-color: transparent;
+    animation: spin 0.9s linear infinite;
     margin-bottom: 16px;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .mybookings-loading p {
@@ -410,8 +412,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-container {
@@ -433,6 +440,7 @@
         transform: translateY(20px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -546,7 +554,8 @@
     gap: 12px;
 }
 
-.btn-secondary, .btn-danger {
+.btn-secondary,
+.btn-danger {
     padding: 8px 20px;
     border-radius: 8px;
     font-size: 14px;
@@ -584,44 +593,44 @@
     .mybookings-container {
         padding: 20px 16px;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
-    
+
     .booking-item {
         flex-direction: column;
     }
-    
+
     .booking-image {
         width: 100%;
         height: 180px;
     }
-    
+
     .booking-content {
         flex-direction: column;
         align-items: stretch;
         gap: 16px;
     }
-    
+
     .booking-actions {
         margin-left: 0;
         justify-content: flex-end;
     }
-    
+
     .booking-details-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .details-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .page-title {
         font-size: 24px;
     }
-    
+
     .header-spacer {
         display: none;
     }
@@ -631,16 +640,16 @@
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .filter-tabs {
         overflow-x: auto;
         padding-bottom: 8px;
     }
-    
+
     .filter-tab {
         white-space: nowrap;
     }
-    
+
     .booking-info-header {
         flex-direction: column;
         align-items: flex-start;
@@ -761,7 +770,7 @@
         padding: 6px 12px;
         font-size: 12px;
     }
-    
+
     .book-again-overlay span {
         font-size: 12px;
     }
@@ -771,12 +780,15 @@
     .booking-actions {
         flex-wrap: wrap;
     }
-    
-    .btn-view, .btn-cancel, .btn-book-again {
+
+    .btn-view,
+    .btn-cancel,
+    .btn-book-again {
         flex: 1;
         justify-content: center;
     }
 }
+
 /* Action Buttons Section */
 .action-buttons {
     display: flex;
@@ -859,7 +871,7 @@
     .action-buttons {
         justify-content: stretch;
     }
-    
+
     .delete-all-btn {
         width: 100%;
         justify-content: center;

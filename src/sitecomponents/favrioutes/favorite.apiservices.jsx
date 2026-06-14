@@ -7,7 +7,7 @@ const API_BASE_URL = `${BaseUrl}api`;
 // Create axios instance
 const favoriteAPI = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: 30000,
 });
 
 // Add token to all requests

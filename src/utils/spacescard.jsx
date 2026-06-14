@@ -1,10 +1,9 @@
-// SpaceCard.jsx (Fixed - Single Image Only, No Navigation Buttons)
+// SpaceCard.jsx - Simple circle loader only
 import React, { useState, useEffect } from 'react';
 import { FiHeart, FiStar } from 'react-icons/fi';
 import { toggleFavorite, checkFavorite } from '../sitecomponents/favrioutes/favorite.apiservices.jsx';
 
 import '../componentstyles/utilstyle/viewcard.css';
-
 
 const SpaceCard = ({
     id,
@@ -22,27 +21,28 @@ const SpaceCard = ({
 }) => {
     const [isLiked, setIsLiked] = useState(propIsFavorite);
     const [isLoading, setIsLoading] = useState(false);
-    const [imageErrors, setImageErrors] = useState({});
+    const [isImageLoading, setIsImageLoading] = useState(true);
+    const [imageError, setImageError] = useState(false);
+    const [currentImage, setCurrentImage] = useState(null);
 
-    // Get image URLs - always returns array of strings
-    const getImageUrls = () => {
-        if (!image) return ['https://via.placeholder.com/400x300?text=No+Image'];
+    // Get image URL - only first image
+    const getImageUrl = () => {
+        if (!image) return null;
 
-        let imagesArray = Array.isArray(image) ? image : [image];
+        let img = Array.isArray(image) ? image[0] : image;
 
-        imagesArray = imagesArray.map(img => {
-            if (typeof img === 'object' && img.image_base64) {
-                return img.image_base64;
-            }
-            return img;
-        });
+        if (typeof img === 'object' && img.image_base64) {
+            img = img.image_base64;
+        }
 
-        return imagesArray.length > 0 ? imagesArray : ['https://via.placeholder.com/400x300?text=No+Image'];
+        if (typeof img === 'string' && img.startsWith('data:application/octet-stream')) {
+            img = img.replace('data:application/octet-stream', 'data:image/jpeg');
+        }
+
+        return img || null;
     };
 
-    const images = getImageUrls();
-    // Show only the first image
-    const displayImage = images[0];
+    const imageUrl = getImageUrl();
 
     // Check favorite status
     useEffect(() => {
@@ -62,6 +62,31 @@ const SpaceCard = ({
 
         checkFavoriteStatus();
     }, [unit_id]);
+
+    // Preload image when URL changes
+    useEffect(() => {
+        if (imageUrl) {
+            // Image prop has arrived — start preloading
+            setIsImageLoading(true);
+            setImageError(false);
+            setCurrentImage(null); // reset so spinner stays visible while preloading
+
+            const img = new Image();
+            img.onload = () => {
+                setCurrentImage(imageUrl);
+                setIsImageLoading(false);
+            };
+            img.onerror = () => {
+                setImageError(true);
+                setIsImageLoading(false);
+            };
+            img.src = imageUrl;
+        } else {
+            // No image prop yet — don't mark as "done loading"
+            // spinner stays via: !currentImage && !imageError
+            setIsImageLoading(false);
+        }
+    }, [imageUrl]);
 
     // Toggle favorite
     const handleFavoriteClick = async (e) => {
@@ -97,33 +122,37 @@ const SpaceCard = ({
         }
     };
 
-    // Handle image error
-    const handleImageError = () => {
-        setImageErrors(prev => ({
-            ...prev,
-            [0]: true
-        }));
-    };
-
-    // Get current image source (always first image)
-    const getCurrentImageSrc = () => {
-        if (imageErrors[0]) {
-            return 'https://via.placeholder.com/400x300?text=Image+Error';
-        }
-        return displayImage;
-    };
+    // Show spinner when:
+    // 1. Actively preloading a known URL, OR
+    // 2. Image prop hasn't arrived yet (null) and no error
+    const showSpinner = isImageLoading || (!currentImage && !imageError);
 
     return (
         <div className={`Cozones_Spaces_main ${className}`} onClick={handleCardClick}>
             {/* IMAGE SECTION */}
-            <div className="Cozones_Spaces_imageContainer">
-                {/* Single Image Display - Only First Image */}
-                <img
-                    src={getCurrentImageSrc()}
-                    alt={title}
-                    className="Cozones_Spaces_image"
-                    onError={handleImageError}
-                />
+            <div className="Cozones_Spaces_imageContainer" style={{ position: 'relative', backgroundColor: '#f5f5f5' }}>
+
+                {/* Circle spinner — shows while waiting for image prop OR while preloading */}
+                {showSpinner && <div className="image-circle-spinner"></div>}
+
+                {/* Image — only renders once fully preloaded */}
+                {currentImage && !showSpinner && (
+                    <img
+                        src={currentImage}
+                        alt={title}
+                        className="Cozones_Spaces_image"
+                        onError={() => setImageError(true)}
+                    />
+                )}
+
+                {/* Fallback — only when image fails to load */}
+                {imageError && (
+                    <img
+                        src="https://via.placeholder.com/400x300?text=No+Image"
+                        alt={title}
+                        className="Cozones_Spaces_image"
+                    />
+                )}
 
                 {/* Favorite Button */}
                 <button

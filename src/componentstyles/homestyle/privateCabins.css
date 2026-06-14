@@ -94,11 +94,11 @@
     /* .Private_Cabins_section {
         padding: 60px 100px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 38px;
     }
-    
+
     .Private_Cabins_slide {
         min-width: 300px;
         max-width: 350px;
@@ -107,6 +107,7 @@
 
 /* Desktop (1400px - 1600px) */
 @media (max-width: 1600px) {
+
     /* .Private_Cabins_section {
         padding: 48px 50px;
     }
@@ -121,15 +122,15 @@
     /* .Private_Cabins_section {
         padding: 40px 40px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 30px;
     }
-    
+
     .Private_Cabins_header {
         margin-bottom: 24px;
     }
-    
+
     .Private_Cabins_viewAll {
         padding: 8px 20px;
         font-size: 13px;
@@ -141,11 +142,11 @@
     /* .Private_Cabins_section {
         padding: 35px 30px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 28px;
     }
-    
+
     .Private_Cabins_header {
         margin-bottom: 20px;
     }
@@ -156,18 +157,18 @@
     /* .Private_Cabins_section {
         padding: 30px 24px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 26px;
     }
-    
+
     .Private_Cabins_header {
         flex-direction: column;
         align-items: flex-start;
         margin-bottom: 20px;
         gap: 12px;
     }
-    
+
     .Private_Cabins_viewAll {
         padding: 8px 18px;
         font-size: 12px;
@@ -179,30 +180,30 @@
     /* .Private_Cabins_section {
         padding: 25px 16px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 24px;
     }
-    
+
     .Private_Cabins_header {
         margin-bottom: 16px;
         gap: 10px;
     }
-    
+
     .Private_Cabins_viewAll {
         padding: 6px 16px;
         font-size: 11px;
         gap: 6px;
     }
-    
+
     .Private_Cabins_cardTitle {
         font-size: 12px;
     }
-    
+
     .Private_Cabins_priceAmount {
         font-size: 13px;
     }
-    
+
     .Private_Cabins_bookBtn {
         padding: 6px 10px;
         font-size: 10px;
@@ -214,16 +215,16 @@
     /* .Private_Cabins_section {
         padding: 20px 12px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 22px;
     }
-    
+
     .Private_Cabins_header {
         margin-bottom: 14px;
         gap: 8px;
     }
-    
+
     .Private_Cabins_viewAll {
         padding: 5px 14px;
         font-size: 10px;
@@ -235,16 +236,16 @@
     /* .Private_Cabins_section {
         padding: 16px 10px;
     } */
-    
+
     .Private_Cabins_title {
         font-size: 20px;
     }
-    
+
     .Private_Cabins_header {
         margin-bottom: 12px;
         gap: 6px;
     }
-    
+
     .Private_Cabins_viewAll {
         padding: 4px 12px;
         font-size: 9px;
@@ -352,6 +353,7 @@
         opacity: 0;
         transform: scale(0.98);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -367,7 +369,7 @@
     .Private_Cabins_slider {
         padding: 2px 1px 6px 1px;
     }
-    
+
     .Private_Cabins_slide {
         min-width: 240px;
         max-width: 280px;
@@ -378,7 +380,7 @@
     .Private_Cabins_slider {
         padding: 0px 0px 4px 0px;
     }
-    
+
     .Private_Cabins_slide {
         min-width: 220px;
         max-width: 260px;
@@ -407,7 +409,7 @@
     .Private_Cabins_loading {
         min-height: 300px;
     }
-    
+
     .Private_Cabins_loading::after {
         width: 40px;
         height: 40px;
@@ -418,12 +420,12 @@
     .Private_Cabins_loading {
         min-height: 250px;
     }
-    
+
     .Private_Cabins_loading::after {
         width: 35px;
         height: 35px;
     }
-    
+
     .Private_Cabins_loadingText {
         font-size: 12px;
     }
@@ -437,7 +439,7 @@
     .Private_Cabins_empty {
         padding: 40px 16px;
     }
-    
+
     .Private_Cabins_empty p {
         font-size: 14px;
     }
@@ -447,7 +449,7 @@
     .Private_Cabins_empty {
         padding: 30px 12px;
     }
-    
+
     .Private_Cabins_empty p {
         font-size: 13px;
     }
@@ -461,7 +463,7 @@
     .Private_Cabins_error {
         padding: 40px 20px;
     }
-    
+
     .Private_Cabins_retryBtn {
         padding: 8px 20px;
         font-size: 13px;
@@ -472,7 +474,7 @@
     .Private_Cabins_error {
         padding: 30px 16px;
     }
-    
+
     .Private_Cabins_retryBtn {
         padding: 6px 16px;
         font-size: 12px;
@@ -490,17 +492,17 @@
         top: 8px;
         left: 8px;
     }
-    
+
     .Private_Cabins_other_rates {
         padding: 6px 10px;
         font-size: 9px;
     }
-    
+
     .Private_Cabins_other_rate {
         padding: 1px 6px;
         font-size: 8px;
     }
-    
+
     .Private_Cabins_capacity {
         font-size: 8px;
         padding: 3px 6px;
@@ -514,12 +516,12 @@
         padding: 2px 6px;
         font-size: 8px;
     }
-    
+
     .Private_Cabins_other_rates {
         padding: 4px 8px;
         font-size: 8px;
     }
-    
+
     .Private_Cabins_capacity {
         font-size: 7px;
         padding: 2px 5px;
@@ -534,15 +536,15 @@
     .Private_Cabins_slider {
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .Private_Cabins_slide .Private_Cabins_card:hover {
         transform: none;
     }
-    
+
     .Private_Cabins_slide .Private_Cabins_card:active {
         transform: scale(0.98);
     }
-    
+
     .Private_Cabins_bookBtn:active {
         transform: scale(0.95);
     }
@@ -556,7 +558,7 @@
     /* .Private_Cabins_section {
         padding: 20px 20px;
     } */
-    
+
     .Private_Cabins_slide {
         min-width: 200px;
         max-width: 240px;
@@ -568,6 +570,7 @@
    ========================= */
 
 @media (min-width: 1920px) {
+
     /* .Private_Cabins_section {
         padding: 80px 150px;
     }
@@ -575,7 +578,7 @@
     .Private_Cabins_title {
         font-size: 42px;
     }
-    
+
     .Private_Cabins_slide {
         min-width: 320px;
         max-width: 380px;
@@ -591,15 +594,15 @@
         animation: none;
         opacity: 1;
     }
-    
+
     .Private_Cabins_slide .Private_Cabins_card:hover {
         transform: none;
     }
-    
+
     .Private_Cabins_loading::after {
         animation: none;
     }
-    
+
     .Private_Cabins_slider .swiper-slide-active .Private_Cabins_card {
         animation: none;
     }
@@ -614,13 +617,13 @@
         padding: 20px;
         background: white;
     }
-    
+
     .Private_Cabins_viewAll,
     .Private_Cabins_bookBtn,
     .Private_Cabins_favorite {
         display: none;
     }
-    
+
     .Private_Cabins_slider .swiper-button-next,
     .Private_Cabins_slider .swiper-button-prev {
         display: none !important;
@@ -646,15 +649,15 @@
     .Private_Cabins_cardTitle {
         font-size: 11px;
     }
-    
+
     .Private_Cabins_priceAmount {
         font-size: 11px;
     }
-    
+
     .Private_Cabins_location {
         font-size: 9px;
     }
-    
+
     .Private_Cabins_rating {
         font-size: 9px;
         padding: 2px 4px;
@@ -666,4 +669,84 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+}
+
+/* Stats Bar */
+.cabins-stats {
+    margin-bottom: 20px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #666;
+    border-bottom: 1px solid #eee;
+}
+
+/* Loading More Indicator */
+.loading-more-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    min-width: 280px;
+}
+
+.loading-spinner-small {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #011CCD;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 12px;
+}
+
+.loading-more-container p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Load More Button Container */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.load-more-btn {
+    background: linear-gradient(135deg, #011CCD 0%, #4a6eff 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(1, 28, 205, 0.2);
+}
+
+.load-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(1, 28, 205, 0.3);
+}
+
+.load-more-btn:active {
+    transform: translateY(0);
+}
+
+/* Loading Slide */
+.loading-slide {
+    pointer-events: none;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

@@ -1,5 +1,5 @@
-// MeetingRoomsDetail.jsx - Updated with SpaceDetail Design and DateTimePicker
-import React, { useState, useEffect, useCallback } from 'react';
+// MeetingRoomsDetail.jsx - FIXED infinite loop
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import DateTimePicker from './DateTimePicker';
@@ -7,6 +7,12 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/meetingRoomsDetail.css';
 import BaseUrl from './AppConstants';
+
+// Local fallback images
+const FALLBACK_IMAGES = {
+    main: 'https://picsum.photos/id/20/800/500',
+    placeholder: 'https://picsum.photos/id/20/800/500'
+};
 
 const MeetingRoomsDetail = () => {
     const { id } = useParams();
@@ -25,10 +31,11 @@ const MeetingRoomsDetail = () => {
     const [user, setUser] = useState(null);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
+    const [images, setImages] = useState([]);
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 30000,
+        timeout: 60000,
         headers: { 'Content-Type': 'application/json' }
     });
 
@@ -41,36 +48,50 @@ const MeetingRoomsDetail = () => {
         return config;
     });
 
+    // Helper function to validate and clean image URL
+    const validateImageUrl = (url) => {
+        if (!url) return FALLBACK_IMAGES.main;
+        if (typeof url !== 'string') return FALLBACK_IMAGES.main;
+
+        if (url.startsWith('data:image')) {
+            return url;
+        }
+
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+
+        if (url.length > 100 && /^[A-Za-z0-9+/=]+$/.test(url.substring(0, 100))) {
+            return `data:image/jpeg;base64,${url}`;
+        }
+
+        return FALLBACK_IMAGES.main;
+    };
+
     // Helper function to extract image URL from object or string
     const extractImageUrl = (img) => {
         if (!img) return null;
 
-        // If it's a string, return as is
         if (typeof img === 'string') {
-            return img;
+            return validateImageUrl(img);
         }
 
-        // If it's an object with image data
         if (typeof img === 'object' && img !== null) {
-            // Check for image_base64 (most common)
             if (img.image_base64 && typeof img.image_base64 === 'string') {
-                return img.image_base64;
+                let base64 = img.image_base64;
+                if (base64.startsWith('data:application/octet-stream')) {
+                    base64 = base64.replace('data:application/octet-stream', 'data:image/jpeg');
+                }
+                return validateImageUrl(base64);
             }
-            // Check for url field
             if (img.url && typeof img.url === 'string') {
-                return img.url;
+                return validateImageUrl(img.url);
             }
-            // Check for src field
             if (img.src && typeof img.src === 'string') {
-                return img.src;
-            }
-            // Check for path field
-            if (img.path && typeof img.path === 'string') {
-                return img.path;
+                return validateImageUrl(img.src);
             }
         }
 
-        console.warn('Could not extract image URL from:', img);
         return null;
     };
 
@@ -103,6 +124,7 @@ const MeetingRoomsDetail = () => {
         }
     }, [location]);
 
+    // Load space and images
     useEffect(() => {
         const fetchMeetingRoom = async () => {
             try {
@@ -121,78 +143,65 @@ const MeetingRoomsDetail = () => {
                         rateType = 'monthly';
                     }
 
-                    // ✅ FIXED: Parse images properly - handle image objects with image_base64
-                    let parsedImages = [];
-                    if (unitData.images) {
-                        if (typeof unitData.images === 'string') {
-                            try {
-                                const parsed = JSON.parse(unitData.images);
-                                if (Array.isArray(parsed)) {
-                                    parsedImages = parsed.map(img => extractImageUrl(img)).filter(img => img !== null);
-                                } else {
-                                    const extracted = extractImageUrl(parsed);
-                                    if (extracted) parsedImages = [extracted];
-                                }
-                            } catch (e) {
-                                parsedImages = [unitData.images];
-                            }
-                        } else if (Array.isArray(unitData.images)) {
-                            parsedImages = unitData.images.map(img => extractImageUrl(img)).filter(img => img !== null);
-                        } else if (typeof unitData.images === 'object' && unitData.images !== null) {
-                            const extracted = extractImageUrl(unitData.images);
-                            if (extracted) parsedImages = [extracted];
-                        }
-                    }
-
-                    // Parse space amenities
-                    let parsedAmenities = unitData.space_amenities || {};
-                    if (typeof parsedAmenities === 'string') {
-                        try {
-                            parsedAmenities = JSON.parse(parsedAmenities);
-                        } catch (e) {
-                            parsedAmenities = {};
-                        }
-                    }
-
-                    // Parse policies
-                    let parsedPolicies = unitData.policies || {};
-                    if (typeof parsedPolicies === 'string') {
-                        try {
-                            parsedPolicies = JSON.parse(parsedPolicies);
-                        } catch (e) {
-                            parsedPolicies = {};
-                        }
-                    }
-
                     const transformedSpace = {
                         id: unitData.id,
                         name: unitData.name,
                         title: unitData.name || unitData.unit_type?.replace('_', ' ') || "Meeting Room",
-                        description: unitData.space?.description || "A professional meeting room equipped with modern amenities",
-                        location: unitData.space?.city || "Coworking Space",
-                        area: unitData.space?.area,
-                        address: unitData.space?.address,
-                        city: unitData.space?.city,
+                        description: unitData.space_description || unitData.space?.description || "A professional meeting room equipped with modern amenities",
+                        location: unitData.city || unitData.space?.city || "Coworking Space",
+                        area: unitData.area || unitData.space?.area,
+                        address: unitData.address || unitData.space?.address,
+                        city: unitData.city || unitData.space?.city,
                         rateType: rateType,
                         hourly_rate: unitData.hourly_rate && unitData.hourly_rate !== -999 ? parseFloat(unitData.hourly_rate) : null,
                         daily_rate: unitData.daily_rate && unitData.daily_rate !== -999 ? parseFloat(unitData.daily_rate) : null,
                         monthly_rate: unitData.monthly_rate && unitData.monthly_rate !== -999 ? parseFloat(unitData.monthly_rate) : null,
                         total_capacity: unitData.total_capacity,
                         unit_type: unitData.unit_type,
-                        images: parsedImages,
                         space: unitData.space,
-                        space_amenities: parsedAmenities,
-                        policies: parsedPolicies,
+                        space_amenities: unitData.space_amenities || {},
+                        policies: unitData.policies || {},
                         is_active: unitData.is_active,
-                        owner_id: unitData.space?.owner_id,
+                        owner_id: unitData.owner_id || unitData.space?.owner_id,
                         created_at: unitData.created_at,
-                        updated_at: unitData.updated_at
+                        updated_at: unitData.updated_at,
+                        opening_time: unitData.opening_time,
+                        closing_time: unitData.closing_time,
+                        working_days: unitData.working_days,
+                        space_name: unitData.space_name,
+                        space_description: unitData.space_description
                     };
 
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
-                    setLoadedImages({});
+
+                    // Now fetch images separately
+                    try {
+                        setImageLoading(true);
+                        const imagesResponse = await apiClient.get(`api/spaces/unit/${id}/images`);
+
+                        if (imagesResponse.data?.success && imagesResponse.data?.images) {
+                            const parsedImages = imagesResponse.data.images
+                                .map(img => extractImageUrl(img))
+                                .filter(img => img !== null);
+
+                            if (parsedImages.length > 0) {
+                                setImages(parsedImages);
+                                console.log('Images loaded:', parsedImages.length);
+                            } else {
+                                setImages([FALLBACK_IMAGES.main]);
+                            }
+                        } else {
+                            setImages([FALLBACK_IMAGES.main]);
+                        }
+                    } catch (imgErr) {
+                        console.error('Error fetching images:', imgErr);
+                        setImages([FALLBACK_IMAGES.main]);
+                    } finally {
+                        setImageLoading(false);
+                    }
+
                     success('Meeting room details loaded successfully! 🎉');
                 } else {
                     error('Meeting room not found');
@@ -210,133 +219,32 @@ const MeetingRoomsDetail = () => {
         }
     }, [id]);
 
-    const isOwnSpace = () => {
+    const isOwnSpace = useCallback(() => {
         if (!user || !space) return false;
         return user.id === space.owner_id;
-    };
-
-    // ✅ FIXED: Get images - now properly handles string URLs from extracted data
-    const getImages = useCallback(() => {
-        if (space?.images && space.images.length > 0) {
-            return space.images
-                .filter(img => img && img !== '' && img !== 'null' && img !== 'undefined')
-                .map(img => {
-                    // Safety check - ensure img is a string
-                    if (typeof img !== 'string') {
-                        console.warn('Invalid image type:', typeof img, img);
-                        return 'https://images.unsplash.com/photo-1497366216548-37526070297c';
-                    }
-
-                    // If it's already a valid URL (http/https)
-                    if (img.startsWith('http://') || img.startsWith('https://')) {
-                        return img;
-                    }
-                    // If it's a Base64 data URL
-                    if (img.startsWith('data:image')) {
-                        return img;
-                    }
-                    // If it's a relative path starting with /
-                    if (img.startsWith('/')) {
-                        return `${BaseUrl.replace(/\/$/, '')}${img}`;
-                    }
-                    // If it's a raw Base64 string (without data:image prefix)
-                    if (img.length > 100 && !img.startsWith('http') && !img.startsWith('/') && !img.startsWith('data:')) {
-                        // Check if it looks like Base64
-                        if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 100))) {
-                            return `data:image/jpeg;base64,${img}`;
-                        }
-                    }
-                    // If it's a relative path without leading slash
-                    if (!img.startsWith('http') && !img.startsWith('data:')) {
-                        return `${BaseUrl.replace(/\/$/, '')}/uploads/${img}`;
-                    }
-                    return img;
-                });
-        }
-
-        // Fallback images
-        const fallbackImages = {
-            'meeting_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c',
-            'conference_room': 'https://images.unsplash.com/photo-1497366811357-69a6f18a0b1a',
-            'board_room': 'https://images.unsplash.com/photo-1497366216548-37526070297c'
-        };
-        return [fallbackImages[space?.unit_type] || 'https://images.unsplash.com/photo-1497366216548-37526070297c'];
-    }, [space]);
-
-    const images = getImages();
-
-    // Preload images efficiently
-    useEffect(() => {
-        if (images && images.length > 0) {
-            images.forEach((src, index) => {
-                if (src && typeof src === 'string') {
-                    const img = new Image();
-                    img.onload = () => {
-                        setLoadedImages(prev => ({ ...prev, [index]: true }));
-                    };
-                    img.onerror = () => {
-                        console.warn(`Failed to load image: ${src?.substring(0, 100)}...`);
-                        setLoadedImages(prev => ({ ...prev, [index]: false }));
-                    };
-                    img.src = src;
-                } else {
-                    setLoadedImages(prev => ({ ...prev, [index]: false }));
-                }
-            });
-        }
-    }, [images]);
-
-    // Preload adjacent images for faster navigation
-    const preloadAdjacentImages = useCallback((currentIdx) => {
-        if (images.length === 0) return;
-        const nextIdx = (currentIdx + 1) % images.length;
-        const prevIdx = (currentIdx - 1 + images.length) % images.length;
-
-        [nextIdx, prevIdx].forEach(idx => {
-            if (!loadedImages[idx] && images[idx] && typeof images[idx] === 'string') {
-                const img = new Image();
-                img.src = images[idx];
-                img.onload = () => {
-                    setLoadedImages(prev => ({ ...prev, [idx]: true }));
-                };
-            }
-        });
-    }, [images, loadedImages]);
-
-    // Preload adjacent images when current image changes
-    useEffect(() => {
-        if (images.length > 0) {
-            preloadAdjacentImages(currentImage);
-        }
-    }, [currentImage, preloadAdjacentImages, images.length]);
+    }, [user, space]);
 
     const nextImage = useCallback(() => {
         if (images.length === 0) return;
         setImageLoading(true);
         const nextIdx = (currentImage + 1) % images.length;
         setCurrentImage(nextIdx);
-        if (loadedImages[nextIdx]) {
-            setTimeout(() => setImageLoading(false), 100);
-        }
-    }, [currentImage, images.length, loadedImages]);
+        setTimeout(() => setImageLoading(false), 200);
+    }, [currentImage, images.length]);
 
     const prevImage = useCallback(() => {
         if (images.length === 0) return;
         setImageLoading(true);
         const prevIdx = (currentImage - 1 + images.length) % images.length;
         setCurrentImage(prevIdx);
-        if (loadedImages[prevIdx]) {
-            setTimeout(() => setImageLoading(false), 100);
-        }
-    }, [currentImage, images.length, loadedImages]);
+        setTimeout(() => setImageLoading(false), 200);
+    }, [currentImage, images.length]);
 
     const goToImage = (index) => {
         if (index >= 0 && index < images.length && index !== currentImage) {
             setImageLoading(true);
             setCurrentImage(index);
-            if (loadedImages[index]) {
-                setTimeout(() => setImageLoading(false), 100);
-            }
+            setTimeout(() => setImageLoading(false), 200);
         }
     };
 
@@ -470,8 +378,6 @@ const MeetingRoomsDetail = () => {
                 end_time: new Date(endDate).toISOString(),
                 total_price: totalPrice
             };
-
-            // console.log('Sending booking data:', bookingData);
 
             const response = await apiClient.post('api/bookings/createbooking', bookingData, {
                 timeout: 30000
@@ -622,7 +528,8 @@ const MeetingRoomsDetail = () => {
                         <h1 className="MeetingRoomsDetail_title">{space.title}</h1>
 
                         <p className="MeetingRoomsDetail_meta">
-                            📍 {space.city}, {space.area}
+                            📍 {space.city || space.location}
+                            {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
@@ -737,90 +644,187 @@ const MeetingRoomsDetail = () => {
                         </button>
                     </div>
 
-                    {/* OPTIMIZED IMAGE SLIDER SECTION */}
+                    {/* IMAGE SLIDER SECTION - WITH FIXED CONTAINER SIZES */}
                     <div className="MeetingRoomsDetail_right">
                         <div
                             className="MeetingRoomsDetail_gallery"
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
+                            style={{
+                                position: 'relative',
+                                width: '100%',
+                                maxWidth: '550px',
+                                margin: '0 auto',
+                                minHeight: '400px',
+                                maxHeight: '450px',
+                                overflow: 'hidden',
+                                borderRadius: '16px',
+                                backgroundColor: '#f5f5f5'
+                            }}
                         >
-                            {images.length > 0 && images[0] ? (
+                            {images.length > 0 ? (
                                 <>
-                                    {/* Loading Spinner */}
-                                    {imageLoading && !loadedImages[currentImage] && (
-                                        <div className="MeetingRoomsDetail_image_loader">
+                                    {imageLoading && (
+                                        <div className="MeetingRoomsDetail_image_loader" style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: '#f5f5f5',
+                                            zIndex: 5,
+                                            borderRadius: '16px'
+                                        }}>
                                             <div className="MeetingRoomsDetail_spinner_small"></div>
                                         </div>
                                     )}
 
-                                    {/* Current Image */}
                                     <img
                                         key={currentImage}
-                                        src={images[currentImage]}
+                                        src={images[currentImage] || FALLBACK_IMAGES.main}
                                         alt={`${space.title} - Image ${currentImage + 1}`}
-                                        className={`MeetingRoomsDetail_main-img ${imageLoading && !loadedImages[currentImage] ? 'hidden' : 'visible'}`}
-                                        onLoad={() => {
-                                            setImageLoading(false);
-                                            setLoadedImages(prev => ({ ...prev, [currentImage]: true }));
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            minHeight: '400px',
+                                            maxHeight: '450px',
+                                            objectFit: 'cover',
+                                            objectPosition: 'center',
+                                            transition: 'opacity 0.3s ease',
+                                            opacity: imageLoading ? 0 : 1
                                         }}
+                                        onLoad={() => setImageLoading(false)}
                                         onError={(e) => {
-                                            console.error('Image failed to load');
-                                            e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                            console.warn('Image failed to load, using fallback');
+                                            e.target.src = FALLBACK_IMAGES.main;
                                             setImageLoading(false);
                                         }}
                                     />
 
-                                    {/* Navigation Buttons */}
                                     {images.length > 1 && (
                                         <>
                                             <button
                                                 className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_prev"
                                                 onClick={prevImage}
-                                                aria-label="Previous image"
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    zIndex: 10,
+                                                    background: 'rgba(0,0,0,0.5)',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    fontSize: '24px',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '50%',
+                                                    cursor: 'pointer'
+                                                }}
                                             >
                                                 ‹
                                             </button>
                                             <button
                                                 className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_next"
                                                 onClick={nextImage}
-                                                aria-label="Next image"
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    zIndex: 10,
+                                                    background: 'rgba(0,0,0,0.5)',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    fontSize: '24px',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '50%',
+                                                    cursor: 'pointer'
+                                                }}
                                             >
                                                 ›
                                             </button>
-                                            <div className="MeetingRoomsDetail_img-counter">
+                                            <div className="MeetingRoomsDetail_img-counter" style={{
+                                                position: 'absolute',
+                                                bottom: '10px',
+                                                right: '10px',
+                                                background: 'rgba(0,0,0,0.6)',
+                                                color: 'white',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '12px',
+                                                zIndex: 10
+                                            }}>
                                                 {currentImage + 1} / {images.length}
                                             </div>
                                         </>
                                     )}
                                 </>
                             ) : (
-                                <div className="MeetingRoomsDetail_no-img">
+                                <div className="MeetingRoomsDetail_no-img" style={{
+                                    width: '100%',
+                                    minHeight: '400px',
+                                    maxHeight: '450px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: '#f5f5f5'
+                                }}>
                                     <img
-                                        src="https://images.unsplash.com/photo-1497366216548-37526070297c"
-                                        alt="Fallback"
-                                        className="MeetingRoomsDetail_main-img"
+                                        src={FALLBACK_IMAGES.main}
+                                        alt="No image available"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            minHeight: '400px',
+                                            maxHeight: '450px',
+                                            objectFit: 'cover'
+                                        }}
                                     />
                                 </div>
                             )}
                         </div>
 
-                        {/* Thumbnails */}
                         {images.length > 1 && (
-                            <div className="MeetingRoomsDetail_thumbnails">
+                            <div className="MeetingRoomsDetail_thumbnails" style={{
+                                display: 'flex',
+                                gap: '12px',
+                                marginTop: '16px',
+                                justifyContent: 'center',
+                                flexWrap: 'wrap'
+                            }}>
                                 {images.slice(0, 6).map((img, i) => (
                                     <div
                                         key={i}
                                         className={`MeetingRoomsDetail_thumb_wrapper ${i === currentImage ? 'active' : ''}`}
                                         onClick={() => goToImage(i)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            width: '70px',
+                                            height: '70px',
+                                            flexShrink: 0,
+                                            borderRadius: '8px',
+                                            overflow: 'hidden',
+                                            border: i === currentImage ? '2px solid #01095A' : '2px solid transparent'
+                                        }}
                                     >
                                         <img
-                                            src={img}
+                                            src={img || FALLBACK_IMAGES.main}
                                             alt={`Thumbnail ${i + 1}`}
-                                            className="MeetingRoomsDetail_thumb"
                                             loading="lazy"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                objectPosition: 'center'
+                                            }}
                                             onError={(e) => {
-                                                e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c';
+                                                e.target.src = FALLBACK_IMAGES.main;
                                             }}
                                         />
                                     </div>
@@ -838,16 +842,16 @@ const MeetingRoomsDetail = () => {
                         </p>
                     </div>
 
-                    {/* Working Hours */}
-                    {space.space?.opening_time && space.space?.closing_time && (
+                    {/* Working Hours - Using flattened fields */}
+                    {(space.opening_time && space.closing_time) && (
                         <div className="MeetingRoomsDetail_section">
                             <h3 className="MeetingRoomsDetail_section-title">Working Hours</h3>
                             <p className="MeetingRoomsDetail_working_hours">
-                                {space.space.opening_time} - {space.space.closing_time}
+                                ⏰ {space.opening_time} - {space.closing_time}
                             </p>
-                            {space.space.working_days && (
+                            {space.working_days && space.working_days.length > 0 && (
                                 <p className="MeetingRoomsDetail_working_days">
-                                    {space.space.working_days.join(', ')}
+                                    📅 {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
@@ -866,17 +870,17 @@ const MeetingRoomsDetail = () => {
                     )}
 
                     {/* Space Information */}
-                    {space.space && (
-                        <div className="MeetingRoomsDetail_section">
-                            <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
-                            <div className="MeetingRoomsDetail_space_info">
-                                <p><strong>Space Name:</strong> {space.space.name}</p>
-                                <p><strong>Room Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                                {space.total_capacity && <p><strong>Total Capacity:</strong> {space.total_capacity} seats</p>}
-                                {space.space.is_verified && <p className="verified">✓ Verified Space</p>}
-                            </div>
+                    <div className="MeetingRoomsDetail_section">
+                        <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
+                        <div className="MeetingRoomsDetail_space_info">
+                            {space.space_name && <p><strong>🏢 Space Name:</strong> {space.space_name}</p>}
+                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
+                            {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
+                            {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
+                            {isOwnSpace() && <p className="verified">👑 You are the owner of this space</p>}
                         </div>
-                    )}
+                    </div>
 
                     {/* Policies */}
                     {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (

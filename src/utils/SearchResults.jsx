@@ -11,6 +11,7 @@ const SearchResults = () => {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchParams, setSearchParams] = useState({});
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -21,119 +22,102 @@ const SearchResults = () => {
             endTime: params.get('endTime') || ''
         };
         setSearchParams(searchCriteria);
-        performSearch(searchCriteria);
+        
+        // Only search if there are criteria
+        if (searchCriteria.destination || searchCriteria.type) {
+            performSearch(searchCriteria);
+        } else {
+            setLoading(false);
+            setResults([]);
+        }
     }, [location.search]);
 
     const performSearch = async (criteria) => {
         setLoading(true);
+        setError(null);
+        
         try {
             const token = localStorage.getItem('token');
             const apiClient = axios.create({
                 baseURL: BaseUrl,
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                timeout: 30000
             });
 
-            const unitTypes = ['open_desks', 'dedicated_desks', 'private_cabins', 'meeting_rooms'];
-            const allSpaces = [];
-
-            const promises = unitTypes.map(type =>
-                apiClient.get(`api/spaces/unit/${type}`).catch(err => {
-                    console.warn(`Failed to fetch ${type}:`, err);
-                    return { data: { success: false, units: [] } };
-                })
-            );
-
-            const responses = await Promise.all(promises);
-
-            responses.forEach(response => {
-                if (response.data?.success && response.data?.units?.length > 0) {
-                    response.data.units.forEach(unit => {
-                        if (unit.is_active) {
-                            // FIXED: Better image handling
-                            let imageUrl = null;
-                            
-                            // Check multiple possible image locations
-                            if (unit.images && Array.isArray(unit.images) && unit.images.length > 0) {
-                                // If images is an array of strings
-                                if (typeof unit.images[0] === 'string') {
-                                    imageUrl = unit.images[0];
-                                }
-                                // If images is an array of objects with url property
-                                else if (unit.images[0]?.url) {
-                                    imageUrl = unit.images[0].url;
-                                }
-                                // If images is an array of objects with image_url property
-                                else if (unit.images[0]?.image_url) {
-                                    imageUrl = unit.images[0].image_url;
-                                }
-                            }
-                            // Check for single image field
-                            else if (unit.image) {
-                                imageUrl = unit.image;
-                            }
-                            else if (unit.image_url) {
-                                imageUrl = unit.image_url;
-                            }
-                            
-                            // If image URL doesn't start with http, prepend BaseUrl
-                            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-                                imageUrl = `${BaseUrl}${imageUrl}`;
-                            }
-                            
-                            // Get best rate
-                            let price = null;
-                            let priceDisplay = 'Contact for pricing';
-                            if (unit.hourly_rate && parseFloat(unit.hourly_rate) > 0) {
-                                price = parseFloat(unit.hourly_rate);
-                                priceDisplay = `PKR ${price.toLocaleString()}/hour`;
-                            } else if (unit.daily_rate && parseFloat(unit.daily_rate) > 0) {
-                                price = parseFloat(unit.daily_rate);
-                                priceDisplay = `PKR ${price.toLocaleString()}/day`;
-                            } else if (unit.monthly_rate && parseFloat(unit.monthly_rate) > 0) {
-                                price = parseFloat(unit.monthly_rate);
-                                priceDisplay = `PKR ${price.toLocaleString()}/month`;
-                            }
-                            
-                            allSpaces.push({
-                                id: unit.id,
-                                title: unit.name || unit.unit_type?.replace('_', ' ') || 'Space',
-                                location: unit.city || unit.address || 'Location available',
-                                price: price,
-                                priceDisplay: priceDisplay,
-                                unit_type: unit.unit_type,
-                                images: imageUrl,
-                                capacity: unit.total_capacity || unit.capacity || 1,
-                                rating: unit.rating || 4.5
-                            });
+            // Build query parameters
+            const queryParams = new URLSearchParams();
+            if (criteria.destination) queryParams.append('destination', criteria.destination);
+            if (criteria.type) queryParams.append('type', criteria.type);
+            
+            const url = `api/spaces/search?${queryParams.toString()}`;
+            // console.log('🔍 Searching:', url);
+            
+            const response = await apiClient.get(url);
+            
+            // console.log('📡 Search response:', response.data);
+            
+            if (response.data?.success) {
+                const units = response.data.units || [];
+                
+                // Transform the data for display
+                const transformedResults = units.map(unit => {
+                    // Handle images
+                    let imageUrl = null;
+                    if (unit.images && Array.isArray(unit.images) && unit.images.length > 0) {
+                        const firstImage = unit.images[0];
+                        if (typeof firstImage === 'string') {
+                            imageUrl = firstImage;
+                        } else if (firstImage?.image_base64) {
+                            imageUrl = firstImage.image_base64;
+                        } else if (firstImage?.url) {
+                            imageUrl = firstImage.url;
                         }
-                    });
+                    }
+                    
+                    // Get best rate for display
+                    let priceDisplay = 'Contact for pricing';
+                    let price = null;
+                    
+                    if (unit.hourly_rate && parseFloat(unit.hourly_rate) > 0) {
+                        price = parseFloat(unit.hourly_rate);
+                        priceDisplay = `PKR ${price.toLocaleString()}/hour`;
+                    } else if (unit.daily_rate && parseFloat(unit.daily_rate) > 0) {
+                        price = parseFloat(unit.daily_rate);
+                        priceDisplay = `PKR ${price.toLocaleString()}/day`;
+                    } else if (unit.monthly_rate && parseFloat(unit.monthly_rate) > 0) {
+                        price = parseFloat(unit.monthly_rate);
+                        priceDisplay = `PKR ${price.toLocaleString()}/month`;
+                    }
+                    
+                    return {
+                        id: unit.id,
+                        space_id: unit.space_id,
+                        title: unit.name || unit.space_name || getSpaceTypeLabel(unit.unit_type),
+                        location: unit.city || unit.address || 'Location available',
+                        price: price,
+                        priceDisplay: priceDisplay,
+                        unit_type: unit.unit_type,
+                        images: imageUrl,
+                        capacity: unit.total_capacity || 1,
+                        rating: 4.5,
+                        space_name: unit.space_name,
+                        is_verified: unit.is_verified
+                    };
+                });
+                
+                console.log(`✅ Found ${transformedResults.length} results`);
+                setResults(transformedResults);
+            } else {
+                console.warn('⚠️ No results from API');
+                setResults([]);
+                if (!response.data?.success) {
+                    setError(response.data?.message || 'No results found');
                 }
-            });
-
-            // Apply filters
-            let filteredSpaces = [...allSpaces];
-
-            if (criteria.destination) {
-                const searchTerm = criteria.destination.toLowerCase();
-                filteredSpaces = filteredSpaces.filter(space =>
-                    (space.location?.toLowerCase().includes(searchTerm) ||
-                    space.title?.toLowerCase().includes(searchTerm))
-                );
-                // console.log(`Filtered by destination "${criteria.destination}": ${filteredSpaces.length} spaces`);
             }
-
-            if (criteria.type) {
-                filteredSpaces = filteredSpaces.filter(space =>
-                    space.unit_type === criteria.type
-                );
-                // console.log(`Filtered by type "${criteria.type}": ${filteredSpaces.length} spaces`);
-            }
-
-            // console.log('Final results:', filteredSpaces.map(s => ({ id: s.id, title: s.title, hasImage: !!s.images })));
-            setResults(filteredSpaces);
-
+            
         } catch (error) {
-            console.error('Search error:', error);
+            console.error('❌ Search error:', error);
+            setError(error.response?.data?.message || error.message || 'Search failed. Please try again.');
             setResults([]);
         } finally {
             setLoading(false);
@@ -181,6 +165,36 @@ const SearchResults = () => {
         navigate(path);
     };
 
+    const getLocationDisplay = () => {
+        if (searchParams.destination) return searchParams.destination;
+        if (results.length > 0 && results[0].location) return results[0].location;
+        return 'All locations';
+    };
+
+    if (loading) {
+        return (
+            <div className="search-results-container">
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Searching for spaces...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="search-results-container">
+                <div className="error-state">
+                    <p>❌ {error}</p>
+                    <button onClick={() => window.location.reload()} className="retry-btn">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="search-results-container">
             <div className="search-results-header">
@@ -204,11 +218,11 @@ const SearchResults = () => {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="loading-spinner">Searching for spaces...</div>
-            ) : results.length > 0 ? (
+            {results.length > 0 ? (
                 <>
-                    <p className="result-count">Found {results.length} space{results.length !== 1 ? 's' : ''}</p>
+                    <p className="result-count">
+                        Found {results.length} space{results.length !== 1 ? 's' : ''} in {getLocationDisplay()}
+                    </p>
                     <div className="results-grid">
                         {results.map(space => (
                             <div
@@ -222,18 +236,26 @@ const SearchResults = () => {
                                             src={space.images} 
                                             alt={space.title}
                                             onError={(e) => {
-                                                // console.log(`Image failed to load for ${space.title}:`, space.images);
+                                                console.log(`Image failed to load for ${space.title}`);
                                                 e.target.style.display = 'none';
-                                                e.target.parentElement.innerHTML = `<div class="image-placeholder">${getSpaceTypeIcon(space.unit_type)}</div>`;
+                                                if (e.target.parentElement) {
+                                                    e.target.parentElement.innerHTML = `<div class="image-placeholder">${getSpaceTypeIcon(space.unit_type)}</div>`;
+                                                }
                                             }}
                                         />
                                     ) : (
                                         <div className="image-placeholder">{getSpaceTypeIcon(space.unit_type)}</div>
                                     )}
                                     <div className="space-type-badge">{getSpaceTypeLabel(space.unit_type)}</div>
+                                    {space.is_verified && (
+                                        <div className="verified-badge">✓ Verified</div>
+                                    )}
                                 </div>
                                 <div className="space-info">
                                     <h3>{space.title}</h3>
+                                    {space.space_name && space.space_name !== space.title && (
+                                        <p className="space-venue">📍 {space.space_name}</p>
+                                    )}
                                     <p className="space-location">📍 {space.location}</p>
                                     <div className="space-details-row">
                                         <span className="space-rating">⭐ {space.rating}</span>
@@ -251,7 +273,10 @@ const SearchResults = () => {
             ) : (
                 <div className="no-results">
                     <p>No spaces found matching your criteria.</p>
-                    <button onClick={() => navigate('/')}>Try different search</button>
+                    <p className="no-results-hint">Try adjusting your search filters or location.</p>
+                    <button onClick={() => navigate('/')} className="search-again-btn">
+                        Search Again
+                    </button>
                 </div>
             )}
         </div>

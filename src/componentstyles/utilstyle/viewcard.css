@@ -109,7 +109,7 @@
         top: 8px;
         right: 8px;
     }
-    
+
     .Cozones_Spaces_favBtn svg {
         width: 20px;
         height: 20px;
@@ -255,7 +255,7 @@
     .Cozones_Spaces_main:hover {
         transform: none;
     }
-    
+
     .Cozones_Spaces_favBtn:hover {
         transform: none;
     }
@@ -271,15 +271,15 @@
         width: 220px;
         height: 180px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 220px;
     }
-    
+
     .Cozones_Spaces_title {
         font-size: 12px;
     }
-    
+
     .Cozones_Spaces_meta {
         font-size: 11px;
     }
@@ -291,7 +291,7 @@
         width: 240px;
         height: 195px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 240px;
     }
@@ -303,7 +303,7 @@
         width: 260px;
         height: 210px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 260px;
     }
@@ -315,7 +315,7 @@
         width: 280px;
         height: 230px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 280px;
     }
@@ -327,7 +327,7 @@
         width: 300px;
         height: 245px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 300px;
     }
@@ -339,7 +339,7 @@
         width: 320px;
         height: 260px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 320px;
     }
@@ -351,7 +351,7 @@
         width: 350px;
         height: 285px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 350px;
     }
@@ -366,15 +366,15 @@
         width: 200px;
         height: 165px;
     }
-    
+
     .Cozones_Spaces_info {
         width: 200px;
     }
-    
+
     .Cozones_Spaces_title {
         font-size: 11px;
     }
-    
+
     .Cozones_Spaces_meta {
         font-size: 10px;
     }
@@ -385,16 +385,17 @@
    ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
+
     .Cozones_Spaces_main,
     .Cozones_Spaces_favBtn,
     .Cozones_Spaces_image {
         transition: none;
     }
-    
+
     .Cozones_Spaces_main:hover {
         transform: none;
     }
-    
+
     .Cozones_Spaces_favBtn:hover {
         transform: none;
     }
@@ -408,10 +409,41 @@
     .Cozones_Spaces_favBtn {
         display: none !important;
     }
-    
+
     .Cozones_Spaces_imageContainer {
         break-inside: avoid;
         width: 200px;
         height: 160px;
     }
+}
+
+/* Simple circle spinner for images */
+.image-circle-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #01095A;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 2;
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.Cozones_Spaces_imageContainer {
+    position: relative;
+    background-color: #f5f5f5;
+    min-height: 200px;
 }
