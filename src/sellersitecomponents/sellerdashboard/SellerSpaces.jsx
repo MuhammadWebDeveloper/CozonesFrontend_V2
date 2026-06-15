@@ -217,7 +217,7 @@ export default function SellerSpaces() {
                     </svg>
                     Edit Space
                   </button>
-                  <button
+                  {/* <button
                     onClick={(e) => handleDeleteSpace(space.id, e)}
                     className="ss__delete-btn"
                   >
@@ -226,7 +226,7 @@ export default function SellerSpaces() {
                       <path d="M9 4h6a1 1 0 0 1 1 1v2H8V5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="2" />
                     </svg>
                     Delete
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}

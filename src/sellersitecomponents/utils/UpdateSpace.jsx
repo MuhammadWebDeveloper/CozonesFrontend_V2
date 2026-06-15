@@ -138,6 +138,67 @@ export default function UpdateSpace() {
         }));
     };
 
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     setSubmitting(true);
+    //     setError(null);
+    //     setSuccess(null);
+
+    //     try {
+    //         const token = getAuthToken();
+
+    //         // Prepare submit data - only include fields that have values
+    //         const submitData = {};
+
+    //         if (formData.name) submitData.name = formData.name;
+    //         if (formData.description) submitData.description = formData.description;
+    //         if (formData.address) submitData.address = formData.address;
+    //         if (formData.city) submitData.city = formData.city;
+    //         if (formData.area) submitData.area = formData.area;
+    //         if (formData.opening_time) submitData.opening_time = formData.opening_time;
+    //         if (formData.closing_time) submitData.closing_time = formData.closing_time;
+    //         if (formData.working_days) submitData.working_days = formData.working_days;
+
+    //         // Boolean values - always send
+    //         submitData.has_wifi = formData.has_wifi;
+    //         submitData.has_ac = formData.has_ac;
+    //         submitData.has_coffee = formData.has_coffee;
+    //         submitData.has_printer = formData.has_printer;
+    //         submitData.has_parking = formData.has_parking;
+    //         submitData.has_security = formData.has_security;
+    //         submitData.has_backup_power = formData.has_backup_power;
+
+    //         if (formData.cancellation_policy) submitData.cancellation_policy = formData.cancellation_policy;
+    //         if (formData.refund_policy) submitData.refund_policy = formData.refund_policy;
+    //         if (formData.late_arrival_policy) submitData.late_arrival_policy = formData.late_arrival_policy;
+
+    //         // console.log('Submitting data:', submitData);
+
+    //         const response = await axios.put(
+    //             `${BaseUrl}api/spaces/updating/${id}`,
+    //             submitData,
+    //             { headers: { 'Authorization': `Bearer ${token}` } }
+    //         );
+
+    //         if (response.data.success) {
+    //             setSuccess('Space updated successfully!');
+    //             setTimeout(() => {
+    //                 navigate('/seller-dashboard');
+    //             }, 1500);
+    //         } else {
+    //             setError(response.data.message || 'Failed to update space');
+    //         }
+    //     } catch (err) {
+    //         // console.error('Error updating space:', err);
+    //         setError(err.response?.data?.message || 'An error occurred while updating the space');
+    //     } finally {
+    //         setSubmitting(false);
+    //     }
+    // };
+
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -147,6 +208,37 @@ export default function UpdateSpace() {
 
         try {
             const token = getAuthToken();
+
+            // Helper function to convert working days string to array
+            const convertWorkingDaysToArray = (daysString) => {
+                if (!daysString) return null;
+
+                const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+                // Handle range like "Monday-Friday"
+                if (daysString.includes('-')) {
+                    const [start, end] = daysString.split('-');
+                    const startIndex = daysOfWeek.indexOf(start);
+                    const endIndex = daysOfWeek.indexOf(end);
+
+                    if (startIndex !== -1 && endIndex !== -1) {
+                        return daysOfWeek.slice(startIndex, endIndex + 1);
+                    }
+                }
+
+                // Handle "Weekends Only"
+                if (daysString.toLowerCase() === 'weekends only') {
+                    return ['Saturday', 'Sunday'];
+                }
+
+                // Handle "Custom" - you might want to show a multi-select for this
+                if (daysString.toLowerCase() === 'custom') {
+                    return null; // Handle custom selection separately
+                }
+
+                // Return as single item array if it's a specific day
+                return [daysString];
+            };
 
             // Prepare submit data - only include fields that have values
             const submitData = {};
@@ -158,7 +250,11 @@ export default function UpdateSpace() {
             if (formData.area) submitData.area = formData.area;
             if (formData.opening_time) submitData.opening_time = formData.opening_time;
             if (formData.closing_time) submitData.closing_time = formData.closing_time;
-            if (formData.working_days) submitData.working_days = formData.working_days;
+
+            // Convert working_days to array format
+            if (formData.working_days) {
+                submitData.working_days = convertWorkingDaysToArray(formData.working_days);
+            }
 
             // Boolean values - always send
             submitData.has_wifi = formData.has_wifi;
@@ -173,7 +269,7 @@ export default function UpdateSpace() {
             if (formData.refund_policy) submitData.refund_policy = formData.refund_policy;
             if (formData.late_arrival_policy) submitData.late_arrival_policy = formData.late_arrival_policy;
 
-            // console.log('Submitting data:', submitData);
+            console.log('Submitting data:', submitData);
 
             const response = await axios.put(
                 `${BaseUrl}api/spaces/updating/${id}`,
@@ -190,7 +286,7 @@ export default function UpdateSpace() {
                 setError(response.data.message || 'Failed to update space');
             }
         } catch (err) {
-            // console.error('Error updating space:', err);
+            console.error('Error updating space:', err);
             setError(err.response?.data?.message || 'An error occurred while updating the space');
         } finally {
             setSubmitting(false);

@@ -360,10 +360,10 @@ export default function SpaceDetails() {
               <p className="sd__description-text">{space.description || 'No description provided'}</p>
             </div>
 
-            <button onClick={handleViewUnits} className="sd__view-units-btn">
+            {/* <button onClick={handleViewUnits} className="sd__view-units-btn">
               View All Units ({space.units?.length || 0})
               <FaChevronRight />
-            </button>
+            </button> */}
           </div>
         )}
 

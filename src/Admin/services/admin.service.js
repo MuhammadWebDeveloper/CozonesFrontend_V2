@@ -1,4 +1,4 @@
-const BASE_URL = " https://cozoens-backend-v2.vercel.app/api";
+const BASE_URL = "https://v1.api.co-zones.com/api";
 // const BASE_URL = "http://localhost:4343/api";
 // 
 // import BaseUrl from "../../sitecomponents//";

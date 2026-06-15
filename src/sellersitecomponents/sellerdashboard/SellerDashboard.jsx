@@ -304,7 +304,7 @@ export default function SellerDashboard() {
         </div>
       </aside>
 
-      <div className="sd__content">{renderPage()}</div>
+      <div className="sd__content-dashboard">{renderPage()}</div>
     </div>
   );
 }

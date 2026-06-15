@@ -1,11 +1,330 @@
-// Dedicated_Desks.jsx - Fixed (no lazy loading, use images from backend)
-import React, { useState, useEffect, useRef } from 'react';
+// // Dedicated_Desks.jsx - Fixed (no lazy loading, use images from backend)
+// import React, { useState, useEffect, useRef } from 'react';
+// import { FiArrowRight } from 'react-icons/fi';
+// import axios from 'axios';
+// import SpaceCard from "../../../utils/spacescard.jsx";
+// import './../../../componentstyles/homestyle/dedicatedDesks.css';
+// import { useNavigate } from 'react-router-dom';
+// import BaseUrl from '../../../utils/AppConstants.jsx';
+
+// // Swiper imports
+// import { Swiper, SwiperSlide } from 'swiper/react';
+// import { Navigation, Mousewheel, Autoplay } from 'swiper/modules';
+// import 'swiper/css';
+// import 'swiper/css/navigation';
+// import 'swiper/css/mousewheel';
+// import 'swiper/css/autoplay';
+
+// const Dedicated_Desks = ({ title }) => {
+//     const [spaces, setSpaces] = useState([]);
+//     const [loading, setLoading] = useState(true);
+//     const [loadingMore, setLoadingMore] = useState(false);
+//     const [error, setError] = useState(false);
+//     const [hasMore, setHasMore] = useState(true);
+//     const [page, setPage] = useState(1);
+//     const [totalCount, setTotalCount] = useState(0);
+//     const swiperRef = useRef(null);
+//     const isLoadingRef = useRef(false);
+
+//     const ITEMS_PER_PAGE = 5;
+
+//     const apiClient = axios.create({
+//         baseURL: BaseUrl,
+//         timeout: 60000, // Increased timeout for base64 images
+//         headers: { 'Content-Type': 'application/json' }
+//     });
+
+//     apiClient.interceptors.request.use((config) => {
+//         const token = localStorage.getItem('token');
+//         if (token) {
+//             config.headers.Authorization = `Bearer ${token}`;
+//         }
+//         return config;
+//     });
+
+//     const getBestRate = (unit) => {
+//         if (unit.hourly_rate && parseFloat(unit.hourly_rate) > 0) {
+//             return `PKR ${parseFloat(unit.hourly_rate).toLocaleString()}/hour`;
+//         } else if (unit.daily_rate && parseFloat(unit.daily_rate) > 0) {
+//             return `PKR ${parseFloat(unit.daily_rate).toLocaleString()}/day`;
+//         } else if (unit.monthly_rate && parseFloat(unit.monthly_rate) > 0) {
+//             return `PKR ${parseFloat(unit.monthly_rate).toLocaleString()}/month`;
+//         }
+//         return "Price on request";
+//     };
+
+//     // Helper to extract image from unit data (backend already returns it)
+//     const getUnitImage = (unit) => {
+//         if (unit.images && unit.images.length > 0) {
+//             let img = unit.images[0].image_base64;
+//             if (img && img.startsWith('data:application/octet-stream')) {
+//                 img = img.replace('data:application/octet-stream', 'data:image/jpeg');
+//             }
+//             return img;
+//         }
+//         return null;
+//     };
+
+//     const fetchSpaces = async (pageNum = 1, isLoadMore = false) => {
+//         if (isLoadingRef.current) return;
+
+//         try {
+//             if (isLoadMore) {
+//                 setLoadingMore(true);
+//             } else {
+//                 setLoading(true);
+//             }
+//             isLoadingRef.current = true;
+//             setError(false);
+
+//             const response = await apiClient.get(`api/spaces/unit/dedicated_desks?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+
+//             if (response.data?.success) {
+//                 const total = response.data.total_count || 0;
+//                 setTotalCount(total);
+
+//                 const newUnits = response.data.units || [];
+
+//                 // Transform units with images from backend
+//                 const transformedSpaces = newUnits
+//                     .filter(unit => unit.is_active === true)
+//                     .map(unit => {
+//                         const image = getUnitImage(unit);
+//                         return {
+//                             id: unit.id,
+//                             unit_id: unit.id,
+//                             title: unit.name || "Dedicated Desk",
+//                             location: unit.city || unit.space_city || "Coworking Space",
+//                             price: getBestRate(unit),
+//                             nights: 1,
+//                             rating: 4.5,
+//                             reviews: 0,
+//                             images: image ? [image] : null, // Use image from backend
+//                             unit_type: unit.unit_type
+//                         };
+//                     });
+
+//                 if (isLoadMore) {
+//                     setSpaces(prev => [...prev, ...transformedSpaces]);
+//                 } else {
+//                     setSpaces(transformedSpaces);
+//                 }
+
+//                 const currentTotal = isLoadMore ? spaces.length + transformedSpaces.length : transformedSpaces.length;
+//                 setHasMore(currentTotal < total);
+
+//                 console.log(`📊 Loaded ${currentTotal} of ${total} dedicated desks`);
+//             } else {
+//                 console.warn('⚠️ No dedicated desks from API');
+//                 setSpaces([]);
+//                 setHasMore(false);
+//             }
+
+//         } catch (err) {
+//             console.error('Error fetching dedicated desks:', err);
+//             setError(true);
+//             if (!isLoadMore) setSpaces([]);
+//         } finally {
+//             setLoading(false);
+//             setLoadingMore(false);
+//             isLoadingRef.current = false;
+//         }
+//     };
+
+//     const handleSlideChange = (swiper) => {
+//         const { activeIndex, slides } = swiper;
+//         if (hasMore && !loadingMore && !isLoadingRef.current) {
+//             if (activeIndex >= slides.length - 3) {
+//                 loadMore();
+//             }
+//         }
+//     };
+
+//     const loadMore = () => {
+//         if (!hasMore || loadingMore || isLoadingRef.current) return;
+//         const nextPage = page + 1;
+//         setPage(nextPage);
+//         fetchSpaces(nextPage, true);
+//     };
+
+//     useEffect(() => {
+//         fetchSpaces(1, false);
+//     }, []);
+
+//     const navigate = useNavigate();
+//     const handleCardClick = (id) => {
+//         navigate(`/dedicated-desk/${id}`);
+//     };
+
+//     const handleFavoriteToggle = (unitId, isLiked) => {
+//         console.log(`Favorite toggled for ${unitId}: ${isLiked}`);
+//     };
+
+//     const handleMouseEnter = () => {
+//         if (swiperRef.current && swiperRef.current.autoplay) {
+//             swiperRef.current.autoplay.stop();
+//         }
+//     };
+
+//     const handleMouseLeave = () => {
+//         if (swiperRef.current && swiperRef.current.autoplay) {
+//             swiperRef.current.autoplay.start();
+//         }
+//     };
+
+//     if (loading && spaces.length === 0) {
+//         return (
+//             <section className="Dedicated_Desks_section">
+//                 <div className="Dedicated_Desks_container">
+//                     <div className="circle-spinner"></div>
+//                     <p style={{ marginTop: '16px', color: '#666' }}>Loading dedicated desks...</p>
+//                 </div>
+//             </section>
+//         );
+//     }
+
+//     if (error && spaces.length === 0) {
+//         return (
+//             <section className="Dedicated_Desks_section">
+//                 <div className="Dedicated_Desks_container">
+//                     <h3>Unable to load dedicated desks</h3>
+//                     <button onClick={() => fetchSpaces(1, false)}>Try Again</button>
+//                 </div>
+//             </section>
+//         );
+//     }
+
+//     if (spaces.length === 0 && !loading) {
+//         return (
+//             <section className="Dedicated_Desks_section">
+//                 <div className="Dedicated_Desks_container">
+//                     <div className="Dedicated_Desks_header">
+//                         <h2 className="Dedicated_Desks_title">{title || "Dedicated Desks"}</h2>
+//                     </div>
+//                     <div className="Dedicated_Desks_empty">
+//                         <p>No active dedicated desks available at the moment.</p>
+//                     </div>
+//                 </div>
+//             </section>
+//         );
+//     }
+
+//     return (
+//         <section className="Dedicated_Desks_section">
+//             <div className="Dedicated_Desks_container">
+//                 <div className="Dedicated_Desks_header">
+//                     <h2 className="Dedicated_Desks_title">{title || "Dedicated Desks"}</h2>
+//                     <button className="Dedicated_Desks_viewAll">
+//                         View all <FiArrowRight />
+//                     </button>
+//                 </div>
+
+//                 <div
+//                     onMouseEnter={handleMouseEnter}
+//                     onMouseLeave={handleMouseLeave}
+//                     style={{ overflow: 'hidden', width: '100%' }}
+//                 >
+//                     <Swiper
+//                         modules={[Navigation, Mousewheel, Autoplay]}
+//                         spaceBetween={16}
+//                         slidesPerView="auto"
+//                         loop={false}
+//                         autoplay={{
+//                             delay: 3000,
+//                             disableOnInteraction: false,
+//                             pauseOnMouseEnter: true,
+//                             stopOnLastSlide: false,
+//                             waitForTransition: true,
+//                         }}
+//                         speed={800}
+//                         mousewheel={{
+//                             forceToAxis: true,
+//                             releaseOnEdges: false,
+//                             sensitivity: 1,
+//                             enabled: true
+//                         }}
+//                         freeMode={{
+//                             enabled: false,
+//                             momentum: false
+//                         }}
+//                         grabCursor={true}
+//                         simulateTouch={true}
+//                         touchRatio={1}
+//                         touchAngle={45}
+//                         threshold={5}
+//                         resistance={true}
+//                         resistanceRatio={0.85}
+//                         className="Dedicated_Desks_slider"
+//                         style={{ overflow: 'hidden' }}
+//                         onSwiper={(swiper) => {
+//                             swiperRef.current = swiper;
+//                         }}
+//                         onSlideChange={handleSlideChange}
+//                         onReachEnd={() => {
+//                             if (hasMore && !loadingMore) {
+//                                 loadMore();
+//                             }
+//                         }}
+//                     >
+//                         {spaces.map((space) => (
+//                             <SwiperSlide key={space.id} className="Dedicated_Desks_slide">
+//                                 <div className="Dedicated_Desks_card">
+//                                     <SpaceCard
+//                                         id={space.id}
+//                                         unit_id={space.unit_id}
+//                                         image={space.images}
+//                                         title={space.title}
+//                                         location={space.location}
+//                                         rating={space.rating}
+//                                         reviews={space.reviews}
+//                                         price={space.price}
+//                                         nights={space.nights}
+//                                         onFavoriteClick={handleFavoriteToggle}
+//                                         onCardClick={handleCardClick}
+//                                     />
+//                                 </div>
+//                             </SwiperSlide>
+//                         ))}
+
+//                         {loadingMore && (
+//                             <SwiperSlide className="Dedicated_Desks_slide loading-slide">
+//                                 <div className="loading-more-container">
+//                                     <div className="circle-spinner-small"></div>
+//                                     <p>Loading more desks...</p>
+//                                 </div>
+//                             </SwiperSlide>
+//                         )}
+//                     </Swiper>
+//                 </div>
+
+//                 {hasMore && !loadingMore && spaces.length > 0 && (
+//                     <div className="load-more-container">
+//                         <button onClick={loadMore} className="load-more-btn">
+//                             Load More Desks
+//                         </button>
+//                     </div>
+//                 )}
+//             </div>
+//         </section>
+//     );
+// };
+
+// export default Dedicated_Desks;
+
+
+
+
+
+
+
+import React, { useRef, useCallback } from 'react';
 import { FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
 import SpaceCard from "../../../utils/spacescard.jsx";
 import './../../../componentstyles/homestyle/dedicatedDesks.css';
 import { useNavigate } from 'react-router-dom';
 import BaseUrl from '../../../utils/AppConstants.jsx';
+import { useInfiniteQuery } from '@tanstack/react-query'; // 👈 ADD THIS
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,21 +335,14 @@ import 'swiper/css/mousewheel';
 import 'swiper/css/autoplay';
 
 const Dedicated_Desks = ({ title }) => {
-    const [spaces, setSpaces] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [error, setError] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
     const swiperRef = useRef(null);
-    const isLoadingRef = useRef(false);
-
+    const navigate = useNavigate();
     const ITEMS_PER_PAGE = 5;
 
+    // API client (unchanged)
     const apiClient = axios.create({
         baseURL: BaseUrl,
-        timeout: 60000, // Increased timeout for base64 images
+        timeout: 60000,
         headers: { 'Content-Type': 'application/json' }
     });
 
@@ -42,6 +354,7 @@ const Dedicated_Desks = ({ title }) => {
         return config;
     });
 
+    // Helper functions (unchanged)
     const getBestRate = (unit) => {
         if (unit.hourly_rate && parseFloat(unit.hourly_rate) > 0) {
             return `PKR ${parseFloat(unit.hourly_rate).toLocaleString()}/hour`;
@@ -53,7 +366,6 @@ const Dedicated_Desks = ({ title }) => {
         return "Price on request";
     };
 
-    // Helper to extract image from unit data (backend already returns it)
     const getUnitImage = (unit) => {
         if (unit.images && unit.images.length > 0) {
             let img = unit.images[0].image_base64;
@@ -65,99 +377,70 @@ const Dedicated_Desks = ({ title }) => {
         return null;
     };
 
-    const fetchSpaces = async (pageNum = 1, isLoadMore = false) => {
-        if (isLoadingRef.current) return;
+    // 👇 REPLACES ALL useState + useEffect + fetchSpaces
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        isError,
+        error,
+    } = useInfiniteQuery({
+        queryKey: ['dedicatedDesks'], // Unique cache key
+        queryFn: async ({ pageParam = 1 }) => {
+            const response = await apiClient.get(
+                `api/spaces/unit/dedicated_desks?page=${pageParam}&limit=${ITEMS_PER_PAGE}`
+            );
+            return response.data;
+        },
+        getNextPageParam: (lastPage, allPages) => {
+            const totalFetched = allPages.length * ITEMS_PER_PAGE;
+            const totalCount = lastPage.total_count || 0;
 
-        try {
-            if (isLoadMore) {
-                setLoadingMore(true);
-            } else {
-                setLoading(true);
+            if (totalFetched < totalCount) {
+                return allPages.length + 1;
             }
-            isLoadingRef.current = true;
-            setError(false);
+            return undefined;
+        },
+        staleTime: 10 * 60 * 1000, // 10 minutes cache
+        initialPageParam: 1,
+    });
 
-            const response = await apiClient.get(`api/spaces/unit/dedicated_desks?page=${pageNum}&limit=${ITEMS_PER_PAGE}`);
+    // Flatten all pages into one array
+    const allSpaces = data?.pages?.flatMap(page =>
+        (page.units || [])
+            .filter(unit => unit.is_active === true)
+            .map(unit => {
+                const image = getUnitImage(unit);
+                return {
+                    id: unit.id,
+                    unit_id: unit.id,
+                    title: unit.name || "Dedicated Desk",
+                    location: unit.city || unit.space_city || "Coworking Space",
+                    price: getBestRate(unit),
+                    nights: 1,
+                    rating: 4.5,
+                    reviews: 0,
+                    images: image ? [image] : null,
+                    unit_type: unit.unit_type
+                };
+            })
+    ) || [];
 
-            if (response.data?.success) {
-                const total = response.data.total_count || 0;
-                setTotalCount(total);
-
-                const newUnits = response.data.units || [];
-                
-                // Transform units with images from backend
-                const transformedSpaces = newUnits
-                    .filter(unit => unit.is_active === true)
-                    .map(unit => {
-                        const image = getUnitImage(unit);
-                        return {
-                            id: unit.id,
-                            unit_id: unit.id,
-                            title: unit.name || "Dedicated Desk",
-                            location: unit.city || unit.space_city || "Coworking Space",
-                            price: getBestRate(unit),
-                            nights: 1,
-                            rating: 4.5,
-                            reviews: 0,
-                            images: image ? [image] : null, // Use image from backend
-                            unit_type: unit.unit_type
-                        };
-                    });
-
-                if (isLoadMore) {
-                    setSpaces(prev => [...prev, ...transformedSpaces]);
-                } else {
-                    setSpaces(transformedSpaces);
-                }
-
-                const currentTotal = isLoadMore ? spaces.length + transformedSpaces.length : transformedSpaces.length;
-                setHasMore(currentTotal < total);
-
-                console.log(`📊 Loaded ${currentTotal} of ${total} dedicated desks`);
-            } else {
-                console.warn('⚠️ No dedicated desks from API');
-                setSpaces([]);
-                setHasMore(false);
-            }
-
-        } catch (err) {
-            console.error('Error fetching dedicated desks:', err);
-            setError(true);
-            if (!isLoadMore) setSpaces([]);
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-            isLoadingRef.current = false;
+    const loadMore = useCallback(() => {
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
-    };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleSlideChange = (swiper) => {
         const { activeIndex, slides } = swiper;
-        if (hasMore && !loadingMore && !isLoadingRef.current) {
+        if (hasNextPage && !isFetchingNextPage) {
             if (activeIndex >= slides.length - 3) {
                 loadMore();
             }
         }
-    };
-
-    const loadMore = () => {
-        if (!hasMore || loadingMore || isLoadingRef.current) return;
-        const nextPage = page + 1;
-        setPage(nextPage);
-        fetchSpaces(nextPage, true);
-    };
-
-    useEffect(() => {
-        fetchSpaces(1, false);
-    }, []);
-
-    const navigate = useNavigate();
-    const handleCardClick = (id) => {
-        navigate(`/dedicated-desk/${id}`);
-    };
-
-    const handleFavoriteToggle = (unitId, isLiked) => {
-        console.log(`Favorite toggled for ${unitId}: ${isLiked}`);
     };
 
     const handleMouseEnter = () => {
@@ -172,7 +455,16 @@ const Dedicated_Desks = ({ title }) => {
         }
     };
 
-    if (loading && spaces.length === 0) {
+    const handleCardClick = (id) => {
+        navigate(`/dedicated-desk/${id}`);
+    };
+
+    const handleFavoriteToggle = (unitId, isLiked) => {
+        console.log(`Favorite toggled for ${unitId}: ${isLiked}`);
+    };
+
+    // Loading state
+    if (isLoading) {
         return (
             <section className="Dedicated_Desks_section">
                 <div className="Dedicated_Desks_container">
@@ -183,18 +475,28 @@ const Dedicated_Desks = ({ title }) => {
         );
     }
 
-    if (error && spaces.length === 0) {
+    // Error state
+    if (isError) {
         return (
             <section className="Dedicated_Desks_section">
                 <div className="Dedicated_Desks_container">
                     <h3>Unable to load dedicated desks</h3>
-                    <button onClick={() => fetchSpaces(1, false)}>Try Again</button>
+                    <p style={{ color: '#666', marginBottom: '12px' }}>
+                        {error?.message || 'Something went wrong'}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="retry-btn"
+                    >
+                        Try Again
+                    </button>
                 </div>
             </section>
         );
     }
 
-    if (spaces.length === 0 && !loading) {
+    // Empty state
+    if (allSpaces.length === 0) {
         return (
             <section className="Dedicated_Desks_section">
                 <div className="Dedicated_Desks_container">
@@ -209,6 +511,7 @@ const Dedicated_Desks = ({ title }) => {
         );
     }
 
+    // Main render
     return (
         <section className="Dedicated_Desks_section">
             <div className="Dedicated_Desks_container">
@@ -261,12 +564,12 @@ const Dedicated_Desks = ({ title }) => {
                         }}
                         onSlideChange={handleSlideChange}
                         onReachEnd={() => {
-                            if (hasMore && !loadingMore) {
+                            if (hasNextPage && !isFetchingNextPage) {
                                 loadMore();
                             }
                         }}
                     >
-                        {spaces.map((space) => (
+                        {allSpaces.map((space) => (
                             <SwiperSlide key={space.id} className="Dedicated_Desks_slide">
                                 <div className="Dedicated_Desks_card">
                                     <SpaceCard
@@ -286,7 +589,7 @@ const Dedicated_Desks = ({ title }) => {
                             </SwiperSlide>
                         ))}
 
-                        {loadingMore && (
+                        {isFetchingNextPage && (
                             <SwiperSlide className="Dedicated_Desks_slide loading-slide">
                                 <div className="loading-more-container">
                                     <div className="circle-spinner-small"></div>
@@ -297,7 +600,7 @@ const Dedicated_Desks = ({ title }) => {
                     </Swiper>
                 </div>
 
-                {hasMore && !loadingMore && spaces.length > 0 && (
+                {hasNextPage && !isFetchingNextPage && allSpaces.length > 0 && (
                     <div className="load-more-container">
                         <button onClick={loadMore} className="load-more-btn">
                             Load More Desks
