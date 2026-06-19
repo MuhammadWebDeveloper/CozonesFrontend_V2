@@ -57,5 +57,13 @@ export const bookingService = {
             getAuthConfig()
         );
         return response.data;
-    }
+    },
+    createDispute: async (bookingId, reason, description) => {
+        const response = await axios.post(
+            `${BaseUrl}api/bookings/${bookingId}/dispute`,
+            { reason, description },
+            getAuthConfig()
+        );
+        return response.data;
+    },
 };

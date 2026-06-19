@@ -1,4 +1,4 @@
-// MeetingRoomsDetail.jsx - FIXED infinite loop
+// MeetingRoomsDetail.jsx - FIXED with improved hour handling
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -24,8 +24,8 @@ const MeetingRoomsDetail = () => {
     const [currentImage, setCurrentImage] = useState(0);
     const [imageLoading, setImageLoading] = useState(true);
     const [loadedImages, setLoadedImages] = useState({});
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [startDateTime, setStartDateTime] = useState(null);
+    const [endDateTime, setEndDateTime] = useState(null);
     const [selectedRateType, setSelectedRateType] = useState('daily');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
@@ -116,8 +116,8 @@ const MeetingRoomsDetail = () => {
     useEffect(() => {
         const { state } = location;
         if (state?.prefillStartDate && state?.prefillEndDate) {
-            setStartDate(state.prefillStartDate);
-            setEndDate(state.prefillEndDate);
+            setStartDateTime(state.prefillStartDate);
+            setEndDateTime(state.prefillEndDate);
             if (state.fromBookAgain) {
                 info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
             }
@@ -276,24 +276,31 @@ const MeetingRoomsDetail = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [nextImage, prevImage]);
 
+    // ============================================================
+    // CALCULATION FUNCTIONS
+    // ============================================================
+
     const calcHours = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
-        return Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+        if (!startDateTime || !endDateTime) return 0;
+        const diffMs = new Date(endDateTime) - new Date(startDateTime);
+        if (diffMs <= 0) return 0;
+        const diffHours = diffMs / (1000 * 60 * 60);
+        // Minimum 1 hour, always round up
+        return Math.max(1, Math.ceil(diffHours));
     };
 
     const calcDays = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
-        return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+        if (!startDateTime || !endDateTime) return 0;
+        const diffMs = new Date(endDateTime) - new Date(startDateTime);
+        if (diffMs <= 0) return 0;
+        return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     };
 
     const calcMonths = () => {
-        if (!startDate || !endDate) return 0;
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-        return Math.max(0, monthDiff);
+        if (!startDateTime || !endDateTime) return 0;
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime);
+        return Math.max(0, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()));
     };
 
     const getRateDisplay = () => {
@@ -307,17 +314,17 @@ const MeetingRoomsDetail = () => {
     };
 
     const calculateTotal = () => {
-        if (!startDate || !endDate) return 0;
+        if (!startDateTime || !endDateTime || !space) return 0;
         switch (selectedRateType) {
-            case 'hourly': return calcHours() * (space?.hourly_rate || 0);
-            case 'daily': return calcDays() * (space?.daily_rate || 0);
-            case 'monthly': return calcMonths() * (space?.monthly_rate || 0);
-            default: return calcDays() * (space?.daily_rate || 0);
+            case 'hourly': return calcHours() * (space.hourly_rate || 0);
+            case 'daily': return calcDays() * (space.daily_rate || 0);
+            case 'monthly': return Math.max(1, calcMonths()) * (space.monthly_rate || 0);
+            default: return calcDays() * (space.daily_rate || 0);
         }
     };
 
     const getQuantity = () => {
-        if (!startDate || !endDate) return 0;
+        if (!startDateTime || !endDateTime) return 0;
         switch (selectedRateType) {
             case 'hourly': return calcHours();
             case 'daily': return calcDays();
@@ -336,6 +343,10 @@ const MeetingRoomsDetail = () => {
         }
     };
 
+    // ============================================================
+    // HANDLE BOOKING WITH VALIDATION
+    // ============================================================
+
     const handleBooking = async () => {
         if (!user) {
             warning('Please login to book this meeting room');
@@ -350,16 +361,35 @@ const MeetingRoomsDetail = () => {
             return;
         }
 
-        if (!startDate || !endDate) {
+        if (!startDateTime || !endDateTime) {
             warning('Please select both start and end dates');
             return;
         }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime);
 
         if (start >= end) {
             error('End time must be after start time');
+            return;
+        }
+
+        // Validate minimum booking duration
+        const diffMs = end - start;
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (selectedRateType === 'hourly' && diffHours < 1) {
+            error('Hourly bookings require a minimum of 1 hour');
+            return;
+        }
+
+        if (selectedRateType === 'daily' && diffHours < 24) {
+            error('Daily bookings require a minimum of 24 hours (1 full day)');
+            return;
+        }
+
+        if (selectedRateType === 'monthly' && diffHours < 24 * 28) {
+            error('Monthly bookings require at least 28 days');
             return;
         }
 
@@ -374,8 +404,8 @@ const MeetingRoomsDetail = () => {
         try {
             const bookingData = {
                 space_unit_id: id,
-                start_time: new Date(startDate).toISOString(),
-                end_time: new Date(endDate).toISOString(),
+                start_time: new Date(startDateTime).toISOString(),
+                end_time: new Date(endDateTime).toISOString(),
                 total_price: totalPrice
             };
 
@@ -420,26 +450,6 @@ const MeetingRoomsDetail = () => {
             error(errorMessage);
         } finally {
             setBookingLoading(false);
-        }
-    };
-
-    const handleStartDateChange = (e) => {
-        const newStartDate = e.target.value;
-        setStartDate(newStartDate);
-
-        if (endDate && new Date(endDate) <= new Date(newStartDate)) {
-            warning('End date should be after start date');
-            setEndDate('');
-        }
-    };
-
-    const handleEndDateChange = (e) => {
-        const newEndDate = e.target.value;
-        setEndDate(newEndDate);
-
-        if (startDate && new Date(newEndDate) <= new Date(startDate)) {
-            warning('End date must be after start date');
-            setEndDate('');
         }
     };
 
@@ -506,8 +516,25 @@ const MeetingRoomsDetail = () => {
                 <h2 className="MeetingRoomsDetail_page-title">Space Details</h2>
 
                 {isOwnSpace() && (
-                    <div className="MeetingRoomsDetail_owner_warning">
-                        ⚠️ This is your own space. You cannot book it.
+                    <div className="MeetingRoomsDetail_owner_warning" style={{
+                        backgroundColor: '#fff3cd',
+                        borderLeft: '4px solid #ffc107',
+                        padding: '16px 20px',
+                        marginBottom: '24px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                    }}>
+                        <span style={{ fontSize: '24px' }}>⚠️</span>
+                        <div>
+                            <strong style={{ display: 'block', marginBottom: '4px', color: '#856404' }}>
+                                You are viewing your own space
+                            </strong>
+                            <span style={{ color: '#856404', fontSize: '14px' }}>
+                                As the owner, you cannot book this space. You can edit it from your dashboard instead.
+                            </span>
+                        </div>
                     </div>
                 )}
 
@@ -540,7 +567,7 @@ const MeetingRoomsDetail = () => {
                         )}
 
                         <p className="MeetingRoomsDetail_meta">
-                            Availability: <span className="MeetingRoomsDetail_available">
+                            Availability: <span className={space.is_active !== false ? "MeetingRoomsDetail_available" : "MeetingRoomsDetail_unavailable"}>
                                 {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
                             </span>
                         </p>
@@ -583,68 +610,192 @@ const MeetingRoomsDetail = () => {
                                 </p>
                             )}
                         </div>
-
-                        {/* Date & Time Selection Section with DateTimePicker */}
-                        <div className="MeetingRoomsDetail_datetime_section">
+                        {/* Date & Time Selection Section */}
+                        <div className="MeetingRoomsDetail_datetime_section" style={{ opacity: isOwnSpace() ? 0.6 : 1 }}>
                             <h3 className="MeetingRoomsDetail_section_title">Select Date & Time</h3>
                             <div className="MeetingRoomsDetail_datetime_grid">
-                                <DateTimePicker
-                                    label="Start Date & Time"
-                                    value={startDate}
-                                    onChange={handleStartDateChange}
-                                    minDate={new Date().toISOString()}
-                                    placeholder="Select start date and time"
-                                />
-                                <DateTimePicker
-                                    label="End Date & Time"
-                                    value={endDate}
-                                    onChange={handleEndDateChange}
-                                    minDate={startDate || new Date().toISOString()}
-                                    placeholder="Select end date and time"
-                                />
+                                {selectedRateType === 'hourly' ? (
+                                    // HOURLY: Show time-only pickers with same-day support
+                                    <>
+                                        <DateTimePicker
+                                            type="start"
+                                            label="Start Time"
+                                            value={startDateTime}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+                                                setStartDateTime(newValue);
+                                                if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
+                                                    setEndDateTime(null);
+                                                    warning('End time must be after start time. Please select a new end time.');
+                                                }
+                                            }}
+                                            minDate={new Date()}
+                                            placeholder="Select start time"
+                                            rateType={selectedRateType}
+                                            onWarning={warning}
+                                            isHourlyOnly={true}
+                                        />
+
+                                        <DateTimePicker
+                                            type="end"
+                                            label="End Time"
+                                            value={endDateTime}
+                                            onChange={(e) => setEndDateTime(e.target.value)}
+                                            minDate={startDateTime || new Date()}
+                                            startDate={startDateTime}
+                                            placeholder="Select end time"
+                                            rateType={selectedRateType}
+                                            onWarning={warning}
+                                            isHourlyOnly={true}
+                                        />
+                                    </>
+                                ) : (
+                                    // DAILY/MONTHLY: Show full date-time pickers
+                                    <>
+                                        <DateTimePicker
+                                            type="start"
+                                            label="Start Date & Time"
+                                            value={startDateTime}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+                                                setStartDateTime(newValue);
+                                                if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
+                                                    setEndDateTime(null);
+                                                    warning('End date must be after start date. Please select a new end date.');
+                                                }
+                                            }}
+                                            minDate={new Date()}
+                                            placeholder="Select start date and time"
+                                            rateType={selectedRateType}
+                                            onWarning={warning}
+                                        />
+
+                                        <DateTimePicker
+                                            type="end"
+                                            label="End Date & Time"
+                                            value={endDateTime}
+                                            onChange={(e) => setEndDateTime(e.target.value)}
+                                            minDate={startDateTime || new Date()}
+                                            startDate={startDateTime}
+                                            placeholder="Select end date and time"
+                                            rateType={selectedRateType}
+                                            onWarning={warning}
+                                        />
+                                    </>
+                                )}
                             </div>
+
+                            {selectedRateType === 'hourly' && (
+                                <div style={{
+                                    fontSize: '12px',
+                                    color: '#01095A',
+                                    marginTop: '8px',
+                                    padding: '6px 12px',
+                                    background: 'rgba(1, 9, 90, 0.05)',
+                                    borderRadius: '4px',
+                                    textAlign: 'center'
+                                }}>
+                                    ⏰ Hourly bookings: minimum 1 hour, same-day allowed
+                                </div>
+                            )}
+
+                            {selectedRateType === 'daily' && (
+                                <div style={{
+                                    fontSize: '12px',
+                                    color: '#6c757d',
+                                    marginTop: '8px',
+                                    padding: '6px 12px',
+                                    background: 'rgba(108, 117, 125, 0.05)',
+                                    borderRadius: '4px',
+                                    textAlign: 'center'
+                                }}>
+                                    📅 Daily bookings: minimum 24 hours (1 day)
+                                </div>
+                            )}
                         </div>
 
-                        {startDate && endDate && (
-                            <div className="MeetingRoomsDetail_summary">
-                                <div className="MeetingRoomsDetail_summary-row">
-                                    <span>Starting Date</span>
-                                    <span>{new Date(startDate).toLocaleString()}</span>
+                        {/* Booking Summary */}
+                        {startDateTime && endDateTime && !isOwnSpace() && (() => {
+                            const start = new Date(startDateTime);
+                            const end = new Date(endDateTime);
+                            if (end <= start) return null;
+                            return (
+                                <div className="MeetingRoomsDetail_summary">
+                                    <div className="MeetingRoomsDetail_summary-row">
+                                        <span>Starting Date</span>
+                                        <span>{start.toLocaleString()}</span>
+                                    </div>
+                                    <div className="MeetingRoomsDetail_summary-row">
+                                        <span>Ending Date</span>
+                                        <span>{end.toLocaleString()}</span>
+                                    </div>
+                                    <div className="MeetingRoomsDetail_summary-row">
+                                        <span>Duration</span>
+                                        <span>
+                                            {selectedRateType === 'hourly' && `${calcHours()}  ${calcHours() === 1 ? 'hour' : 'hours'}`}
+                                            {selectedRateType === 'daily' && `${calcDays()}   ${calcDays() === 1 ? 'night' : 'nights'}`}
+                                            {selectedRateType === 'monthly' && `${Math.max(1, calcMonths())} ${calcMonths() === 1 ? 'month' : 'months'}`}
+                                        </span>
+                                    </div>
+                                    <div className="MeetingRoomsDetail_summary-row">
+                                        <span>
+                                            {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
+                                        </span>
+                                        <span>PKR {total.toLocaleString()}</span>
+                                    </div>
+                                    <div className="MeetingRoomsDetail_summary-row MeetingRoomsDetail_summary-total">
+                                        <span>Total</span>
+                                        <span>PKR {total.toLocaleString()}</span>
+                                    </div>
                                 </div>
-                                <div className="MeetingRoomsDetail_summary-row">
-                                    <span>Ending Date</span>
-                                    <span>{new Date(endDate).toLocaleString()}</span>
-                                </div>
-                                <div className="MeetingRoomsDetail_summary-row">
-                                    <span>
-                                        {rateDisplay.rate?.toLocaleString()} PKR × {quantity} {getUnitLabel()}
-                                    </span>
-                                    <span>PKR {total.toLocaleString()}</span>
-                                </div>
-                                <div className="MeetingRoomsDetail_summary-row MeetingRoomsDetail_summary-total">
-                                    <span>Total</span>
-                                    <span>PKR {total.toLocaleString()}</span>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         <button
                             className="MeetingRoomsDetail_continue-btn"
-                            disabled={!startDate || !endDate || bookingLoading || isOwnSpace() || !user}
+                            disabled={isOwnSpace() || !startDateTime || !endDateTime || bookingLoading || !user || space.is_active === false}
                             onClick={handleBooking}
+                            style={{
+                                backgroundColor: isOwnSpace() ? '#6c757d' : undefined,
+                                cursor: isOwnSpace() ? 'not-allowed' : 'pointer'
+                            }}
                         >
                             {bookingLoading ? (
                                 <>
                                     <span className="spinner-small"></span>
                                     Processing...
                                 </>
+                            ) : isOwnSpace() ? (
+                                '📝 Edit Your Space'
+                            ) : space.is_active === false ? (
+                                'Currently Unavailable'
                             ) : (
                                 'Confirm Booking'
                             )}
                         </button>
+
+                        {isOwnSpace() && (
+                            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                                <button
+                                    onClick={() => navigate(`/edit-space/${space.id}`)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: '2px solid #01095A',
+                                        color: '#01095A',
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        width: '100%'
+                                    }}
+                                >
+                                    ✏️ Edit Space Details
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    {/* IMAGE SLIDER SECTION - WITH FIXED CONTAINER SIZES */}
+                    {/* IMAGE SLIDER SECTION */}
                     <div className="MeetingRoomsDetail_right">
                         <div
                             className="MeetingRoomsDetail_gallery"
@@ -842,7 +993,6 @@ const MeetingRoomsDetail = () => {
                         </p>
                     </div>
 
-                    {/* Working Hours - Using flattened fields */}
                     {(space.opening_time && space.closing_time) && (
                         <div className="MeetingRoomsDetail_section">
                             <h3 className="MeetingRoomsDetail_section-title">Working Hours</h3>
@@ -857,7 +1007,6 @@ const MeetingRoomsDetail = () => {
                         </div>
                     )}
 
-                    {/* Amenities */}
                     {renderAmenities().length > 0 && (
                         <div className="MeetingRoomsDetail_section">
                             <h3 className="MeetingRoomsDetail_section-title">Amenities</h3>
@@ -869,7 +1018,6 @@ const MeetingRoomsDetail = () => {
                         </div>
                     )}
 
-                    {/* Space Information */}
                     <div className="MeetingRoomsDetail_section">
                         <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
                         <div className="MeetingRoomsDetail_space_info">
@@ -881,18 +1029,6 @@ const MeetingRoomsDetail = () => {
                             {isOwnSpace() && <p className="verified">👑 You are the owner of this space</p>}
                         </div>
                     </div>
-
-                    {/* Policies */}
-                    {space.policies && (space.policies.cancellation || space.policies.refund || space.policies.late_arrival) && (
-                        <div className="MeetingRoomsDetail_section">
-                            <h3 className="MeetingRoomsDetail_section-title">Booking Policies</h3>
-                            <div className="MeetingRoomsDetail_policies">
-                                {space.policies.cancellation && <p><strong>Cancellation:</strong> {space.policies.cancellation}</p>}
-                                {space.policies.refund && <p><strong>Refund:</strong> {space.policies.refund}</p>}
-                                {space.policies.late_arrival && <p><strong>Late Arrival:</strong> {space.policies.late_arrival}</p>}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </>

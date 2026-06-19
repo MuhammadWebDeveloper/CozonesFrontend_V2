@@ -205,8 +205,9 @@ const SpaceDetail = () => {
     const [imagesLoading, setImagesLoading] = useState(true);
     const [images, setImages] = useState([]);
     const [currentImage, setCurrentImage] = useState(0);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    // FIXED: Using consistent state names for dates
+    const [startDateTime, setStartDateTime] = useState(null);
+    const [endDateTime, setEndDateTime] = useState(null);
     const [selectedRateType, setSelectedRateType] = useState('daily');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
@@ -250,8 +251,8 @@ const SpaceDetail = () => {
     useEffect(() => {
         const { state } = location;
         if (state?.prefillStartDate && state?.prefillEndDate) {
-            setStartDate(state.prefillStartDate);
-            setEndDate(state.prefillEndDate);
+            setStartDateTime(state.prefillStartDate);
+            setEndDateTime(state.prefillEndDate);
             if (state.fromBookAgain) {
                 info('📅 Previous booking dates loaded. You can modify them or select new dates to book again.');
             }
@@ -426,28 +427,29 @@ const SpaceDetail = () => {
         }
     };
 
+    // FIXED: Use startDateTime and endDateTime
     const calcHours = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
+        if (!startDateTime || !endDateTime) return 0;
+        const diff = new Date(endDateTime) - new Date(startDateTime);
         return Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
     };
 
     const calcDays = () => {
-        if (!startDate || !endDate) return 0;
-        const diff = new Date(endDate) - new Date(startDate);
+        if (!startDateTime || !endDateTime) return 0;
+        const diff = new Date(endDateTime) - new Date(startDateTime);
         return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
     };
 
     const calcMonths = () => {
-        if (!startDate || !endDate) return 0;
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        if (!startDateTime || !endDateTime) return 0;
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime);
         const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
         return Math.max(0, monthDiff);
     };
 
     const calculateTotal = () => {
-        if (!startDate || !endDate) return 0;
+        if (!startDateTime || !endDateTime) return 0;
         switch (selectedRateType) {
             case 'hourly': return calcHours() * (space?.hourly_rate || 0);
             case 'daily': return calcDays() * (space?.daily_rate || 0);
@@ -457,7 +459,7 @@ const SpaceDetail = () => {
     };
 
     const getQuantity = () => {
-        if (!startDate || !endDate) return 0;
+        if (!startDateTime || !endDateTime) return 0;
         switch (selectedRateType) {
             case 'hourly': return calcHours();
             case 'daily': return calcDays();
@@ -488,13 +490,13 @@ const SpaceDetail = () => {
             return;
         }
 
-        if (!startDate || !endDate) {
+        if (!startDateTime || !endDateTime) {
             warning('Please select both start and end dates');
             return;
         }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime);
 
         if (start >= end) {
             error('End time must be after start time');
@@ -512,8 +514,8 @@ const SpaceDetail = () => {
         try {
             const bookingData = {
                 space_unit_id: id,
-                start_time: new Date(startDate).toISOString(),
-                end_time: new Date(endDate).toISOString(),
+                start_time: new Date(startDateTime).toISOString(),
+                end_time: new Date(endDateTime).toISOString(),
                 total_price: totalPrice
             };
 
@@ -617,7 +619,7 @@ const SpaceDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="SpaceDetail_page">
                 <button className="SpaceDetail_back-btn" onClick={() => navigate(-1)}>
-                     Back to spaces
+                    Back to spaces
                 </button>
 
                 <h2 className="SpaceDetail_page-title">Space Details</h2>
@@ -722,33 +724,43 @@ const SpaceDetail = () => {
                             <h3 className="SpaceDetail_section_title">Select Date & Time</h3>
                             <div className="SpaceDetail_datetime_grid">
                                 <DateTimePicker
+                                    type="start"
                                     label="Start Date & Time"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    minDate={new Date().toISOString()}
+                                    value={startDateTime}
+                                    onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        setStartDateTime(newValue);
+                                        // If end date is before start date, clear it
+                                        if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
+                                            setEndDateTime(null);
+                                            warning('End date must be after start date. Please select a new end date.');
+                                        }
+                                    }}
+                                    minDate={new Date()}
                                     placeholder="Select start date and time"
-                                    disabled={isOwner}
                                 />
+
                                 <DateTimePicker
+                                    type="end"
                                     label="End Date & Time"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    minDate={startDate || new Date().toISOString()}
+                                    value={endDateTime}
+                                    onChange={(e) => setEndDateTime(e.target.value)}
+                                    minDate={startDateTime || new Date()}
+                                    startDate={startDateTime}
                                     placeholder="Select end date and time"
-                                    disabled={isOwner}
                                 />
                             </div>
                         </div>
 
-                        {startDate && endDate && !isOwner && (
+                        {startDateTime && endDateTime && !isOwner && (
                             <div className="SpaceDetail_summary">
                                 <div className="SpaceDetail_summary-row">
                                     <span>Starting Date</span>
-                                    <span>{new Date(startDate).toLocaleString()}</span>
+                                    <span>{new Date(startDateTime).toLocaleString()}</span>
                                 </div>
                                 <div className="SpaceDetail_summary-row">
                                     <span>Ending Date</span>
-                                    <span>{new Date(endDate).toLocaleString()}</span>
+                                    <span>{new Date(endDateTime).toLocaleString()}</span>
                                 </div>
                                 <div className="SpaceDetail_summary-row">
                                     <span>
@@ -765,7 +777,7 @@ const SpaceDetail = () => {
 
                         <button
                             className="SpaceDetail_continue-btn"
-                            disabled={isOwner || !startDate || !endDate || bookingLoading || !user || !space.is_active}
+                            disabled={isOwner || !startDateTime || !endDateTime || bookingLoading || !user || !space.is_active}
                             onClick={handleBooking}
                             style={{
                                 backgroundColor: isOwner ? '#6c757d' : undefined,

@@ -40,6 +40,7 @@ import AdminBookings from './admin/pages/AdminBookings';
 import AdminHostRequests from './admin/pages/AdminHostRequests';
 import AdminUsers from './admin/pages/AdminUsers';
 import SearchResults from './utils/SearchResults.jsx';
+import AdminDisputes from './Admin/pages/AdminDisputes.jsx';
 // ──────────────────────────────────────────────────────────────────────────
 
 // Routes where Navbar should be hidden
@@ -158,6 +159,7 @@ function AppContent() {
                     <Route path="spaces" element={<AdminSpaces />} />
                     <Route path="bookings" element={<AdminBookings />} />
                     <Route path="hosts" element={<AdminHostRequests />} />
+                    <Route path="disputes" element={<AdminDisputes />} />
                     <Route path="users" element={<AdminUsers />} />
                 </Route>
                 {/* ─────────────────────────────────────────────────────── */}

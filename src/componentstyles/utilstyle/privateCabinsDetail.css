@@ -1,1135 +1,1850 @@
-/* privateCabinsDetail.css - Premium Redesign with #01095A Theme */
+    /* privateCabinsDetail.css — White + #011CCD only, fully responsive grid */
 
-/* ===== CSS Variables ===== */
-:root {
-    --primary: #01095A;
-    --primary-dark: #000740;
-    --primary-light: #2a3180;
-    --primary-bg: rgba(1, 9, 90, 0.05);
-    --primary-glow: rgba(1, 9, 90, 0.15);
-    --text-primary: #1a1a2e;
-    --text-secondary: #4a4a6a;
-    --text-muted: #7a7a9a;
-    --border-light: #e8eaf0;
-    --bg-card: #ffffff;
-    --bg-gradient: linear-gradient(135deg, #f8f9fc 0%, #f1f3f8 100%);
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 24px 64px rgba(1, 9, 90, 0.15);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --container-padding: 2rem;
-    --gap-large: 3rem;
-    --gap-medium: 1.5rem;
-    --gap-small: 1rem;
-}
-
-/* ===== Container ===== */
-.PrivateCabinsDetail_page {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 2rem var(--container-padding) 4rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg-gradient);
-    min-height: 100vh;
-    position: relative;
-}
-
-.PrivateCabinsDetail_page::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 400px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    opacity: 0.03;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* ===== Loading State ===== */
-.PrivateCabinsDetail_loading {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    gap: 1.5rem;
-    font-size: 1.1rem;
-    color: var(--primary);
-    background: var(--bg-gradient);
-    padding: 2rem;
-    text-align: center;
-}
-
-.PrivateCabinsDetail_spinner {
-    width: 56px;
-    height: 56px;
-    border: 3px solid var(--border-light);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: PrivateCabinsDetail_spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    box-shadow: var(--shadow-sm);
-}
-
-@keyframes PrivateCabinsDetail_spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ===== Back Button ===== */
-.PrivateCabinsDetail_back-btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    position: relative;
-    z-index: 1;
-}
-
-.PrivateCabinsDetail_back-btn:hover {
-    transform: translateX(-4px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-light);
-    color: var(--primary);
-}
-
-/* ===== Page Title ===== */
-.PrivateCabinsDetail_page-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--primary);
-    margin-bottom: 1.5rem;
-    opacity: 0.7;
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== Unit Type Badge ===== */
-.PrivateCabinsDetail_unit_badge {
-    display: inline-block;
-    background: var(--primary);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== Top Grid Layout ===== */
-.PrivateCabinsDetail_top-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: var(--gap-large);
-    margin-bottom: 3rem;
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== Left Section - Booking ===== */
-.PrivateCabinsDetail_left {
-    background: var(--bg-card);
-    border-radius: 32px;
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-    transition: var(--transition);
-    animation: fadeInUp 0.6s ease;
-}
-
-.PrivateCabinsDetail_left:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-}
-
-.PrivateCabinsDetail_title {
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-}
-
-.PrivateCabinsDetail_meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-    padding: 6px 0;
-}
-
-.PrivateCabinsDetail_available {
-    color: #10b981 !important;
-    background: rgba(16, 185, 129, 0.1);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-/* Rate Selector */
-.PrivateCabinsDetail_rate_selector {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background: var(--primary-bg);
-    border-radius: 24px;
-}
-
-.PrivateCabinsDetail_rate_selector label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 0.75rem;
-}
-
-.PrivateCabinsDetail_rate_options {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.PrivateCabinsDetail_rate_option {
-    flex: 1;
-    min-width: 100px;
-    padding: 10px 16px;
-    background: white;
-    border: 2px solid var(--border-light);
-    border-radius: 16px;
-    cursor: pointer;
-    transition: var(--transition);
-    text-align: center;
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: clamp(0.75rem, 2vw, 0.85rem);
-}
-
-.PrivateCabinsDetail_rate_option.active {
-    border-color: var(--primary);
-    background: var(--primary-bg);
-    color: var(--primary);
-}
-
-.PrivateCabinsDetail_rate_option:hover {
-    border-color: var(--primary-light);
-    transform: translateY(-2px);
-}
-
-.PrivateCabinsDetail_rate_amount {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-top: 4px;
-}
-
-/* Pricing Section */
-.PrivateCabinsDetail_pricing {
-    background: var(--primary-bg);
-    border-radius: 24px;
-    padding: 1.5rem;
-    margin: 1.5rem 0;
-    text-align: center;
-}
-
-.PrivateCabinsDetail_price {
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 800;
-    color: var(--primary);
-    margin: 0;
-}
-
-.PrivateCabinsDetail_note {
-    font-size: clamp(0.7rem, 2vw, 0.85rem);
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-}
-
-/* Date & Time Section */
-.PrivateCabinsDetail_datetime_section {
-    margin: 24px 0;
-    padding: 0;
-    background: transparent;
-    border-radius: 0;
-}
-
-.PrivateCabinsDetail_section_title {
-    font-size: clamp(0.9rem, 3vw, 1.1rem);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.PrivateCabinsDetail_datetime_grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 16px;
-}
-
-/* Summary Card */
-.PrivateCabinsDetail_summary {
-    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-    border-radius: 28px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: var(--transition);
-}
-
-.PrivateCabinsDetail_summary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.PrivateCabinsDetail_summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    color: var(--text-secondary);
-    font-size: clamp(0.8rem, 2vw, 0.95rem);
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.PrivateCabinsDetail_summary-total {
-    border-top: 2px solid rgba(1, 9, 90, 0.1);
-    margin-top: 0.5rem;
-    padding-top: 1rem;
-    font-size: 1.1rem;
-}
-
-.PrivateCabinsDetail_summary-total span:last-child {
-    color: var(--primary);
-    font-size: clamp(1rem, 3vw, 1.3rem);
-    font-weight: 800;
-}
-
-/* Continue Button */
-.PrivateCabinsDetail_continue-btn {
-    width: 100%;
-    padding: clamp(14px, 3vw, 18px);
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 60px;
-    font-size: clamp(0.85rem, 2.5vw, 1rem);
-    font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--shadow-md);
-    position: relative;
-    overflow: hidden;
-}
-
-.PrivateCabinsDetail_continue-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.PrivateCabinsDetail_continue-btn:active {
-    transform: translateY(0);
-}
-
-.PrivateCabinsDetail_continue-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ===== Right Section - Gallery ===== */
-.PrivateCabinsDetail_right {
-    animation: fadeInUp 0.6s ease 0.2s backwards;
-}
-
-.PrivateCabinsDetail_gallery {
-    position: relative;
-    border-radius: 32px;
-    overflow: hidden;
-    background: var(--bg-card);
-    box-shadow: var(--shadow-lg);
-    transition: var(--transition);
-    aspect-ratio: 16 / 9;
-    max-height: 480px;
-}
-
-.PrivateCabinsDetail_gallery:hover {
-    box-shadow: var(--shadow-xl);
-}
-
-.PrivateCabinsDetail_no-img {
-    width: 100%;
-    height: 100%;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 1rem;
-    background: var(--primary-bg);
-}
-
-/* Image Navigation Buttons */
-.PrivateCabinsDetail_img-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    box-shadow: var(--shadow-md);
-    color: var(--primary);
-    backdrop-filter: blur(4px);
-    z-index: 10;
-}
-
-.PrivateCabinsDetail_img-nav:hover {
-    background: white;
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: var(--shadow-lg);
-}
-
-.PrivateCabinsDetail_img-nav:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.PrivateCabinsDetail_prev {
-    left: 20px;
-}
-
-.PrivateCabinsDetail_next {
-    right: 20px;
-}
-
-.PrivateCabinsDetail_img-counter {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    backdrop-filter: blur(4px);
-    z-index: 10;
-}
-
-/* Thumbnails */
-.PrivateCabinsDetail_thumbnails {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 12px 0;
-    margin-top: 1rem;
-    scrollbar-width: thin;
-}
-
-.PrivateCabinsDetail_thumbnails::-webkit-scrollbar {
-    height: 6px;
-}
-
-.PrivateCabinsDetail_thumbnails::-webkit-scrollbar-track {
-    background: var(--border-light);
-    border-radius: 10px;
-}
-
-.PrivateCabinsDetail_thumbnails::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.PrivateCabinsDetail_thumb_wrapper {
-    cursor: pointer;
-    width: 80px;
-    height: 80px;
-    flex-shrink: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid transparent;
-    transition: var(--transition);
-}
-
-.PrivateCabinsDetail_thumb_wrapper:hover {
-    transform: scale(1.05);
-    box-shadow: var(--shadow-md);
-}
-
-.PrivateCabinsDetail_thumb_wrapper.active {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-.PrivateCabinsDetail_thumb_wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* ===== Bottom Section ===== */
-.PrivateCabinsDetail_bottom {
-    background: var(--bg-card);
-    border-radius: 32px;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    box-shadow: var(--shadow-lg);
-    animation: fadeInUp 0.6s ease 0.4s backwards;
-    position: relative;
-}
-
-.PrivateCabinsDetail_section {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 20px;
-    padding: clamp(1rem, 3vw, 1.75rem);
-    margin-bottom: clamp(1rem, 3vw, 2rem);
-    border: 1px solid #e2e8f0;
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
-}
-
-.PrivateCabinsDetail_section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #011CCD, #4a6eff);
-    transform: scaleX(0);
-    transition: transform 0.4s ease;
-}
-
-.PrivateCabinsDetail_section:hover::before {
-    transform: scaleX(1);
-}
-
-.PrivateCabinsDetail_section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e0;
-}
-
-.PrivateCabinsDetail_section-title {
-    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
-    font-weight: 700;
-    background: linear-gradient(135deg, #011CCD, #4a6eff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin: 0 0 1.25rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
-    display: inline-block;
-    position: relative;
-}
-
-.PrivateCabinsDetail_description {
-    color: var(--text-secondary);
-    line-height: 1.7;
-    font-size: clamp(0.85rem, 2.5vw, 1rem);
-}
-
-/* Working Hours */
-.PrivateCabinsDetail_working_hours {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    font-weight: 600;
-    color: var(--primary);
-    margin: 0;
-}
-
-.PrivateCabinsDetail_working_days {
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-}
-
-/* Features Grid - Amenities */
-.PrivateCabinsDetail_features {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 1rem;
-}
-
-.PrivateCabinsDetail_feature-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: var(--primary-bg);
-    border: 1px solid rgba(1, 9, 90, 0.1);
-    border-radius: 40px;
-    font-size: clamp(0.7rem, 2vw, 0.85rem);
-    font-weight: 500;
-    color: var(--primary);
-    transition: var(--transition);
-    cursor: default;
-}
-
-.PrivateCabinsDetail_feature-tag:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-    border-color: transparent;
-}
-
-/* Space Information */
-.PrivateCabinsDetail_space_info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.PrivateCabinsDetail_space_info p {
-    margin: 0;
-    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
-    color: #2d3748;
-    flex-wrap: wrap;
-}
-
-.PrivateCabinsDetail_space_info p:hover {
-    transform: translateX(5px);
-    border-color: #011CCD;
-    box-shadow: 0 2px 8px rgba(1, 28, 205, 0.1);
-}
-
-.PrivateCabinsDetail_space_info p strong {
-    color: #011CCD;
-    font-weight: 600;
-    min-width: 140px;
-}
-
-.PrivateCabinsDetail_space_info .verified {
-    background: linear-gradient(135deg, #f0fff4, #d1fae5);
-    border-color: #10b981;
-    color: #065f46;
-    font-weight: 600;
-}
-
-/* Policies */
-.PrivateCabinsDetail_policies {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.PrivateCabinsDetail_policies p {
-    margin: 0;
-    padding: 0.75rem 1rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
-    color: var(--text-secondary);
-}
-
-/* Owner and Login Warnings */
-.PrivateCabinsDetail_owner_warning,
-.PrivateCabinsDetail_login_warning {
-    padding: 12px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    font-weight: 500;
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-}
-
-.PrivateCabinsDetail_owner_warning {
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
-}
-
-.PrivateCabinsDetail_login_warning {
-    background-color: #d1ecf1;
-    border: 1px solid #bee5eb;
-    color: #0c5460;
-}
-
-.login-link {
-    background: none;
-    border: none;
-    color: #011CCD;
-    text-decoration: underline;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-/* Retry Button */
-.PrivateCabinsDetail_retry-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: var(--transition);
-    font-weight: 600;
-}
-
-.PrivateCabinsDetail_retry-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-/* Spinner Small */
-.spinner-small {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.6s linear infinite;
-    margin-right: 8px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===== Responsive Breakpoints ===== */
-
-/* Tablet Landscape (1024px - 1280px) */
-@media (max-width: 1280px) {
+    /* ===== Variables ===== */
     :root {
-        --container-padding: 1.5rem;
-        --gap-large: 2rem;
+        --blue: #011CCD;
+        --blue-dark: #010ea0;
+        --blue-faint: rgba(1, 28, 205, 0.06);
+        --blue-mid: rgba(1, 28, 205, 0.12);
+        --blue-border: rgba(1, 28, 205, 0.2);
+        --white: #ffffff;
+        --gray-50: #f8f9fc;
+        --gray-100: #f0f2f8;
+        --gray-200: #e2e6f0;
+        --gray-400: #9099b8;
+        --gray-600: #4a5275;
+        --gray-800: #1a1f3a;
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-xl: 32px;
+        --shadow-sm: 0 2px 8px rgba(1, 28, 205, 0.06);
+        --shadow-md: 0 8px 24px rgba(1, 28, 205, 0.1);
+        --shadow-lg: 0 16px 48px rgba(1, 28, 205, 0.13);
+        --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 70px;
-        height: 70px;
-    }
-}
-
-/* Tablet Portrait (768px - 1024px) */
-@media (max-width: 1024px) {
-    .PrivateCabinsDetail_top-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .PrivateCabinsDetail_right {
-        order: -1;
-    }
-
-    .PrivateCabinsDetail_gallery {
-        max-height: 450px;
-    }
-
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 65px;
-        height: 65px;
-    }
-
-    .PrivateCabinsDetail_space_info p strong {
-        min-width: 120px;
-    }
-}
-
-/* Mobile Landscape (640px - 768px) */
-@media (max-width: 768px) {
-    :root {
-        --container-padding: 1rem;
-        --gap-large: 1.5rem;
-    }
-
+    /* ===== Page Shell ===== */
     .PrivateCabinsDetail_page {
-        padding: 1rem 1rem 3rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 80px 40px 60px;
+        background: var(--white);
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--gray-800);
     }
 
-    .PrivateCabinsDetail_back-btn {
-        padding: 10px 18px;
-        font-size: 13px;
-        margin-bottom: 1rem;
-    }
-
-    .PrivateCabinsDetail_left {
-        padding: 1.5rem;
-        border-radius: 24px;
-    }
-
-    .PrivateCabinsDetail_datetime_grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .PrivateCabinsDetail_rate_options {
+    /* ===== Loading ===== */
+    .PrivateCabinsDetail_loading {
+        display: flex;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        gap: 20px;
+        background: var(--white);
     }
 
-    .PrivateCabinsDetail_rate_option {
-        min-width: auto;
-    }
-
-    .PrivateCabinsDetail_gallery {
-        max-height: 350px;
-    }
-
-    .PrivateCabinsDetail_img-nav {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-    }
-
-    .PrivateCabinsDetail_prev {
-        left: 12px;
-    }
-
-    .PrivateCabinsDetail_next {
-        right: 12px;
-    }
-
-    .PrivateCabinsDetail_thumbnails {
-        gap: 8px;
-    }
-
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 55px;
-        height: 55px;
-    }
-
-    .PrivateCabinsDetail_bottom {
-        padding: 1.5rem;
-        border-radius: 24px;
-    }
-
-    .PrivateCabinsDetail_section {
-        padding: 1.25rem;
-    }
-
-    .PrivateCabinsDetail_features {
-        gap: 8px;
-    }
-
-    .PrivateCabinsDetail_feature-tag {
-        padding: 6px 14px;
-    }
-
-    .PrivateCabinsDetail_space_info p strong {
-        min-width: 100px;
-    }
-}
-
-/* Mobile Portrait (480px - 640px) */
-@media (max-width: 640px) {
-    .PrivateCabinsDetail_top-grid {
-        gap: 1.5rem;
-    }
-
-    .PrivateCabinsDetail_left {
-        padding: 1.25rem;
-        border-radius: 20px;
-    }
-
-    .PrivateCabinsDetail_gallery {
-        max-height: 280px;
-        border-radius: 20px;
-    }
-
-    .PrivateCabinsDetail_no-img {
-        min-height: 250px;
-    }
-
-    .PrivateCabinsDetail_img-nav {
-        width: 32px;
-        height: 32px;
+    .PrivateCabinsDetail_loading p {
         font-size: 16px;
+        color: var(--gray-600);
     }
 
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 50px;
-        height: 50px;
-        border-radius: 8px;
+    .PrivateCabinsDetail_spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--blue);
+        border-radius: 50%;
+        animation: pcd-spin 0.8s linear infinite;
     }
 
-    .PrivateCabinsDetail_summary {
-        padding: 1rem;
-        border-radius: 20px;
+    @keyframes pcd-spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
-    .PrivateCabinsDetail_summary-row {
-        padding: 0.5rem 0;
-    }
-
-    .PrivateCabinsDetail_bottom {
-        padding: 1.25rem;
-        border-radius: 20px;
-    }
-
-    .PrivateCabinsDetail_section {
-        padding: 1rem;
-        border-radius: 16px;
-    }
-
-    .PrivateCabinsDetail_space_info p {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-
-    .PrivateCabinsDetail_space_info p strong {
-        min-width: auto;
-    }
-
-    .PrivateCabinsDetail_space_info p:hover {
-        transform: translateX(0);
-    }
-
-    .PrivateCabinsDetail_policies p {
-        padding: 0.5rem 0.75rem;
-    }
-}
-
-/* Small Mobile (320px - 480px) */
-@media (max-width: 480px) {
-    .PrivateCabinsDetail_page {
-        padding: 0.75rem 0.75rem 2rem;
-    }
-
+    /* ===== Nav Row ===== */
     .PrivateCabinsDetail_back-btn {
-        padding: 8px 16px;
-        font-size: 12px;
-        margin-bottom: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--white);
+        border: 1.5px solid var(--blue-border);
+        color: var(--blue);
+        padding: 10px 22px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 24px;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
     }
 
+    .PrivateCabinsDetail_back-btn:hover {
+        background: var(--blue);
+        color: var(--white);
+        transform: translateX(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* ===== Page Label + Badge ===== */
     .PrivateCabinsDetail_page-title {
-        font-size: 0.75rem;
-        margin-bottom: 1rem;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--blue);
+        opacity: 0.6;
+        margin-bottom: 12px;
     }
 
     .PrivateCabinsDetail_unit_badge {
-        margin-bottom: 1rem;
-        font-size: 0.7rem;
+        display: inline-block;
+        background: var(--blue);
+        color: var(--white);
+        padding: 5px 16px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 28px;
     }
 
-    .PrivateCabinsDetail_left {
-        padding: 1rem;
-        border-radius: 16px;
-    }
-
-    .PrivateCabinsDetail_rate_selector {
-        padding: 0.75rem;
-        margin: 1rem 0;
-    }
-
-    .PrivateCabinsDetail_pricing {
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-
-    .PrivateCabinsDetail_gallery {
-        max-height: 220px;
-        border-radius: 16px;
-    }
-
-    .PrivateCabinsDetail_no-img {
-        min-height: 200px;
-    }
-
-    .PrivateCabinsDetail_img-nav {
-        width: 28px;
-        height: 28px;
+    /* ===== Warnings ===== */
+    .PrivateCabinsDetail_owner_warning,
+    .PrivateCabinsDetail_login_warning {
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        margin-bottom: 20px;
         font-size: 14px;
+        font-weight: 500;
+        border: 1.5px solid var(--blue-border);
+        background: var(--blue-faint);
+        color: var(--blue);
     }
 
-    .PrivateCabinsDetail_img-counter {
-        bottom: 10px;
-        right: 10px;
-        padding: 4px 10px;
-        font-size: 10px;
+    .login-link {
+        background: none;
+        border: none;
+        color: var(--blue);
+        text-decoration: underline;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: inherit;
     }
 
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 45px;
-        height: 45px;
-        border-radius: 6px;
+    /* ===== TOP GRID — the main two-column layout ===== */
+    .PrivateCabinsDetail_top-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr; 
+        gap: 40px;
+        align-items: start;
+        margin-bottom: 48px;
     }
 
-    .PrivateCabinsDetail_thumbnails {
-        gap: 6px;
+    /* ===== LEFT — Booking Panel ===== */
+    .PrivateCabinsDetail_left {
+        background: var(--white);
+        border: 1.5px solid var(--gray-200);
+        border-radius: var(--radius-xl);
+        padding: 32px;
+        box-shadow: var(--shadow-md);
+        position: sticky;
+        top: 100px;
     }
 
-    .PrivateCabinsDetail_section-title {
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.5rem;
-    }
-
-    .PrivateCabinsDetail_section-title::after {
-        width: 40px;
-    }
-
-    .PrivateCabinsDetail_feature-tag {
-        padding: 4px 12px;
-        font-size: 0.7rem;
-    }
-
-    .PrivateCabinsDetail_features {
-        gap: 6px;
+    .PrivateCabinsDetail_title {
+        font-size: clamp(22px, 3vw, 32px);
+        font-weight: 800;
+        color: var(--gray-800);
+        margin: 0 0 12px;
+        line-height: 1.2;
+        letter-spacing: -0.03em;
     }
 
     .PrivateCabinsDetail_meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 6px;
+        font-size: 14px;
+        color: var(--gray-600);
+        margin-bottom: 8px;
     }
 
     .PrivateCabinsDetail_available {
-        padding: 2px 10px;
-        font-size: 0.75rem;
-    }
-}
-
-/* Extra Small Devices (below 320px) */
-@media (max-width: 320px) {
-    .PrivateCabinsDetail_thumb_wrapper {
-        width: 40px;
-        height: 40px;
+        color: var(--blue) !important;
+        background: var(--blue-faint);
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        border: 1px solid var(--blue-border);
     }
 
-    .PrivateCabinsDetail_thumbnails {
-        gap: 4px;
+    /* Rate Selector */
+    .PrivateCabinsDetail_rate_selector {
+        margin: 20px 0;
+        padding: 16px;
+        background: var(--blue-faint);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--blue-border);
     }
 
-    .PrivateCabinsDetail_feature-tag {
-        padding: 3px 10px;
-        font-size: 0.65rem;
+    .PrivateCabinsDetail_rate_selector label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--blue);
+        margin-bottom: 12px;
+    }
+
+    .PrivateCabinsDetail_rate_options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .PrivateCabinsDetail_rate_option {
+        padding: 10px 12px;
+        background: var(--white);
+        border: 1.5px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: center;
+        font-weight: 600;
+        color: var(--gray-600);
+        font-size: 13px;
+    }
+
+    .PrivateCabinsDetail_rate_option.active {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: var(--white);
+    }
+
+    .PrivateCabinsDetail_rate_option:hover:not(.active) {
+        border-color: var(--blue);
+        color: var(--blue);
+        transform: translateY(-1px);
+    }
+
+    .PrivateCabinsDetail_rate_amount {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 4px;
+        opacity: 0.85;
+    }
+
+    /* Price Display */
+    .PrivateCabinsDetail_pricing {
+        background: var(--blue);
+        border-radius: var(--radius-md);
+        padding: 10px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .PrivateCabinsDetail_price {
+        font-size: clamp(20px, 3vw, 28px);
+        font-weight: 500;
+        color: var(--white);
+        margin: 0;
+    }
+
+    .PrivateCabinsDetail_note {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+        margin-top: 6px;
+    }
+
+    /* DateTime Section */
+    .PrivateCabinsDetail_datetime_section {
+        margin: 20px 0;
+    }
+
+    .PrivateCabinsDetail_section_title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .PrivateCabinsDetail_datetime_grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    /* Summary */
+    .PrivateCabinsDetail_summary {
+        background: var(--blue-faint);
+        border: 1px solid var(--blue-border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin: 20px 0;
     }
 
     .PrivateCabinsDetail_summary-row {
-        font-size: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 14px;
+        color: var(--gray-600);
+        border-bottom: 1px solid var(--blue-border);
+        gap: 12px;
+        flex-wrap: wrap;
     }
-}
 
-/* Landscape Mode for Mobile */
-@media (max-height: 500px) and (orientation: landscape) {
-    .PrivateCabinsDetail_page {
-        padding: 0.75rem 1rem 2rem;
+    .PrivateCabinsDetail_summary-row:last-child {
+        border-bottom: none;
     }
 
-    .PrivateCabinsDetail_top-grid {
-        gap: 1rem;
+    .PrivateCabinsDetail_summary-total {
+        padding-top: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--gray-800);
+    }
+
+    .PrivateCabinsDetail_summary-total span:last-child {
+        color: var(--blue);
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    /* Confirm Button */
+    .PrivateCabinsDetail_continue-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--blue);
+        color: var(--white);
+        border: none;
+        border-radius: 50px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .PrivateCabinsDetail_continue-btn:hover:not(:disabled) {
+        background: var(--blue-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .PrivateCabinsDetail_continue-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Spinner inside button */
+    .spinner-small {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: pcd-spin 0.6s linear infinite;
+    }
+
+    /* ===== RIGHT — Gallery ===== */
+    .PrivateCabinsDetail_right {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .PrivateCabinsDetail_gallery {
-        max-height: 250px;
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        height: 100%;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        background: var(--gray-100);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .PrivateCabinsDetail_gallery img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: opacity 0.3s ease;
+        display: block;
+    }
+
+    .PrivateCabinsDetail_image_loader {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        z-index: 5;
+        border-radius: var(--radius-xl);
+    }
+
+    .PrivateCabinsDetail_spinner_small {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--blue);
+        border-radius: 50%;
+        animation: pcd-spin 0.8s linear infinite;
+    }
+
+    .PrivateCabinsDetail_no-img {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        font-size: 14px;
+    }
+
+    /* Image nav buttons */
+    .PrivateCabinsDetail_img-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.92);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow-md);
+        color: var(--blue);
+        z-index: 10;
+        line-height: 1;
+    }
+
+    .PrivateCabinsDetail_img-nav:hover {
+        background: var(--blue);
+        color: var(--white);
+        transform: translateY(-50%) scale(1.08);
+    }
+
+    .PrivateCabinsDetail_prev {
+        left: 16px;
+    }
+
+    .PrivateCabinsDetail_next {
+        right: 16px;
+    }
+
+    .PrivateCabinsDetail_img-counter {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(1, 28, 205, 0.8);
+        color: var(--white);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    /* Thumbnails */
+    .PrivateCabinsDetail_thumbnails {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
     }
 
     .PrivateCabinsDetail_thumb_wrapper {
-        width: 50px;
-        height: 50px;
+        cursor: pointer;
+        aspect-ratio: 1;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: var(--transition);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper:hover {
+        border-color: var(--blue);
+        transform: scale(1.04);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper.active {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px var(--blue-mid);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* ===== BOTTOM — Info Sections ===== */
+    .PrivateCabinsDetail_bottom {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .PrivateCabinsDetail_section {
+        background: var(--white);
+        border: 1.5px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        transition: var(--transition);
+    }
+
+    .PrivateCabinsDetail_section:hover {
+        border-color: var(--blue-border);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    /* Full-width sections */
+    .PrivateCabinsDetail_section:first-child,
+    .PrivateCabinsDetail_section:has(.PrivateCabinsDetail_features) {
+        grid-column: 1 / -1;
+    }
+
+    .PrivateCabinsDetail_section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--blue);
+        margin: 0 0 18px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--blue-faint);
+    }
+
+    .PrivateCabinsDetail_description {
+        font-size: 15px;
+        line-height: 1.75;
+        color: var(--gray-600);
+        margin: 0;
+    }
+
+    /* Working Hours */
+    .PrivateCabinsDetail_working_hours {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0 0 8px;
+    }
+
+    .PrivateCabinsDetail_working_days {
+        font-size: 14px;
+        color: var(--gray-600);
+        margin: 0;
+    }
+
+    /* Amenities */
+    .PrivateCabinsDetail_features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .PrivateCabinsDetail_feature-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: var(--blue-faint);
+        border: 1px solid var(--blue-border);
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--blue);
+        transition: var(--transition);
+        cursor: default;
+    }
+
+    .PrivateCabinsDetail_feature-tag:hover {
+        background: var(--blue);
+        color: var(--white);
+        border-color: var(--blue);
+        transform: translateY(-2px);
+    }
+
+    /* Space Info */
+    .PrivateCabinsDetail_space_info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .PrivateCabinsDetail_space_info p {
+        margin: 0;
+        padding: 12px 16px;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        color: var(--gray-600);
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .PrivateCabinsDetail_space_info p:hover {
+        border-color: var(--blue-border);
+        background: var(--blue-faint);
+    }
+
+    .PrivateCabinsDetail_space_info p strong {
+        color: var(--blue);
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .PrivateCabinsDetail_space_info .verified {
+        background: var(--blue-faint);
+        border-color: var(--blue-border);
+        color: var(--blue);
+        font-weight: 600;
+    }
+
+    /* Policies */
+    .PrivateCabinsDetail_policies {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .PrivateCabinsDetail_policies p {
+        margin: 0;
+        padding: 12px 16px;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        color: var(--gray-600);
+    }
+
+    /* Retry button */
+    .PrivateCabinsDetail_retry-btn {
+        background: var(--blue);
+        color: var(--white);
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--radius-sm);
+        margin-left: 10px;
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .PrivateCabinsDetail_retry-btn:hover {
+        background: var(--blue-dark);
+        transform: translateY(-1px);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .PrivateCabinsDetail_left {
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .PrivateCabinsDetail_right {
+        animation: fadeInUp 0.5s ease 0.1s backwards;
     }
 
     .PrivateCabinsDetail_bottom {
-        margin-top: 1rem;
+        animation: fadeInUp 0.5s ease 0.2s backwards;
     }
-}
 
-/* Print Styles */
-@media print {
+    /* ===== RESPONSIVE ===== */
 
-    .PrivateCabinsDetail_back-btn,
-    .PrivateCabinsDetail_continue-btn,
-    .PrivateCabinsDetail_img-nav,
+    /* Large tablet */
+    @media (max-width: 1200px) {
+        .PrivateCabinsDetail_page {
+            padding: 80px 28px 48px;
+        }
+
+        .PrivateCabinsDetail_top-grid {
+            gap: 28px;
+        }
+    }
+
+    /* Tablet portrait — stack to single column */
+    @media (max-width: 1024px) {
+        .PrivateCabinsDetail_top-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        /* Gallery above booking on tablet/mobile */
+        .PrivateCabinsDetail_right {
+            order: -1;
+        }
+
+        .PrivateCabinsDetail_left {
+            position: static;
+            /* no sticky on mobile */
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 16 / 9;
+        }
+
+        .PrivateCabinsDetail_bottom {
+            grid-template-columns: 1fr;
+        }
+
+        .PrivateCabinsDetail_section:first-child,
+        .PrivateCabinsDetail_section:has(.PrivateCabinsDetail_features) {
+            grid-column: auto;
+        }
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────
+    MOBILE RANGE: 768px → 320px
+    Five tight steps so nothing breaks at any width in between.
+    ───────────────────────────────────────────────────────────────────────── */
+
+    /* ── 768px: large mobile / small tablet landscape ── */
+    @media (max-width: 768px) {
+        .PrivateCabinsDetail_page {
+            padding: 68px 18px 36px;
+        }
+
+        /* booking card: slightly tighter */
+        .PrivateCabinsDetail_left {
+            padding: 22px 18px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* title scales down */
+        .PrivateCabinsDetail_title {
+            font-size: 22px;
+        }
+
+        /* dates stack vertically */
+        .PrivateCabinsDetail_datetime_grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        /* rate buttons: fill row evenly */
+        .PrivateCabinsDetail_rate_options {
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        /* gallery: wider aspect on small landscape */
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 16 / 9;
+        }
+
+        /* nav arrows slightly smaller */
+        .PrivateCabinsDetail_img-nav {
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
+        }
+
+        /* thumbnails: 6 equal columns */
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        /* section cards */
+        .PrivateCabinsDetail_section {
+            padding: 20px 16px;
+            border-radius: var(--radius-md);
+        }
+
+        /* space info: single column */
+        .PrivateCabinsDetail_space_info {
+            grid-template-columns: 1fr;
+        }
+
+        /* amenity tags */
+        .PrivateCabinsDetail_feature-tag {
+            padding: 7px 14px;
+            font-size: 13px;
+        }
+
+        /* summary rows */
+        .PrivateCabinsDetail_summary-row {
+            font-size: 13px;
+        }
+    }
+
+    /* ── 640px: standard mobile landscape / large portrait ── */
+    @media (max-width: 640px) {
+        .PrivateCabinsDetail_page {
+            padding: 64px 16px 32px;
+        }
+
+        .PrivateCabinsDetail_back-btn {
+            padding: 9px 18px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .PrivateCabinsDetail_top-grid {
+            gap: 16px;
+        }
+
+        .PrivateCabinsDetail_left {
+            padding: 18px 16px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .PrivateCabinsDetail_meta {
+            font-size: 13px;
+        }
+
+        /* price box */
+        .PrivateCabinsDetail_pricing {
+            padding: 10px;
+            border-radius: var(--radius-md);
+            margin: 16px 0;
+        }
+
+        .PrivateCabinsDetail_price {
+            font-size: 22px;
+        }
+
+        /* rate selector */
+        .PrivateCabinsDetail_rate_selector {
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_rate_options {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        /* gallery: square-ish on portrait */
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 4 / 3;
+            border-radius: var(--radius-lg);
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 34px;
+            height: 34px;
+            font-size: 16px;
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 12px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 12px;
+        }
+
+        .PrivateCabinsDetail_img-counter {
+            bottom: 12px;
+            right: 12px;
+            font-size: 11px;
+            padding: 4px 10px;
+        }
+
+        /* thumbnails: 6 columns still fit */
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        /* bottom sections */
+        .PrivateCabinsDetail_bottom {
+            gap: 14px;
+        }
+
+        .PrivateCabinsDetail_section {
+            padding: 16px 14px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_section-title {
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        .PrivateCabinsDetail_summary {
+            padding: 14px 12px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_summary-total span:last-child {
+            font-size: 18px;
+        }
+
+        .PrivateCabinsDetail_continue-btn {
+            padding: 14px;
+            font-size: 14px;
+        }
+
+        .PrivateCabinsDetail_feature-tag {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    }
+
+    /* ── 480px: typical portrait phone (iPhone SE, Galaxy A-series) ── */
+    @media (max-width: 480px) {
+        .PrivateCabinsDetail_page {
+            padding: 60px 12px 28px;
+        }
+
+        .PrivateCabinsDetail_back-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .PrivateCabinsDetail_page-title {
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .PrivateCabinsDetail_unit_badge {
+            font-size: 10px;
+            padding: 4px 12px;
+            margin-bottom: 20px;
+        }
+
+        .PrivateCabinsDetail_top-grid {
+            grid-template-columns: 400px;
+            gap: 14px;
+        }
+
+        .PrivateCabinsDetail_left {
+            padding: 16px 12px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_title {
+            font-size: 18px;
+            letter-spacing: -0.02em;
+        }
+
+        .PrivateCabinsDetail_meta {
+            font-size: 12px;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .PrivateCabinsDetail_available {
+            font-size: 11px;
+            padding: 2px 10px;
+        }
+
+        /* rate: two-column grid on small phones */
+        .PrivateCabinsDetail_rate_selector {
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .PrivateCabinsDetail_rate_selector label {
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        .PrivateCabinsDetail_rate_options {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        /* if only 1 rate, span full width */
+        .PrivateCabinsDetail_rate_option:only-child {
+            grid-column: 1 / -1;
+        }
+
+        .PrivateCabinsDetail_rate_option {
+            padding: 9px 8px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        .PrivateCabinsDetail_rate_amount {
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_pricing {
+            padding: 14px;
+            margin: 14px 0;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_price {
+            font-size: 20px;
+        }
+
+        .PrivateCabinsDetail_note {
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_section_title {
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        /* gallery */
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 4 / 3;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 8px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 8px;
+        }
+
+        /* thumbnails: drop to 4 so each thumb stays touchable */
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        /* summary */
+        .PrivateCabinsDetail_summary {
+            padding: 12px 10px;
+            margin: 14px 0;
+        }
+
+        .PrivateCabinsDetail_summary-row {
+            font-size: 12px;
+            padding: 7px 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .PrivateCabinsDetail_summary-row span:last-child {
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .PrivateCabinsDetail_summary-total {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .PrivateCabinsDetail_summary-total span:last-child {
+            color: var(--blue);
+            font-size: 17px;
+        }
+
+        .PrivateCabinsDetail_continue-btn {
+            padding: 13px;
+            font-size: 14px;
+            border-radius: 40px;
+        }
+
+        /* bottom sections */
+        .PrivateCabinsDetail_bottom {
+            gap: 12px;
+        }
+
+        .PrivateCabinsDetail_section {
+            padding: 14px 12px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_section-title {
+            font-size: 13px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+
+        .PrivateCabinsDetail_description {
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .PrivateCabinsDetail_features {
+            gap: 7px;
+        }
+
+        .PrivateCabinsDetail_feature-tag {
+            padding: 5px 11px;
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_space_info p {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .PrivateCabinsDetail_space_info p strong {
+            font-size: 10px;
+        }
+
+        .PrivateCabinsDetail_working_hours {
+            font-size: 13px;
+        }
+
+        .PrivateCabinsDetail_working_days {
+            font-size: 12px;
+        }
+
+        .PrivateCabinsDetail_policies p {
+            font-size: 13px;
+            padding: 10px 12px;
+        }
+
+        .PrivateCabinsDetail_owner_warning,
+        .PrivateCabinsDetail_login_warning {
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+        }
+    }
+
+    /* ── 390px: iPhone 14 / Pixel 7 portrait ── */
+    @media (max-width: 376px) {
+        .PrivateCabinsDetail_top-grid {
+            grid-template-columns: 350px;
+            /* gap: 14px; */
+        }
+    }
+
+    @media (max-width: 390px) {
+        .PrivateCabinsDetail_page {
+            padding: 58px 10px 24px;
+        }
+
+        .PrivateCabinsDetail_title {
+            font-size: 17px;
+        }
+
+        .PrivateCabinsDetail_price {
+            font-size: 18px;
+        }
+
+        /* thumbnails: stay at 4 but tighter gap */
+        .PrivateCabinsDetail_thumbnails {
+            gap: 5px;
+        }
+
+        /* summary row: keep two-line layout */
+        .PrivateCabinsDetail_summary-row {
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_summary-total span:last-child {
+            font-size: 16px;
+        }
+
+        .PrivateCabinsDetail_continue-btn {
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        /* rate options: 2 columns, compact */
+        .PrivateCabinsDetail_rate_option {
+            padding: 8px 6px;
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_rate_amount {
+            font-size: 10px;
+        }
+
+        .PrivateCabinsDetail_feature-tag {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_section {
+            padding: 12px 10px;
+        }
+    }
+
+    /* ── 320px: minimum supported width (iPhone SE 1st gen, older Androids) ── */
+    @media (max-width: 320px) {
+        .PrivateCabinsDetail_page {
+            padding: 56px 8px 20px;
+        }
+
+        .PrivateCabinsDetail_back-btn {
+            padding: 7px 12px;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        .PrivateCabinsDetail_title {
+            font-size: 15px;
+            letter-spacing: 0;
+        }
+
+        .PrivateCabinsDetail_meta {
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_pricing {
+            padding: 12px 10px;
+        }
+
+        .PrivateCabinsDetail_price {
+            font-size: 16px;
+        }
+
+        /* rate: stack to single column at 320 */
+        .PrivateCabinsDetail_rate_options {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .PrivateCabinsDetail_rate_option {
+            padding: 8px 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .PrivateCabinsDetail_rate_amount {
+            display: inline;
+            margin-top: 0;
+            font-size: 11px;
+        }
+
+        /* gallery: taller on tiny screen to show image */
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 1 / 1;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 28px;
+            height: 28px;
+            font-size: 13px;
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 6px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 6px;
+        }
+
+        .PrivateCabinsDetail_img-counter {
+            font-size: 10px;
+            padding: 3px 8px;
+            bottom: 8px;
+            right: 8px;
+        }
+
+        /* thumbnails: 3 columns at 320 — keeps them large enough to tap */
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        /* summary: single column layout */
+        .PrivateCabinsDetail_summary {
+            padding: 10px 8px;
+        }
+
+        .PrivateCabinsDetail_summary-row {
+            font-size: 11px;
+            padding: 6px 0;
+        }
+
+        .PrivateCabinsDetail_summary-total span:last-child {
+            font-size: 15px;
+        }
+
+        .PrivateCabinsDetail_continue-btn {
+            padding: 11px;
+            font-size: 13px;
+        }
+
+        /* bottom sections */
+        .PrivateCabinsDetail_section {
+            padding: 10px 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .PrivateCabinsDetail_section-title {
+            font-size: 12px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+        }
+
+        .PrivateCabinsDetail_description {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .PrivateCabinsDetail_feature-tag {
+            padding: 4px 9px;
+            font-size: 10px;
+        }
+
+        .PrivateCabinsDetail_features {
+            gap: 5px;
+        }
+
+        .PrivateCabinsDetail_space_info p {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .PrivateCabinsDetail_space_info p strong {
+            font-size: 9px;
+        }
+
+        .PrivateCabinsDetail_policies p {
+            font-size: 12px;
+            padding: 8px 10px;
+        }
+
+        .PrivateCabinsDetail_working_hours {
+            font-size: 12px;
+        }
+
+        .PrivateCabinsDetail_working_days {
+            font-size: 11px;
+        }
+
+        .PrivateCabinsDetail_owner_warning,
+        .PrivateCabinsDetail_login_warning {
+            font-size: 12px;
+            padding: 8px 10px;
+        }
+
+        .PrivateCabinsDetail_unit_badge {
+            font-size: 9px;
+            padding: 3px 10px;
+        }
+
+        .PrivateCabinsDetail_top-grid {
+            grid-template-columns: 300px;
+            /* gap: 14px; */
+        }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* Print */
+    @media print {
+
+        .PrivateCabinsDetail_back-btn,
+        .PrivateCabinsDetail_continue-btn,
+        .PrivateCabinsDetail_img-nav,
+        .PrivateCabinsDetail_thumbnails {
+            display: none;
+        }
+
+        .PrivateCabinsDetail_page {
+            padding: 0;
+        }
+
+        .PrivateCabinsDetail_top-grid,
+        .PrivateCabinsDetail_bottom {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ===== RIGHT — Gallery ===== */
+    .PrivateCabinsDetail_right {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+        animation: fadeInUp 0.5s ease 0.1s backwards;
+    }
+
+    .PrivateCabinsDetail_gallery {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        background: var(--gray-100);
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+        min-height: 320px;
+    }
+
+    .PrivateCabinsDetail_gallery:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .PrivateCabinsDetail_gallery img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.5s ease, opacity 0.3s ease;
+        display: block;
+    }
+
+    .PrivateCabinsDetail_gallery:hover img {
+        transform: scale(1.03);
+    }
+
+    .PrivateCabinsDetail_image_loader {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        z-index: 5;
+        border-radius: var(--radius-xl);
+    }
+
+    .PrivateCabinsDetail_spinner_small {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--blue);
+        border-radius: 50%;
+        animation: pcd-spin 0.8s linear infinite;
+    }
+
+    .PrivateCabinsDetail_no-img {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        color: var(--gray-400);
+        font-size: 14px;
+        gap: 8px;
+    }
+
+    .PrivateCabinsDetail_no-img::before {
+        content: '🖼️';
+        font-size: 32px;
+        opacity: 0.5;
+    }
+
+    /* ===== Image Navigation Buttons ===== */
+    .PrivateCabinsDetail_img-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.92);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow-md);
+        color: var(--blue);
+        z-index: 10;
+        line-height: 1;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .PrivateCabinsDetail_img-nav:hover {
+        background: var(--blue);
+        color: var(--white);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .PrivateCabinsDetail_img-nav:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .PrivateCabinsDetail_prev {
+        left: 16px;
+    }
+
+    .PrivateCabinsDetail_next {
+        right: 16px;
+    }
+
+    /* ===== Image Counter ===== */
+    .PrivateCabinsDetail_img-counter {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(1, 28, 205, 0.85);
+        color: var(--white);
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* ===== Thumbnails ===== */
     .PrivateCabinsDetail_thumbnails {
-        display: none;
+        display: grid;
+        gap: 10px;
+        width: 100%;
     }
 
-    .PrivateCabinsDetail_page {
-        padding: 0;
-        background: white;
+    /* Desktop: 6 columns */
+    @media (min-width: 1025px) {
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(6, 1fr);
+        }
     }
 
-    .PrivateCabinsDetail_left,
-    .PrivateCabinsDetail_bottom,
-    .PrivateCabinsDetail_section {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-    :root {
-        --primary: #0000aa;
-        --border-light: #000;
-        --shadow-sm: none;
-        --shadow-md: none;
+    /* Tablet: 6 columns */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
     }
 
-    .PrivateCabinsDetail_gallery,
-    .PrivateCabinsDetail_left,
-    .PrivateCabinsDetail_bottom,
-    .PrivateCabinsDetail_section {
-        border: 2px solid #000;
+    /* Mobile Landscape: 4 columns */
+    @media (max-width: 768px) and (min-width: 481px) {
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
     }
-}
 
-/* Reduced Motion Preference */
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+    /* Mobile Portrait: 4 columns */
+    @media (max-width: 480px) and (min-width: 321px) {
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
     }
-}
+
+    /* Very Small: 3 columns */
+    @media (max-width: 320px) {
+        .PrivateCabinsDetail_thumbnails {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper {
+        cursor: pointer;
+        aspect-ratio: 1;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: var(--transition);
+        position: relative;
+        background: var(--gray-100);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper:hover {
+        border-color: var(--blue);
+        transform: scale(1.05);
+        z-index: 2;
+        box-shadow: var(--shadow-md);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper.active {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px var(--blue-mid);
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .PrivateCabinsDetail_thumb_wrapper:hover img {
+        transform: scale(1.1);
+    }
+
+    /* ===== Responsive Gallery Adjustments ===== */
+
+    /* Tablet */
+    @media (max-width: 1024px) {
+        .PrivateCabinsDetail_right {
+            order: -1;
+            gap: 14px;
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 16 / 9;
+            min-height: 280px;
+            border-radius: var(--radius-lg);
+        }
+    }
+
+    /* Mobile Landscape */
+    @media (max-width: 768px) {
+        .PrivateCabinsDetail_right {
+            gap: 12px;
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 16 / 9;
+            min-height: 240px;
+            border-radius: var(--radius-lg);
+        }
+
+        .PrivateCabinsDetail_gallery:hover {
+            transform: none;
+        }
+
+        .PrivateCabinsDetail_gallery:hover img {
+            transform: none;
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 12px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 12px;
+        }
+    }
+
+    /* Mobile Portrait */
+    @media (max-width: 480px) {
+        .PrivateCabinsDetail_right {
+            gap: 10px;
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 4 / 3;
+            min-height: 200px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 8px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 8px;
+        }
+
+        .PrivateCabinsDetail_img-counter {
+            bottom: 12px;
+            right: 12px;
+            font-size: 11px;
+            padding: 4px 10px;
+        }
+    }
+
+    /* Very Small Screens */
+    @media (max-width: 320px) {
+        .PrivateCabinsDetail_right {
+            gap: 8px;
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 1 / 1;
+            min-height: 180px;
+            border-radius: var(--radius-md);
+        }
+
+        .PrivateCabinsDetail_img-nav {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+        }
+
+        .PrivateCabinsDetail_prev {
+            left: 6px;
+        }
+
+        .PrivateCabinsDetail_next {
+            right: 6px;
+        }
+
+        .PrivateCabinsDetail_img-counter {
+            font-size: 10px;
+            padding: 3px 8px;
+            bottom: 8px;
+            right: 8px;
+        }
+    }
+
+    /* ===== Touch Device Optimizations ===== */
+    @media (hover: none) {
+        .PrivateCabinsDetail_thumb_wrapper:hover {
+            transform: none;
+            border-color: transparent;
+        }
+
+        .PrivateCabinsDetail_thumb_wrapper:active {
+            transform: scale(0.95);
+            border-color: var(--blue);
+        }
+
+        .PrivateCabinsDetail_img-nav:hover {
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--blue);
+            transform: translateY(-50%);
+        }
+
+        .PrivateCabinsDetail_img-nav:active {
+            transform: translateY(-50%) scale(0.92);
+        }
+
+        .PrivateCabinsDetail_gallery:hover {
+            transform: none;
+        }
+
+        .PrivateCabinsDetail_gallery:hover img {
+            transform: none;
+        }
+    }
+
+    /* ===== Reduced Motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+
+        .PrivateCabinsDetail_gallery img,
+        .PrivateCabinsDetail_thumb_wrapper img,
+        .PrivateCabinsDetail_img-nav,
+        .PrivateCabinsDetail_thumb_wrapper {
+            transition: none !important;
+        }
+
+        .PrivateCabinsDetail_gallery:hover img {
+            transform: none !important;
+        }
+
+        .PrivateCabinsDetail_thumb_wrapper:hover img {
+            transform: none !important;
+        }
+
+        .PrivateCabinsDetail_thumb_wrapper:hover {
+            transform: none !important;
+        }
+    }
+
+    /* ===== Scrollbar Styling for Thumbnails (if needed) ===== */
+    .PrivateCabinsDetail_thumbnails::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .PrivateCabinsDetail_thumbnails::-webkit-scrollbar-track {
+        background: var(--gray-100);
+        border-radius: 10px;
+    }
+
+    .PrivateCabinsDetail_thumbnails::-webkit-scrollbar-thumb {
+        background: var(--blue);
+        border-radius: 10px;
+    }
+
+    /* ===== Print Styles ===== */
+    @media print {
+        .PrivateCabinsDetail_right {
+            order: 0 !important;
+        }
+
+        .PrivateCabinsDetail_img-nav,
+        .PrivateCabinsDetail_thumbnails {
+            display: none !important;
+        }
+
+        .PrivateCabinsDetail_gallery {
+            aspect-ratio: 4 / 3 !important;
+            box-shadow: none !important;
+            border: 1px solid #ddd;
+            min-height: auto !important;
+        }
+
+        .PrivateCabinsDetail_gallery:hover {
+            transform: none !important;
+        }
+
+        .PrivateCabinsDetail_gallery:hover img {
+            transform: none !important;
+        }
+    }

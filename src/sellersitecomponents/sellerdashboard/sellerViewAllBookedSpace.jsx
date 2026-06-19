@@ -13,12 +13,13 @@ import {
     Search,
     Check,
     X,
-    Trash2
+    Trash2,
+    AlertTriangle
 } from 'lucide-react';
 import '../../componentstyles/sellerdashboardstyles/SellerViewAllBookedSpace.css';
 import { bookingService } from '../utils/booking.service';
 
-// Cancel Modal Component
+// ─── Cancel Modal ────────────────────────────────────────────────────────────
 const CancelBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,20 +28,11 @@ const CancelBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!reason.trim()) {
-            toast.error('Please provide a reason for cancellation');
-            return;
-        }
+        if (!reason.trim()) { toast.error('Please provide a reason for cancellation'); return; }
         setIsSubmitting(true);
-        try {
-            await onConfirm(reason);
-            setReason('');
-            onClose();
-        } catch (error) {
-            console.error('Cancel submission error:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        try { await onConfirm(reason); setReason(''); onClose(); }
+        catch (error) { console.error('Cancel submission error:', error); }
+        finally { setIsSubmitting(false); }
     };
 
     return (
@@ -48,11 +40,8 @@ const CancelBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
             <div className="cancel-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="cancel-modal-header">
                     <h3>Cancel Booking</h3>
-                    <button className="cancel-modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
+                    <button className="cancel-modal-close" onClick={onClose}><X size={20} /></button>
                 </div>
-
                 <form onSubmit={handleSubmit}>
                     <div className="cancel-modal-body">
                         <p className="cancel-booking-info">
@@ -61,28 +50,23 @@ const CancelBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
                             <strong>Date:</strong> {booking?.start_time ? new Date(booking.start_time).toLocaleDateString() : 'N/A'}<br />
                             <strong>Amount:</strong> PKR {booking?.total_price ? parseFloat(booking.total_price).toLocaleString() : '0'}
                         </p>
-
                         <label className="cancel-label">
                             Reason for Cancellation *
                             <textarea
                                 className="cancel-textarea"
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                placeholder="Please explain why you need to cancel this booking (e.g., maintenance issue, double booking, etc.)..."
+                                placeholder="Please explain why you need to cancel this booking..."
                                 rows="4"
                                 required
                             />
                         </label>
-
                         <div className="cancel-warning">
-                            ⚠️ This action cannot be undone. The customer will be notified via email with your cancellation reason.
+                            ⚠️ This action cannot be undone. The customer will be notified via email.
                         </div>
                     </div>
-
                     <div className="cancel-modal-footer">
-                        <button type="button" className="cancel-btn-secondary" onClick={onClose}>
-                            Close
-                        </button>
+                        <button type="button" className="cancel-btn-secondary" onClick={onClose}>Close</button>
                         <button type="submit" className="cancel-btn-primary" disabled={isSubmitting}>
                             {isSubmitting ? 'Cancelling...' : 'Confirm Cancellation'}
                         </button>
@@ -93,7 +77,7 @@ const CancelBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
     );
 };
 
-// Delete Confirmation Modal
+// ─── Delete Modal ─────────────────────────────────────────────────────────────
 const DeleteBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,14 +86,9 @@ const DeleteBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        try {
-            await onConfirm();
-            onClose();
-        } catch (error) {
-            console.error('Delete submission error:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        try { await onConfirm(); onClose(); }
+        catch (error) { console.error('Delete submission error:', error); }
+        finally { setIsSubmitting(false); }
     };
 
     return (
@@ -117,11 +96,8 @@ const DeleteBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
             <div className="cancel-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="cancel-modal-header">
                     <h3>Delete Booking Permanently</h3>
-                    <button className="cancel-modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
+                    <button className="cancel-modal-close" onClick={onClose}><X size={20} /></button>
                 </div>
-
                 <form onSubmit={handleSubmit}>
                     <div className="cancel-modal-body">
                         <p className="cancel-booking-info">
@@ -130,16 +106,12 @@ const DeleteBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
                             <strong>Booking Ref:</strong> {booking?.booking_ref}<br />
                             <strong>Date:</strong> {booking?.start_time ? new Date(booking.start_time).toLocaleDateString() : 'N/A'}
                         </p>
-
                         <div className="delete-warning">
-                            ⚠️ <strong>Warning!</strong> This action cannot be undone. This booking will be permanently deleted from the system.
+                            ⚠️ <strong>Warning!</strong> This action cannot be undone. This booking will be permanently deleted.
                         </div>
                     </div>
-
                     <div className="cancel-modal-footer">
-                        <button type="button" className="cancel-btn-secondary" onClick={onClose}>
-                            Cancel
-                        </button>
+                        <button type="button" className="cancel-btn-secondary" onClick={onClose}>Cancel</button>
                         <button type="submit" className="delete-btn-primary" disabled={isSubmitting}>
                             {isSubmitting ? 'Deleting...' : 'Yes, Delete Permanently'}
                         </button>
@@ -150,6 +122,85 @@ const DeleteBookingModal = ({ isOpen, onClose, onConfirm, booking }) => {
     );
 };
 
+// ─── Dispute Modal ────────────────────────────────────────────────────────────
+const DisputeModal = ({ isOpen, onClose, onConfirm, booking }) => {
+    const [reason, setReason] = useState('');
+    const [description, setDescription] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!reason.trim()) { toast.error('Please provide a reason for the dispute'); return; }
+        setIsSubmitting(true);
+        try { await onConfirm(reason, description); setReason(''); setDescription(''); onClose(); }
+        catch (error) { console.error('Dispute submission error:', error); }
+        finally { setIsSubmitting(false); }
+    };
+
+    return (
+        <div className="cancel-modal-overlay" onClick={onClose}>
+            <div className="cancel-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="cancel-modal-header">
+                    <h3>⚠️ Raise a Dispute</h3>
+                    <button className="cancel-modal-close" onClick={onClose}><X size={20} /></button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="cancel-modal-body">
+                        <p className="cancel-booking-info">
+                            <strong>Customer:</strong> {booking?.buyer?.full_name}<br />
+                            <strong>Unit:</strong> {booking?.unit?.name}<br />
+                            <strong>Booking Ref:</strong> {booking?.booking_ref}<br />
+                            <strong>Amount:</strong> PKR {booking?.total_price ? parseFloat(booking.total_price).toLocaleString() : '0'}
+                        </p>
+
+                        <label className="cancel-label">
+                            Reason *
+                            <input
+                                type="text"
+                                className="cancel-textarea"
+                                style={{ height: '42px', resize: 'none', padding: '10px 12px', display: 'block', width: '100%', boxSizing: 'border-box' }}
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                placeholder="e.g. Payment not received, property damage..."
+                                required
+                            />
+                        </label>
+
+                        <label className="cancel-label" style={{ marginTop: '12px' }}>
+                            Additional Details (optional)
+                            <textarea
+                                className="cancel-textarea"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Describe the issue in more detail..."
+                                rows="4"
+                            />
+                        </label>
+
+                        <div className="cancel-warning" style={{ background: 'rgba(220,38,38,0.08)', borderLeft: '4px solid #dc2626', color: '#dc2626' }}>
+                            ⚠️ Your dispute will be reviewed by admin. You will be notified via email once resolved.
+                        </div>
+                    </div>
+                    <div className="cancel-modal-footer">
+                        <button type="button" className="cancel-btn-secondary" onClick={onClose}>Close</button>
+                        <button
+                            type="submit"
+                            className="cancel-btn-primary"
+                            disabled={isSubmitting}
+                            style={{ background: '#dc2626', borderColor: '#dc2626' }}
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Submit Dispute'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 function SellerViewAllBookedSpace() {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
@@ -159,52 +210,33 @@ function SellerViewAllBookedSpace() {
     const [searchTerm, setSearchTerm] = useState('');
     const [actionLoading, setActionLoading] = useState(null);
 
-    // State for modals
+    // Modal states
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showDisputeModal, setShowDisputeModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
 
-    // Format date helper
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
-    // Format time helper
     const formatTime = (dateString) => {
         if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    // Fetch owner bookings
     const fetchBookings = async () => {
         try {
             setLoading(true);
-
             const token = localStorage.getItem('token');
-            if (!token) {
-                toast.error('Please login first');
-                navigate('/login');
-                return;
-            }
+            if (!token) { toast.error('Please login first'); navigate('/login'); return; }
 
             const response = await bookingService.getOwnerBookings();
-
             if (response.success) {
                 setBookings(response.bookings);
                 setFilteredBookings(response.bookings);
-                if (response.count > 0) {
-                    toast.success(`Loaded ${response.count} bookings`);
-                }
+                if (response.count > 0) toast.success(`Loaded ${response.count} bookings`);
             }
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -221,199 +253,114 @@ function SellerViewAllBookedSpace() {
         }
     };
 
-    // Confirm/Approve Booking Handler
     const handleConfirmBooking = async (bookingId) => {
-        if (!window.confirm('✅ Approve this booking?\n\nThe customer will receive a confirmation email with all details.')) {
-            return;
-        }
-
+        if (!window.confirm('✅ Approve this booking?\n\nThe customer will receive a confirmation email.')) return;
         setActionLoading(bookingId);
-
         try {
             const response = await bookingService.confirmBooking(bookingId);
-
-            if (response.success) {
-                toast.success('✅ Booking confirmed! Email sent to customer.');
-                fetchBookings();
-            }
+            if (response.success) { toast.success('✅ Booking confirmed! Email sent to customer.'); fetchBookings(); }
         } catch (error) {
-            console.error('Confirm booking error:', error);
             toast.error(error.response?.data?.message || 'Failed to confirm booking');
-        } finally {
-            setActionLoading(null);
-        }
+        } finally { setActionLoading(null); }
     };
 
-    // Reject Booking Handler
     const handleRejectBooking = async (bookingId) => {
-        if (!window.confirm('❌ Reject this booking?\n\nThe customer will be notified about the rejection.')) {
-            return;
-        }
-
+        if (!window.confirm('❌ Reject this booking?\n\nThe customer will be notified.')) return;
         setActionLoading(bookingId);
-
         try {
             const response = await bookingService.rejectBooking(bookingId);
-
-            if (response.success) {
-                toast.success('❌ Booking rejected successfully');
-                fetchBookings();
-            }
+            if (response.success) { toast.success('❌ Booking rejected successfully'); fetchBookings(); }
         } catch (error) {
-            console.error('Reject booking error:', error);
             toast.error(error.response?.data?.message || 'Failed to reject booking');
-        } finally {
-            setActionLoading(null);
-        }
+        } finally { setActionLoading(null); }
     };
 
-    // Owner Cancel Booking Handler
     const handleCancelBooking = async (reason) => {
-        if (!selectedBooking) {
-            toast.error('No booking selected');
-            return;
-        }
-
-        // console.log('Cancelling booking:', {
-        //     id: selectedBooking.id,
-        //     reason: reason,
-        //     bookingRef: selectedBooking.booking_ref
-        // });
-
+        if (!selectedBooking) { toast.error('No booking selected'); return; }
         setActionLoading(selectedBooking.id);
-
         try {
-            const response = await bookingService.ownerCancelBooking(
-                selectedBooking.id,
-                reason
-            );
-
-            // console.log('Cancel response:', response);
-
+            const response = await bookingService.ownerCancelBooking(selectedBooking.id, reason);
             if (response.success) {
-                toast.success('❌ Booking cancelled successfully. Customer has been notified.');
+                toast.success('❌ Booking cancelled. Customer has been notified.');
                 await fetchBookings();
                 setShowCancelModal(false);
                 setSelectedBooking(null);
-            } else {
-                throw new Error(response.message || 'Cancellation failed');
-            }
+            } else { throw new Error(response.message || 'Cancellation failed'); }
         } catch (error) {
-            // console.error('Cancel booking error:', error);
-            // console.error('Error response details:', error.response?.data);
-
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to cancel booking';
-            toast.error(errorMessage);
-        } finally {
-            setActionLoading(null);
-        }
+            toast.error(error.response?.data?.message || error.message || 'Failed to cancel booking');
+        } finally { setActionLoading(null); }
     };
 
-    // ✅ Delete Booking Handler
     const handleDeleteBooking = async () => {
-        if (!selectedBooking) {
-            toast.error('No booking selected');
-            return;
-        }
-
-        // console.log('Deleting booking:', {
-        //     id: selectedBooking.id,
-        //     bookingRef: selectedBooking.booking_ref,
-        //     status: selectedBooking.status
-        // });
-
+        if (!selectedBooking) { toast.error('No booking selected'); return; }
         setActionLoading(selectedBooking.id);
-
         try {
             const response = await bookingService.deleteBooking(selectedBooking.id);
-
-            // console.log('Delete response:', response);
-
             if (response.success) {
                 toast.success('🗑️ Booking deleted permanently');
                 await fetchBookings();
                 setShowDeleteModal(false);
                 setSelectedBooking(null);
-            } else {
-                throw new Error(response.message || 'Deletion failed');
-            }
+            } else { throw new Error(response.message || 'Deletion failed'); }
         } catch (error) {
-            console.error('Delete booking error:', error);
-            console.error('Error response details:', error.response?.data);
-
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete booking';
-            toast.error(errorMessage);
-        } finally {
-            setActionLoading(null);
-        }
+            toast.error(error.response?.data?.message || error.message || 'Failed to delete booking');
+        } finally { setActionLoading(null); }
     };
 
-    // Open cancel modal
-    const openCancelModal = (booking) => {
-        // console.log('Opening cancel modal for booking:', booking);
-        setSelectedBooking(booking);
-        setShowCancelModal(true);
+    // ✅ Dispute Handler
+    const handleCreateDispute = async (reason, description) => {
+        if (!selectedBooking) { toast.error('No booking selected'); return; }
+        setActionLoading(selectedBooking.id);
+        try {
+            const response = await bookingService.createDispute(selectedBooking.id, reason, description);
+            if (response.success) {
+                toast.success('⚠️ Dispute submitted. Admin has been notified.');
+                setShowDisputeModal(false);
+                setSelectedBooking(null);
+                await fetchBookings();
+            } else { throw new Error(response.message || 'Dispute submission failed'); }
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message || 'Failed to submit dispute');
+        } finally { setActionLoading(null); }
     };
 
-    // Open delete modal
-    const openDeleteModal = (booking) => {
-        // console.log('Opening delete modal for booking:', booking);
-        setSelectedBooking(booking);
-        setShowDeleteModal(true);
-    };
+    const openCancelModal = (booking) => { setSelectedBooking(booking); setShowCancelModal(true); };
+    const openDeleteModal = (booking) => { setSelectedBooking(booking); setShowDeleteModal(true); };
+    const openDisputeModal = (booking) => { setSelectedBooking(booking); setShowDisputeModal(true); };
 
-    useEffect(() => {
-        fetchBookings();
-    }, []);
+    useEffect(() => { fetchBookings(); }, []);
 
-    // Filter and search
     useEffect(() => {
         let filtered = bookings;
-
-        if (selectedStatus !== 'all') {
-            filtered = filtered.filter(booking => booking.status === selectedStatus);
-        }
-
+        if (selectedStatus !== 'all') filtered = filtered.filter(b => b.status === selectedStatus);
         if (searchTerm) {
-            filtered = filtered.filter(booking =>
-                booking.buyer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                booking.unit?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                booking.booking_ref?.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter(b =>
+                b.buyer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                b.unit?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                b.booking_ref?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-
         setFilteredBookings(filtered);
     }, [selectedStatus, searchTerm, bookings]);
 
-    // Get status badge style
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'pending':
-                return { bg: 'badge-pending', text: 'Pending', icon: Clock };
-            case 'confirmed':
-                return { bg: 'badge-confirmed', text: 'Confirmed', icon: CheckCircle };
-            case 'rejected':
-                return { bg: 'badge-rejected', text: 'Rejected', icon: XCircle };
-            case 'cancelled_by_owner':
-                return { bg: 'badge-cancelled', text: 'Cancelled', icon: XCircle };
-            default:
-                return { bg: 'badge-pending', text: status, icon: Clock };
+            case 'pending': return { bg: 'badge-pending', text: 'Pending', icon: Clock };
+            case 'confirmed': return { bg: 'badge-confirmed', text: 'Confirmed', icon: CheckCircle };
+            case 'rejected': return { bg: 'badge-rejected', text: 'Rejected', icon: XCircle };
+            case 'cancelled_by_owner': return { bg: 'badge-cancelled', text: 'Cancelled', icon: XCircle };
+            default: return { bg: 'badge-pending', text: status, icon: Clock };
         }
     };
 
-    // Check if booking can be deleted
-    const canDelete = (status) => {
-        return true;
-        // return ['rejected', 'cancelled_by_owner', 'cancelled_by_user', 'completed', 'no_show'].includes(status);
-    };
+    const canDelete = () => true;
 
-    // Calculate statistics
     const stats = {
         total: bookings.length,
         pending: bookings.filter(b => b.status === 'pending').length,
         confirmed: bookings.filter(b => b.status === 'confirmed').length,
         rejected: bookings.filter(b => b.status === 'rejected').length,
-        cancelled: bookings.filter(b => b.status === 'cancelled_by_owner').length
+        cancelled: bookings.filter(b => b.status === 'cancelled_by_owner').length,
     };
 
     if (loading) {
@@ -433,45 +380,26 @@ function SellerViewAllBookedSpace() {
                     <p className="bookings-subtitle">View and manage all booking requests for your spaces</p>
                 </div>
 
-                {/* Statistics Cards */}
+                {/* Stats */}
                 <div className="stats-grid">
                     <div className="stat-card stat-card-total">
-                        <div>
-                            <p className="stat-label">Total Bookings</p>
-                            <p className="stat-value">{stats.total}</p>
-                        </div>
+                        <div><p className="stat-label">Total Bookings</p><p className="stat-value">{stats.total}</p></div>
                         <Calendar size={28} />
                     </div>
-
                     <div className="stat-card stat-card-pending">
-                        <div>
-                            <p className="stat-label">Pending</p>
-                            <p className="stat-value">{stats.pending}</p>
-                        </div>
+                        <div><p className="stat-label">Pending</p><p className="stat-value">{stats.pending}</p></div>
                         <Clock size={28} />
                     </div>
-
                     <div className="stat-card stat-card-confirmed">
-                        <div>
-                            <p className="stat-label">Confirmed</p>
-                            <p className="stat-value">{stats.confirmed}</p>
-                        </div>
+                        <div><p className="stat-label">Confirmed</p><p className="stat-value">{stats.confirmed}</p></div>
                         <CheckCircle size={28} />
                     </div>
-
                     <div className="stat-card stat-card-rejected">
-                        <div>
-                            <p className="stat-label">Rejected</p>
-                            <p className="stat-value">{stats.rejected}</p>
-                        </div>
+                        <div><p className="stat-label">Rejected</p><p className="stat-value">{stats.rejected}</p></div>
                         <XCircle size={28} />
                     </div>
-
                     <div className="stat-card stat-card-cancelled">
-                        <div>
-                            <p className="stat-label">Cancelled</p>
-                            <p className="stat-value">{stats.cancelled}</p>
-                        </div>
+                        <div><p className="stat-label">Cancelled</p><p className="stat-value">{stats.cancelled}</p></div>
                         <XCircle size={28} />
                     </div>
                 </div>
@@ -488,22 +416,15 @@ function SellerViewAllBookedSpace() {
                             className="search-input"
                         />
                     </div>
-
-                    <select
-                        value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="status-select"
-                    >
+                    <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="status-select">
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
                         <option value="rejected">Rejected</option>
                         <option value="cancelled_by_owner">Cancelled</option>
                     </select>
-
                     <button onClick={fetchBookings} className="refresh-button">
-                        <RefreshCw size={16} />
-                        Refresh
+                        <RefreshCw size={16} /> Refresh
                     </button>
                 </div>
 
@@ -513,11 +434,7 @@ function SellerViewAllBookedSpace() {
                         <div className="empty-state">
                             <Calendar size={48} />
                             <h3>No bookings found</h3>
-                            <p>
-                                {searchTerm || selectedStatus !== 'all'
-                                    ? "Try adjusting your filters"
-                                    : "You don't have any bookings yet"}
-                            </p>
+                            <p>{searchTerm || selectedStatus !== 'all' ? 'Try adjusting your filters' : "You don't have any bookings yet"}</p>
                         </div>
                     ) : (
                         filteredBookings.map((booking) => {
@@ -555,36 +472,27 @@ function SellerViewAllBookedSpace() {
                                                 <div>
                                                     <p className="info-label">Date & Time</p>
                                                     <p className="info-text">{formatDate(booking.start_time)}</p>
-                                                    <p className="info-subtext">
-                                                        {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
-                                                    </p>
+                                                    <p className="info-subtext">{formatTime(booking.start_time)} - {formatTime(booking.end_time)}</p>
                                                 </div>
                                             </div>
-
                                             <div className="info-row">
                                                 <User size={16} className="info-icon" />
                                                 <div>
                                                     <p className="info-label">Customer</p>
                                                     <p className="info-text">{booking.buyer?.full_name || 'N/A'}</p>
                                                     <p className="info-subtext">{booking.buyer?.email || 'N/A'}</p>
-                                                    {booking.buyer?.phone && (
-                                                        <p className="info-subtext">{booking.buyer.phone}</p>
-                                                    )}
+                                                    {booking.buyer?.phone && <p className="info-subtext">{booking.buyer.phone}</p>}
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div className="info-column">
                                             <div className="info-row">
                                                 <CreditCard size={16} className="info-icon" />
                                                 <div>
                                                     <p className="info-label">Total Price</p>
-                                                    <p className="price-text">
-                                                        PKR {parseFloat(booking.total_price || 0).toLocaleString()}
-                                                    </p>
+                                                    <p className="price-text">PKR {parseFloat(booking.total_price || 0).toLocaleString()}</p>
                                                 </div>
                                             </div>
-
                                             <div className="info-row">
                                                 <MapPin size={16} className="info-icon" />
                                                 <div>
@@ -595,86 +503,51 @@ function SellerViewAllBookedSpace() {
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons - For pending bookings */}
+                                    {/* Pending Actions */}
                                     {isPending && !isPastBooking && (
                                         <div className="card-actions">
-                                            <button
-                                                onClick={() => handleConfirmBooking(booking.id)}
-                                                disabled={isLoading}
-                                                className="btn-approve"
-                                            >
-                                                {isLoading ? (
-                                                    <div className="spinner-small"></div>
-                                                ) : (
-                                                    <>
-                                                        <Check size={16} />
-                                                        Approve Booking
-                                                    </>
-                                                )}
+                                            <button onClick={() => handleConfirmBooking(booking.id)} disabled={isLoading} className="btn-approve">
+                                                {isLoading ? <div className="spinner-small"></div> : <><Check size={16} /> Approve Booking</>}
                                             </button>
-                                            <button
-                                                onClick={() => handleRejectBooking(booking.id)}
-                                                disabled={isLoading}
-                                                className="btn-reject"
-                                            >
-                                                {isLoading ? (
-                                                    <div className="spinner-small"></div>
-                                                ) : (
-                                                    <>
-                                                        <X size={16} />
-                                                        Reject Booking
-                                                    </>
-                                                )}
+                                            <button onClick={() => handleRejectBooking(booking.id)} disabled={isLoading} className="btn-reject">
+                                                {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Reject Booking</>}
                                             </button>
                                         </div>
                                     )}
 
-                                    {/* Cancel Button - For confirmed bookings (future only) */}
-                                    {isConfirmed && !isPastBooking && (
+                                    {/* Confirmed Actions: Cancel + Dispute */}
+                                    {isConfirmed && (
                                         <div className="card-actions">
+                                            {!isPastBooking && (
+                                                <button onClick={() => openCancelModal(booking)} disabled={isLoading} className="btn-cancel">
+                                                    {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Cancel Booking</>}
+                                                </button>
+                                            )}
+                                            {/* ✅ Dispute Button */}
                                             <button
-                                                onClick={() => openCancelModal(booking)}
+                                                onClick={() => openDisputeModal(booking)}
                                                 disabled={isLoading}
                                                 className="btn-cancel"
+                                                style={{ background: '#dc2626', borderColor: '#dc2626', color: '#fff' }}
                                             >
-                                                {isLoading ? (
-                                                    <div className="spinner-small"></div>
-                                                ) : (
-                                                    <>
-                                                        <X size={16} />
-                                                        Cancel Booking
-                                                    </>
-                                                )}
+                                                {isLoading ? <div className="spinner-small"></div> : <><AlertTriangle size={16} /> Raise Dispute</>}
                                             </button>
                                         </div>
                                     )}
 
-                                    {/* ✅ Delete Button - For cancelled/rejected/completed bookings */}
+                                    {/* Delete Button */}
                                     {showDelete && (
                                         <div className="card-actions">
-                                            <button
-                                                onClick={() => openDeleteModal(booking)}
-                                                disabled={isLoading}
-                                                className="btn-delete"
-                                            >
-                                                {isLoading ? (
-                                                    <div className="spinner-small"></div>
-                                                ) : (
-                                                    <>
-                                                        <Trash2 size={16} />
-                                                        Delete Permanently
-                                                    </>
-                                                )}
+                                            <button onClick={() => openDeleteModal(booking)} disabled={isLoading} className="btn-delete">
+                                                {isLoading ? <div className="spinner-small"></div> : <><Trash2 size={16} /> Delete Permanently</>}
                                             </button>
                                         </div>
                                     )}
 
-                                    {/* Card Footer */}
+                                    {/* Footer */}
                                     {booking.booking_ref && (
                                         <div className="card-footer">
-                                            <p className="ref-text">
-                                                Booking Reference: <span className="ref-value">{booking.booking_ref}</span>
-                                            </p>
+                                            <p className="ref-text">Booking Reference: <span className="ref-value">{booking.booking_ref}</span></p>
                                         </div>
                                     )}
                                 </div>
@@ -684,25 +557,24 @@ function SellerViewAllBookedSpace() {
                 </div>
             </div>
 
-            {/* Cancel Modal */}
+            {/* Modals */}
             <CancelBookingModal
                 isOpen={showCancelModal}
-                onClose={() => {
-                    setShowCancelModal(false);
-                    setSelectedBooking(null);
-                }}
+                onClose={() => { setShowCancelModal(false); setSelectedBooking(null); }}
                 onConfirm={handleCancelBooking}
                 booking={selectedBooking}
             />
-
-            {/* Delete Modal */}
             <DeleteBookingModal
                 isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setSelectedBooking(null);
-                }}
+                onClose={() => { setShowDeleteModal(false); setSelectedBooking(null); }}
                 onConfirm={handleDeleteBooking}
+                booking={selectedBooking}
+            />
+            {/* ✅ Dispute Modal */}
+            <DisputeModal
+                isOpen={showDisputeModal}
+                onClose={() => { setShowDisputeModal(false); setSelectedBooking(null); }}
+                onConfirm={handleCreateDispute}
                 booking={selectedBooking}
             />
         </div>

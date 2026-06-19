@@ -7,6 +7,7 @@ const NAV = [
     { to: "/admin/spaces", icon: "ti-building", label: "Spaces & Units" },
     { to: "/admin/bookings", icon: "ti-calendar-event", label: "Bookings" },
     { to: "/admin/hosts", icon: "ti-user-check", label: "Host Requests" },
+    { to: "/admin/disputes", icon: "ti-alert-circle", label: "Disputes" }, // Added disputes
     // { to: "/admin/users", icon: "ti-users", label: "Users" },
 ];
 
