@@ -25,6 +25,18 @@ const DateTimePicker = ({
         if (onWarning) onWarning(msg);
     };
 
+    const formatDisplayDate = () => {
+        if (!value) return '';
+        if (isHourlyOnly) {
+            return formatTime(new Date(value));
+        }
+        return new Date(value).toLocaleString('en-US', {
+            weekday: 'short', year: 'numeric', month: 'short',
+            day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    };
+
+
     // Timezone-safe day key
     const dayKey = (d) => {
         if (!d) return null;
@@ -216,16 +228,6 @@ const DateTimePicker = ({
         return undefined;
     };
 
-    const formatDisplayDate = () => {
-        if (!value) return '';
-        if (isHourlyOnly) {
-            return formatTime(new Date(value));
-        }
-        return new Date(value).toLocaleString('en-US', {
-            weekday: 'short', year: 'numeric', month: 'short',
-            day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-    };
 
     const getDaysInMonth = (date) => {
         const y = date.getFullYear(), m = date.getMonth();
@@ -304,12 +306,12 @@ const DateTimePicker = ({
     // ============================================================
     // FULL CALENDAR MODE (Daily/Monthly)
     // ============================================================
-    console.log('🔵 DateTimePicker Render:', {
-        type,
-        rateType,
-        startDate: startDate ? new Date(startDate).toLocaleDateString() : 'null',
-        isOpen
-    });
+    // console.log('🔵 DateTimePicker Render:', {
+    //     type,
+    //     rateType,
+    //     startDate: startDate ? new Date(startDate).toLocaleDateString() : 'null',
+    //     isOpen
+    // });
 
     return (
         <div className="datetime-picker" ref={pickerRef}>

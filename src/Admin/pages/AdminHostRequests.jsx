@@ -16,7 +16,7 @@ export default function AdminHostRequests() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [currentRequestId, setCurrentRequestId] = useState(null);
-  const [imageErrors, setImageErrors] = useState({});
+  const [imageModal, setImageModal] = useState(null); // { url, label, type }
 
   useEffect(() => { loadRequests(); }, []);
 
@@ -24,8 +24,19 @@ export default function AdminHostRequests() {
     setLoading(true);
     adminGetPendingHosts()
       .then((d) => {
-        console.log('📦 Raw response:', d);
-        // Handle different response formats
+        console.log('📦 Full API Response:', d);
+
+        if (d.requests && d.requests.length > 0) {
+          const firstRequest = d.requests[0];
+          console.log('🔍 First request data:', {
+            id: firstRequest.id,
+            has_front_image: !!firstRequest.cnic_front_image,
+            has_back_image: !!firstRequest.cnic_back_image,
+            front_image_length: firstRequest.cnic_front_image?.length,
+            back_image_length: firstRequest.cnic_back_image?.length,
+          });
+        }
+
         let requestsData = [];
         if (Array.isArray(d)) {
           requestsData = d;
@@ -36,7 +47,8 @@ export default function AdminHostRequests() {
             requestsData = d.data;
           }
         }
-        console.log('✅ Processed requests:', requestsData);
+
+        console.log('✅ Processed requests count:', requestsData.length);
         setRequests(requestsData);
       })
       .catch((e) => {
@@ -94,22 +106,37 @@ export default function AdminHostRequests() {
     }
   };
 
-  const handleImageError = (requestId, imageType) => {
-    setImageErrors(prev => ({
-      ...prev,
-      [`${requestId}-${imageType}`]: true
-    }));
-  };
-
   const getImageUrl = (imageData) => {
     if (!imageData) return null;
-    // If it's already a data URL or HTTP URL, return as is
     if (imageData.startsWith('data:') || imageData.startsWith('http')) {
       return imageData;
     }
-    // If it's a file path, prepend the base URL
     return `https://v1.api.co-zones.com/uploads/${imageData}`;
   };
+
+  const openImageModal = (imageData, label) => {
+    const url = getImageUrl(imageData);
+    if (url) {
+      setImageModal({ url, label });
+      document.body.style.overflow = 'hidden';
+    }
+  };
+
+  const closeImageModal = () => {
+    setImageModal(null);
+    document.body.style.overflow = 'unset';
+  };
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   return (
     <div className="admin-page">
@@ -133,6 +160,142 @@ export default function AdminHostRequests() {
           {toast.msg}
         </div>
       )}
+
+      {/* LARGE IMAGE MODAL - Full Screen Viewer */}
+      {imageModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.92)",
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+            animation: "fadeIn 0.2s ease",
+          }}
+          onClick={closeImageModal}
+        >
+          <div
+            style={{
+              position: "relative",
+              maxWidth: "95vw",
+              maxHeight: "95vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={closeImageModal}
+              style={{
+                position: "absolute",
+                top: "-60px",
+                right: "-10px",
+                background: "rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.3)",
+                color: "white",
+                fontSize: "16px",
+                cursor: "pointer",
+                padding: "10px 24px",
+                borderRadius: "8px",
+                transition: "all 0.3s",
+                backdropFilter: "blur(10px)",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,0,0,0.3)";
+                e.target.style.borderColor = "rgba(255,0,0,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+                e.target.style.borderColor = "rgba(255,255,255,0.3)";
+              }}
+            >
+              ✕ Close Image
+            </button>
+
+            {/* Image Label */}
+            <div
+              style={{
+                color: "white",
+                fontSize: "20px",
+                fontWeight: "600",
+                marginBottom: "16px",
+                textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                background: "rgba(0,0,0,0.4)",
+                padding: "8px 24px",
+                borderRadius: "8px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              {imageModal.label || "CNIC Document"}
+            </div>
+
+            {/* Image Container with Zoom */}
+            <div
+              style={{
+                width: "100%",
+                height: "80vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(0,0,0,0.3)",
+                borderRadius: "12px",
+                padding: "10px",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={imageModal.url}
+                alt={imageModal.label || "Full size image"}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  borderRadius: "8px",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+                  background: "#1a1a1a",
+                  userSelect: "none",
+                }}
+                onError={(e) => {
+                  e.target.src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='400'%3E%3Crect width='500' height='400' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='20'%3EImage failed to load%3C/text%3E%3C/svg%3E";
+                }}
+              />
+            </div>
+
+            {/* Instructions */}
+            <div
+              style={{
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "14px",
+                marginTop: "16px",
+                textAlign: "center",
+                background: "rgba(0,0,0,0.3)",
+                padding: "8px 20px",
+                borderRadius: "6px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              💡 Click outside image or press <kbd style={{ background: "rgba(255,255,255,0.2)", padding: "2px 8px", borderRadius: "4px" }}>ESC</kbd> to close • Image is fully zoomable
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
 
       <div className="page-header">
         <h1>Host Requests</h1>
@@ -160,125 +323,196 @@ export default function AdminHostRequests() {
           <div className="table-toolbar">
             <h2>Pending Host Requests ({requests.length})</h2>
           </div>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Applicant</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>CNIC</th>
-                <th>CNIC Images</th>
-                <th>Submitted</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((r) => (
-                <tr key={r.id}>
-                  <td>
-                    <div style={{ fontWeight: 500 }}>
-                      {r.user_name || r.full_name || r.user?.full_name || "—"}
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 13 }}>
-                    {r.user_email || r.email || r.user?.email || "—"}
-                  </td>
-                  <td style={{ fontSize: 13 }}>
-                    {r.phone_number || r.phone || r.user?.phone || "—"}
-                  </td>
-                  <td style={{ fontSize: 12, fontFamily: "monospace" }}>
-                    {r.cnic_number || "—"}
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {r.cnic_front_image ? (
-                        <img
-                          src={getImageUrl(r.cnic_front_image)}
-                          alt="CNIC Front"
-                          style={{
-                            width: 40,
-                            height: 30,
-                            objectFit: "cover",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                            border: "1px solid #e5e7eb",
-                            background: "#f9fafb"
-                          }}
-                          onClick={() => setSelected(r)}
-                          onError={(e) => {
-                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30'%3E%3Crect width='40' height='30' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='8'%3ENo Image%3C/text%3E%3C/svg%3E";
-                          }}
-                        />
-                      ) : "—"}
-                      {r.cnic_back_image && (
-                        <img
-                          src={getImageUrl(r.cnic_back_image)}
-                          alt="CNIC Back"
-                          style={{
-                            width: 40,
-                            height: 30,
-                            objectFit: "cover",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                            border: "1px solid #e5e7eb",
-                            background: "#f9fafb"
-                          }}
-                          onClick={() => setSelected(r)}
-                          onError={(e) => {
-                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30'%3E%3Crect width='40' height='30' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='8'%3ENo Image%3C/text%3E%3C/svg%3E";
-                          }}
-                        />
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ fontSize: 12, color: "#9ca3af" }}>
-                    {r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button
-                        className="btn-action view"
-                        onClick={() => setSelected(r)}
-                      >
-                        <i className="ti ti-eye" /> View
-                      </button>
-                      <button
-                        className="btn-action approve"
-                        disabled={!!actionLoading}
-                        onClick={() => handleApprove(r.id)}
-                      >
-                        {actionLoading === r.id + "-approve" ? (
-                          <i className="ti ti-loader" />
-                        ) : (
-                          <i className="ti ti-check" />
-                        )}
-                        Approve
-                      </button>
-                      <button
-                        className="btn-action reject"
-                        disabled={!!actionLoading}
-                        onClick={() => openRejectModal(r.id)}
-                      >
-                        {actionLoading === r.id + "-reject" ? (
-                          <i className="ti ti-loader" />
-                        ) : (
-                          <i className="ti ti-x" />
-                        )}
-                        Reject
-                      </button>
-                    </div>
-                  </td>
+          <div style={{ overflowX: "auto" }}>
+            <table className="admin-table" style={{ minWidth: "900px" }}>
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>CNIC</th>
+                  <th>CNIC Images</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {requests.map((r) => (
+                  <tr key={r.id}>
+                    <td>
+                      <div style={{ fontWeight: 500 }}>
+                        {r.user_name || r.full_name || r.user?.full_name || "—"}
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 13 }}>
+                      {r.user_email || r.email || r.user?.email || "—"}
+                    </td>
+                    <td style={{ fontSize: 13 }}>
+                      {r.phone_number || r.phone || r.user?.phone || "—"}
+                    </td>
+                    <td style={{ fontSize: 12, fontFamily: "monospace" }}>
+                      {r.cnic_number || "—"}
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+                        {r.cnic_front_image ? (
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: "600", marginBottom: 4 }}>📄 FRONT</div>
+                            <img
+                              src={getImageUrl(r.cnic_front_image)}
+                              alt="CNIC Front"
+                              style={{
+                                width: 120,
+                                height: 90,
+                                objectFit: "contain",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                                border: "3px solid #3b82f6",
+                                background: "#f9fafb",
+                                transition: "transform 0.2s, box-shadow 0.2s",
+                              }}
+                              onClick={() => openImageModal(r.cnic_front_image, "CNIC - Front Side")}
+                              onMouseEnter={(e) => {
+                                e.target.style.transform = "scale(1.05)";
+                                e.target.style.boxShadow = "0 4px 16px rgba(59, 130, 246, 0.4)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.transform = "scale(1)";
+                                e.target.style.boxShadow = "none";
+                              }}
+                              onError={(e) => {
+                                e.target.src =
+                                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='12'%3ENo Image%3C/text%3E%3C/svg%3E";
+                              }}
+                            />
+                            <button
+                              onClick={() => openImageModal(r.cnic_front_image, "CNIC - Front Side")}
+                              style={{
+                                marginTop: 4,
+                                padding: "4px 16px",
+                                background: "#3b82f6",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                fontSize: 12,
+                                cursor: "pointer",
+                                fontWeight: "500",
+                                transition: "background 0.2s",
+                              }}
+                              onMouseEnter={(e) => e.target.style.background = "#2563eb"}
+                              onMouseLeave={(e) => e.target.style.background = "#3b82f6"}
+                            >
+                              🔍 View Full
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: "#9ca3af", fontSize: 12 }}>—</span>
+                        )}
+                        {r.cnic_back_image && (
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 11, color: "#8b5cf6", fontWeight: "600", marginBottom: 4 }}>📄 BACK</div>
+                            <img
+                              src={getImageUrl(r.cnic_back_image)}
+                              alt="CNIC Back"
+                              style={{
+                                width: 120,
+                                height: 90,
+                                objectFit: "contain",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                                border: "3px solid #8b5cf6",
+                                background: "#f9fafb",
+                                transition: "transform 0.2s, box-shadow 0.2s",
+                              }}
+                              onClick={() => openImageModal(r.cnic_back_image, "CNIC - Back Side")}
+                              onMouseEnter={(e) => {
+                                e.target.style.transform = "scale(1.05)";
+                                e.target.style.boxShadow = "0 4px 16px rgba(139, 92, 246, 0.4)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.transform = "scale(1)";
+                                e.target.style.boxShadow = "none";
+                              }}
+                              onError={(e) => {
+                                e.target.src =
+                                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='12'%3ENo Image%3C/text%3E%3C/svg%3E";
+                              }}
+                            />
+                            <button
+                              onClick={() => openImageModal(r.cnic_back_image, "CNIC - Back Side")}
+                              style={{
+                                marginTop: 4,
+                                padding: "4px 16px",
+                                background: "#8b5cf6",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                fontSize: 12,
+                                cursor: "pointer",
+                                fontWeight: "500",
+                                transition: "background 0.2s",
+                              }}
+                              onMouseEnter={(e) => e.target.style.background = "#7c3aed"}
+                              onMouseLeave={(e) => e.target.style.background = "#8b5cf6"}
+                            >
+                              🔍 View Full
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 12, color: "#9ca3af" }}>
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button
+                          className="btn-action view"
+                          onClick={() => setSelected(r)}
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                        >
+                          <i className="ti ti-eye" /> View
+                        </button>
+                        <button
+                          className="btn-action approve"
+                          disabled={!!actionLoading}
+                          onClick={() => handleApprove(r.id)}
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                        >
+                          {actionLoading === r.id + "-approve" ? (
+                            <i className="ti ti-loader" />
+                          ) : (
+                            <i className="ti ti-check" />
+                          )}
+                          Approve
+                        </button>
+                        <button
+                          className="btn-action reject"
+                          disabled={!!actionLoading}
+                          onClick={() => openRejectModal(r.id)}
+                          style={{ padding: "4px 10px", fontSize: 12 }}
+                        >
+                          {actionLoading === r.id + "-reject" ? (
+                            <i className="ti ti-loader" />
+                          ) : (
+                            <i className="ti ti-x" />
+                          )}
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Detail Modal with Images */}
+      {/* Detail Modal */}
       {selected && (
         <div className="modal-backdrop" onClick={() => setSelected(null)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "650px" }}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "850px", maxHeight: "95vh", overflow: "auto" }}>
             <button className="modal-close" onClick={() => setSelected(null)}>
               <i className="ti ti-x" />
             </button>
@@ -325,53 +559,117 @@ export default function AdminHostRequests() {
               </table>
             </div>
 
-            {/* CNIC Images Section */}
+            {/* CNIC Images Section - Large Preview */}
             {(selected.cnic_front_image || selected.cnic_back_image) && (
               <div style={{ marginBottom: 20 }}>
                 <h3 style={{ fontSize: 14, color: "#6b7280", marginBottom: 12 }}>CNIC Documents</h3>
-                <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 30, flexWrap: "wrap", justifyContent: "center" }}>
                   {selected.cnic_front_image && (
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
-                        <i className="ti ti-id" /> Front Side
+                    <div style={{ flex: 1, minWidth: 300, maxWidth: 500 }}>
+                      <div style={{
+                        fontSize: 14,
+                        color: "#3b82f6",
+                        fontWeight: "600",
+                        marginBottom: 8,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}>
+                        <span>📄 Front Side</span>
+                        <button
+                          onClick={() => openImageModal(selected.cnic_front_image, "CNIC - Front Side")}
+                          style={{
+                            padding: "6px 20px",
+                            background: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            fontSize: 13,
+                            cursor: "pointer",
+                            fontWeight: "500",
+                            transition: "background 0.2s",
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#2563eb"}
+                          onMouseLeave={(e) => e.target.style.background = "#3b82f6"}
+                        >
+                          🔍 View Full Size
+                        </button>
                       </div>
                       <img
                         src={getImageUrl(selected.cnic_front_image)}
                         alt="CNIC Front"
                         style={{
                           width: "100%",
-                          maxHeight: 250,
+                          maxHeight: 500,
                           objectFit: "contain",
-                          border: "1px solid #e5e7eb",
+                          border: "2px solid #3b82f6",
                           borderRadius: 8,
-                          padding: 8,
-                          background: "#f9fafb"
+                          padding: 10,
+                          background: "#f9fafb",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
                         }}
+                        onClick={() => openImageModal(selected.cnic_front_image, "CNIC - Front Side")}
+                        onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                        onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
                         onError={(e) => {
-                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
+                          e.target.src =
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
                         }}
                       />
                     </div>
                   )}
                   {selected.cnic_back_image && (
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
-                        <i className="ti ti-id" /> Back Side
+                    <div style={{ flex: 1, minWidth: 300, maxWidth: 500 }}>
+                      <div style={{
+                        fontSize: 14,
+                        color: "#8b5cf6",
+                        fontWeight: "600",
+                        marginBottom: 8,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}>
+                        <span>📄 Back Side</span>
+                        <button
+                          onClick={() => openImageModal(selected.cnic_back_image, "CNIC - Back Side")}
+                          style={{
+                            padding: "6px 20px",
+                            background: "#8b5cf6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            fontSize: 13,
+                            cursor: "pointer",
+                            fontWeight: "500",
+                            transition: "background 0.2s",
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#7c3aed"}
+                          onMouseLeave={(e) => e.target.style.background = "#8b5cf6"}
+                        >
+                          🔍 View Full Size
+                        </button>
                       </div>
                       <img
                         src={getImageUrl(selected.cnic_back_image)}
                         alt="CNIC Back"
                         style={{
                           width: "100%",
-                          maxHeight: 250,
+                          maxHeight: 500,
                           objectFit: "contain",
-                          border: "1px solid #e5e7eb",
+                          border: "2px solid #8b5cf6",
                           borderRadius: 8,
-                          padding: 8,
-                          background: "#f9fafb"
+                          padding: 10,
+                          background: "#f9fafb",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
                         }}
+                        onClick={() => openImageModal(selected.cnic_back_image, "CNIC - Back Side")}
+                        onMouseEnter={(e) => e.target.style.transform = "scale(1.02)"}
+                        onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
                         onError={(e) => {
-                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
+                          e.target.src =
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
                         }}
                       />
                     </div>
@@ -429,7 +727,7 @@ export default function AdminHostRequests() {
                   borderRadius: 6,
                   fontSize: 14,
                   resize: "vertical",
-                  fontFamily: "inherit"
+                  fontFamily: "inherit",
                 }}
               />
             </div>
@@ -443,7 +741,7 @@ export default function AdminHostRequests() {
                   border: "none",
                   borderRadius: 6,
                   cursor: "pointer",
-                  fontSize: 14
+                  fontSize: 14,
                 }}
               >
                 Cancel
@@ -459,7 +757,7 @@ export default function AdminHostRequests() {
                   border: "none",
                   borderRadius: 6,
                   cursor: !rejectReason.trim() ? "not-allowed" : "pointer",
-                  fontSize: 14
+                  fontSize: 14,
                 }}
               >
                 Confirm Reject

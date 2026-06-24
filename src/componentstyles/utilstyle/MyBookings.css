@@ -1451,3 +1451,182 @@
         padding: 12px 20px;
     }
 }
+
+/* Dispute related styles */
+.booking-item.has-dispute {
+    border-left: 4px solid #f59e0b;
+    background: #fffbeb;
+}
+
+.dispute-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.dispute-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dispute-badge.resolved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.dispute-badge-small {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.dispute-badge-small.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dispute-badge-small.resolved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.btn-dispute {
+    padding: 6px 12px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-dispute:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.btn-dispute-pending {
+    padding: 6px 12px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-dispute-pending:hover {
+    background: #fde68a;
+}
+
+.btn-dispute-resolved {
+    padding: 6px 12px;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-dispute-resolved:hover {
+    background: #a7f3d0;
+}
+
+.dispute-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+}
+
+.dispute-reason {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.dispute-pending-text {
+    color: #92400e;
+    font-size: 12px;
+}
+
+.dispute-resolution {
+    color: #065f46;
+    font-size: 12px;
+}
+
+/* Stats card for disputes */
+.stat-card.disputed {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.stat-card.disputed .stat-icon {
+    color: #f59e0b;
+}
+
+/* Filter tab with disputes */
+.filter-tab.has-disputes {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.filter-tab.has-disputes.active {
+    background: #f59e0b;
+    color: white;
+    border-color: #f59e0b;
+}
+
+/* Dispute details section */
+.dispute-details {
+    border-left: 4px solid #f59e0b;
+    background: #fffbeb;
+    padding: 12px;
+}
+
+/* Image overlay for dispute badge */
+.booking-image {
+    position: relative;
+}
+
+.dispute-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dispute-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.dispute-badge.resolved {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+

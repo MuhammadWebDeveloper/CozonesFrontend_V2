@@ -14,7 +14,9 @@ import {
     Check,
     X,
     Trash2,
-    AlertTriangle
+    AlertTriangle,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import '../../componentstyles/sellerdashboardstyles/SellerViewAllBookedSpace.css';
 import { bookingService } from '../utils/booking.service';
@@ -200,6 +202,133 @@ const DisputeModal = ({ isOpen, onClose, onConfirm, booking }) => {
     );
 };
 
+// ─── Dispute Display Component ─────────────────────────────────────────────
+const DisputeDisplay = ({ disputes }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    if (!disputes || disputes.length === 0) {
+        return null;
+    }
+
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'open': return '#f59e0b';
+            case 'under_review': return '#3b82f6';
+            case 'resolved': return '#22c55e';
+            case 'rejected': return '#ef4444';
+            default: return '#6b7280';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'open': return 'Open';
+            case 'under_review': return 'Under Review';
+            case 'resolved': return 'Resolved';
+            case 'rejected': return 'Rejected';
+            default: return status || 'Unknown';
+        }
+    };
+
+    const displayDisputes = expanded ? disputes : disputes.slice(0, 1);
+    const hasMore = disputes.length > 1;
+
+    return (
+        <div className="disputes-container" style={{
+            margin: '12px 20px 0 20px',
+            padding: '12px',
+            background: '#fef2f2',
+            borderRadius: '8px',
+            border: '1px solid #fecaca'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <AlertTriangle size={16} color="#dc2626" />
+                <span style={{ fontWeight: '600', fontSize: '14px', color: '#991b1b' }}>
+                    Disputes ({disputes.length})
+                </span>
+            </div>
+
+            {displayDisputes.map((dispute, index) => (
+                <div key={dispute.id || index} style={{
+                    background: 'white',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    marginBottom: index < displayDisputes.length - 1 ? '8px' : '0',
+                    border: '1px solid #f3f4f6'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>
+                                    {dispute.reason || 'No reason provided'}
+                                </span>
+                                <span style={{
+                                    fontSize: '11px',
+                                    padding: '2px 10px',
+                                    borderRadius: '12px',
+                                    background: getStatusColor(dispute.status) + '20',
+                                    color: getStatusColor(dispute.status),
+                                    fontWeight: '500',
+                                    border: `1px solid ${getStatusColor(dispute.status)}30`
+                                }}>
+                                    {getStatusText(dispute.status)}
+                                </span>
+                            </div>
+                            {dispute.description && (
+                                <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
+                                    {dispute.description}
+                                </p>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', fontSize: '12px', color: '#9ca3af', flexWrap: 'wrap' }}>
+                                <span>Raised by: <strong style={{ color: '#374151' }}>
+                                    {dispute.raised_by?.full_name || 'Unknown User'}
+                                </strong></span>
+                                <span>•</span>
+                                <span>{dispute.created_at ? new Date(dispute.created_at).toLocaleDateString() : 'N/A'}</span>
+                                {dispute.resolved_by && (
+                                    <>
+                                        <span>•</span>
+                                        <span>Resolved by: <strong style={{ color: '#374151' }}>
+                                            {dispute.resolved_by?.full_name || 'Unknown'}
+                                        </strong></span>
+                                    </>
+                                )}
+                            </div>
+                            {dispute.resolution && (
+                                <div style={{ marginTop: '6px', padding: '8px', background: '#f0fdf4', borderRadius: '4px', fontSize: '13px', color: '#166534' }}>
+                                    <strong>Resolution:</strong> {dispute.resolution}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ))}
+
+            {hasMore && (
+                <button
+                    onClick={() => setExpanded(!expanded)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginTop: '8px',
+                        padding: '4px 12px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#6b7280',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        fontWeight: '500'
+                    }}
+                >
+                    {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {expanded ? 'Show Less' : `View ${disputes.length - 1} More`}
+                </button>
+            )}
+        </div>
+    );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 function SellerViewAllBookedSpace() {
     const navigate = useNavigate();
@@ -226,6 +355,47 @@ function SellerViewAllBookedSpace() {
         return new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
+    // const fetchBookings = async () => {
+    //     try {
+    //         setLoading(true);
+    //         const token = localStorage.getItem('token');
+    //         if (!token) { toast.error('Please login first'); navigate('/login'); return; }
+
+    //         const response = await bookingService.getOwnerBookings();
+    //         console.log('Full API Response:', response);
+
+    //         if (response.success) {
+    //             console.log('Total bookings:', response.bookings.length);
+
+    //             // Check for bookings with disputes
+    //             const bookingsWithDisputes = response.bookings.filter(b =>
+    //                 b.disputes && Array.isArray(b.disputes) && b.disputes.length > 0
+    //             );
+    //             console.log('Bookings with disputes:', bookingsWithDisputes.length);
+
+    //             if (bookingsWithDisputes.length > 0) {
+    //                 console.log('First booking with dispute:', bookingsWithDisputes[0]);
+    //                 console.log('Dispute data:', bookingsWithDisputes[0].disputes);
+    //             }
+
+    //             setBookings(response.bookings);
+    //             setFilteredBookings(response.bookings);
+    //             if (response.count > 0) toast.success(`Loaded ${response.count} bookings`);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching bookings:', error);
+    //         if (error.response?.status === 401) {
+    //             toast.error('Session expired. Please login again.');
+    //             localStorage.removeItem('token');
+    //             localStorage.removeItem('user');
+    //             navigate('/login');
+    //         } else {
+    //             toast.error(error.response?.data?.message || 'Failed to load bookings');
+    //         }
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     const fetchBookings = async () => {
         try {
             setLoading(true);
@@ -233,6 +403,43 @@ function SellerViewAllBookedSpace() {
             if (!token) { toast.error('Please login first'); navigate('/login'); return; }
 
             const response = await bookingService.getOwnerBookings();
+
+            // 🔍 DEBUG: Log the complete response
+            console.log('========== COMPLETE BACKEND RESPONSE ==========');
+            console.log('Full Response:', JSON.stringify(response, null, 2));
+            console.log('===============================================');
+
+            // 🔍 DEBUG: Check if disputes exist in the response
+            if (response.success && response.bookings) {
+                console.log('📊 Total Bookings:', response.bookings.length);
+
+                // Check each booking for disputes
+                response.bookings.forEach((booking, index) => {
+                    console.log(`\n📋 Booking ${index + 1}:`, {
+                        id: booking.id,
+                        status: booking.status,
+                        hasDisputes: !!booking.disputes,
+                        disputesType: typeof booking.disputes,
+                        disputesLength: booking.disputes?.length || 0,
+                        disputes: booking.disputes || 'No disputes'
+                    });
+                });
+
+                // Find bookings with disputes
+                const bookingsWithDisputes = response.bookings.filter(b =>
+                    b.disputes && Array.isArray(b.disputes) && b.disputes.length > 0
+                );
+
+                console.log('\n⚠️ Bookings WITH Disputes:', bookingsWithDisputes.length);
+                if (bookingsWithDisputes.length > 0) {
+                    console.log('🔍 Sample dispute data:', JSON.stringify(bookingsWithDisputes[0].disputes, null, 2));
+                } else {
+                    console.log('❌ No bookings with disputes found in the response');
+                    console.log('💡 Check if there are any disputes in the database');
+                }
+            }
+            console.log('===============================================\n');
+
             if (response.success) {
                 setBookings(response.bookings);
                 setFilteredBookings(response.bookings);
@@ -252,7 +459,6 @@ function SellerViewAllBookedSpace() {
             setLoading(false);
         }
     };
-
     const handleConfirmBooking = async (bookingId) => {
         if (!window.confirm('✅ Approve this booking?\n\nThe customer will receive a confirmation email.')) return;
         setActionLoading(bookingId);
@@ -307,7 +513,6 @@ function SellerViewAllBookedSpace() {
         } finally { setActionLoading(null); }
     };
 
-    // ✅ Dispute Handler
     const handleCreateDispute = async (reason, description) => {
         if (!selectedBooking) { toast.error('No booking selected'); return; }
         setActionLoading(selectedBooking.id);
@@ -446,6 +651,11 @@ function SellerViewAllBookedSpace() {
                             const isLoading = actionLoading === booking.id;
                             const showDelete = canDelete(booking.status);
 
+                            // Check if booking has disputes - ensure disputes is an array and has items
+                            const hasDisputes = booking.disputes &&
+                                Array.isArray(booking.disputes) &&
+                                booking.disputes.length > 0;
+
                             return (
                                 <div key={booking.id} className="booking-card">
                                     {/* Card Header */}
@@ -461,6 +671,19 @@ function SellerViewAllBookedSpace() {
                                                 <StatusIcon size={12} />
                                                 {statusBadge.text}
                                             </span>
+                                            {hasDisputes && (
+                                                <span className="status-badge" style={{
+                                                    background: '#dc2626',
+                                                    color: 'white',
+                                                    marginLeft: '4px',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    <AlertTriangle size={12} />
+                                                    Dispute
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -503,6 +726,9 @@ function SellerViewAllBookedSpace() {
                                         </div>
                                     </div>
 
+                                    {/* Show Disputes */}
+                                    {hasDisputes && <DisputeDisplay disputes={booking.disputes} />}
+
                                     {/* Pending Actions */}
                                     {isPending && !isPastBooking && (
                                         <div className="card-actions">
@@ -523,7 +749,6 @@ function SellerViewAllBookedSpace() {
                                                     {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Cancel Booking</>}
                                                 </button>
                                             )}
-                                            {/* ✅ Dispute Button */}
                                             <button
                                                 onClick={() => openDisputeModal(booking)}
                                                 disabled={isLoading}
@@ -570,7 +795,6 @@ function SellerViewAllBookedSpace() {
                 onConfirm={handleDeleteBooking}
                 booking={selectedBooking}
             />
-            {/* ✅ Dispute Modal */}
             <DisputeModal
                 isOpen={showDisputeModal}
                 onClose={() => { setShowDisputeModal(false); setSelectedBooking(null); }}

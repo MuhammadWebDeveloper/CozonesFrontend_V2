@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './sitecomponents/headerandfooter/Header';
 import Home from './sitecomponents/pages/Home';
 import './App.css';
@@ -24,6 +24,7 @@ import ForgotPassword from './utils/ForgotPassword';
 import ResetPassword from './utils/ResetPassword';
 import HostRequestForm from './sellersitecomponents/sellerdashboard/BecomeHost';
 import RequestStatus from './sellersitecomponents/sellerdashboard/Hoststatus';
+// import NotFound from './u'; // 👈 Import the NotFound component
 
 // ── Chat imports ───────────────────────────────────────────────────────────
 import ChatList from './chat-frontend/pages/ChatList.jsx';
@@ -41,6 +42,7 @@ import AdminHostRequests from './admin/pages/AdminHostRequests';
 import AdminUsers from './admin/pages/AdminUsers';
 import SearchResults from './utils/SearchResults.jsx';
 import AdminDisputes from './Admin/pages/AdminDisputes.jsx';
+import NotFound from './utils/PageNoteFound.jsx';
 // ──────────────────────────────────────────────────────────────────────────
 
 // Routes where Navbar should be hidden
@@ -98,6 +100,7 @@ function AppContent() {
                 <Route path="/private-cabins/:id" element={<PrivateCabinsDetail />} />
                 <Route path="/meeting-rooms/:id" element={<MeetingRoomsDetail />} />
                 <Route path="/search-results" element={<SearchResults />} />
+
                 {/* ── Protected User Routes ────────────────────────────── */}
                 <Route path="/My-Profile" element={
                     <ProtectedRoute><ProfileSidebar /></ProtectedRoute>
@@ -162,6 +165,10 @@ function AppContent() {
                     <Route path="disputes" element={<AdminDisputes />} />
                     <Route path="users" element={<AdminUsers />} />
                 </Route>
+                {/* ─────────────────────────────────────────────────────── */}
+
+                {/* ── 404 Not Found Route - MUST BE LAST ──────────────── */}
+                <Route path="*" element={<NotFound />} />
                 {/* ─────────────────────────────────────────────────────── */}
             </Routes>
         </>

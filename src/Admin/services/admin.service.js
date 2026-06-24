@@ -75,6 +75,11 @@ export const adminToggleUserBlock = (userId, blocked) =>
 
 // ── Disputes ──────────────────────────────────────────────
 // Base route: /api/bookings/admin/disputes
+
+/**
+ * Get all disputes with optional status filter
+ * @param {string} status - Optional status filter (pending, resolved, rejected)
+ */
 export const adminGetAllDisputes = (status = "") => {
     const url = status
         ? `${BASE_URL}/bookings/admin/disputes?status=${status}`
@@ -84,56 +89,137 @@ export const adminGetAllDisputes = (status = "") => {
     }).then(handleResponse);
 };
 
-export const adminGetDisputeById = (disputeId) =>
-    fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}`, {
+/**
+ * Get a single dispute by ID with full details
+ * @param {string} disputeId - The dispute ID
+ */
+export const adminGetDisputeById = (disputeId) => {
+    return fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}`, {
         headers: getAuthHeaders()
     }).then(handleResponse);
+};
 
-export const adminResolveDispute = (disputeId, resolutionNotes = "") =>
-    fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/resolve`, {
-        method: "PATCH", // or "POST" depending on your backend
+/**
+ * Resolve a dispute with resolution notes and decision
+ * @param {string} disputeId - The dispute ID
+ * @param {string} resolution - Resolution notes/decision text
+ * @param {string} decision - The decision type: 'refund', 'no_refund', 'partial_refund'
+ */
+export const adminResolveDispute = (disputeId, resolution, decision = "refund") => {
+    const validDecisions = ['refund', 'no_refund', 'partial_refund'];
+    if (!validDecisions.includes(decision)) {
+        console.warn(`Invalid decision "${decision}". Defaulting to "refund".`);
+        decision = "refund";
+    }
+
+    return fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/resolve`, {
+        method: "PATCH",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ resolution_notes: resolutionNotes }),
+        body: JSON.stringify({
+            resolution: resolution,
+            decision: decision
+        }),
     }).then(handleResponse);
+};
 
-export const adminRejectDispute = (disputeId, rejectionReason = "") =>
-    fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/reject`, {
-        method: "PATCH", // or "POST" depending on your backend
+/**
+ * Reject a dispute with rejection reason - Uses dedicated reject endpoint
+ * @param {string} disputeId - The dispute ID
+ * @param {string} reason - Rejection reason
+ */
+export const adminRejectDispute = (disputeId, reason) => {
+    return fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/reject`, {
+        method: "PATCH",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ rejection_reason: rejectionReason }),
+        body: JSON.stringify({
+            rejection_reason: reason
+        }),
     }).then(handleResponse);
+};
 
-export const adminUpdateDisputeStatus = (disputeId, status, notes = "") =>
-    fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/status`, {
+/**
+ * Delete a dispute permanently (Admin only)
+ * @param {string} disputeId - The dispute ID to delete
+ */
+export const adminDeleteDispute = (disputeId) => {
+    return fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+    }).then(handleResponse);
+};
+
+/**
+ * Update dispute status (alternative method)
+ * @param {string} disputeId - The dispute ID
+ * @param {string} status - New status (resolved, rejected)
+ * @param {string} notes - Notes about the status change
+ */
+export const adminUpdateDisputeStatus = (disputeId, status, notes = "") => {
+    return fetch(`${BASE_URL}/bookings/admin/disputes/${disputeId}/status`, {
         method: "PATCH",
         headers: getAuthHeaders(),
         body: JSON.stringify({ status, notes }),
     }).then(handleResponse);
+};
 
 // ── Dashboard Stats ───────────────────────────────────────
 export const adminGetDashboardStats = async () => {
-    const [bookingsRes, spacesRes, hostsRes, disputesRes] = await Promise.allSettled([
-        adminGetAllBookings(),
-        adminGetAllSpaces(),
-        adminGetPendingHosts(),
-        adminGetAllDisputes(),
-    ]);
+    try {
+        const [bookingsRes, spacesRes, hostsRes, disputesRes] = await Promise.allSettled([
+            adminGetAllBookings(),
+            adminGetAllSpaces(),
+            adminGetPendingHosts(),
+            adminGetAllDisputes(),
+        ]);
 
-    const bookings = bookingsRes.status === "fulfilled" ? bookingsRes.value : {};
-    const spaces = spacesRes.status === "fulfilled" ? spacesRes.value : {};
-    const hosts = hostsRes.status === "fulfilled" ? hostsRes.value : {};
-    const disputes = disputesRes.status === "fulfilled" ? disputesRes.value : {};
+        const bookings = bookingsRes.status === "fulfilled" ? bookingsRes.value : {};
+        const spaces = spacesRes.status === "fulfilled" ? spacesRes.value : {};
+        const hosts = hostsRes.status === "fulfilled" ? hostsRes.value : {};
+        const disputes = disputesRes.status === "fulfilled" ? disputesRes.value : {};
 
-    // Count pending disputes
-    const pendingDisputes = disputes.disputes
-        ? disputes.disputes.filter(d => d.status?.toLowerCase() === 'pending').length
-        : 0;
+        const pendingDisputes = disputes.disputes
+            ? disputes.disputes.filter(d => d.status?.toLowerCase() === 'pending' || d.status?.toLowerCase() === 'open').length
+            : 0;
 
-    return {
-        stats: bookings.stats || {},
-        totalSpaces: spaces.count || 0,
-        pendingHosts: Array.isArray(hosts) ? hosts.length : (hosts.count || 0),
-        pendingDisputes: pendingDisputes,
-        recentBookings: (bookings.bookings || []).slice(0, 5),
-    };
+        const totalDisputes = disputes.disputes ? disputes.disputes.length : 0;
+        const resolvedDisputes = disputes.disputes
+            ? disputes.disputes.filter(d => d.status?.toLowerCase() === 'resolved').length
+            : 0;
+        const rejectedDisputes = disputes.disputes
+            ? disputes.disputes.filter(d => d.status?.toLowerCase() === 'rejected').length
+            : 0;
+
+        return {
+            stats: bookings.stats || {},
+            totalSpaces: spaces.count || 0,
+            pendingHosts: Array.isArray(hosts) ? hosts.length : (hosts.count || 0),
+            pendingDisputes: pendingDisputes,
+            totalDisputes: totalDisputes,
+            resolvedDisputes: resolvedDisputes,
+            rejectedDisputes: rejectedDisputes,
+            recentBookings: (bookings.bookings || []).slice(0, 5),
+        };
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        throw error;
+    }
+};
+
+// ── Helper function to get dispute statistics ──────────────────
+export const adminGetDisputeStats = async () => {
+    try {
+        const allDisputes = await adminGetAllDisputes();
+        const disputes = allDisputes.disputes || [];
+
+        return {
+            total: disputes.length,
+            pending: disputes.filter(d => d.status?.toLowerCase() === 'pending' || d.status?.toLowerCase() === 'open').length,
+            resolved: disputes.filter(d => d.status?.toLowerCase() === 'resolved').length,
+            rejected: disputes.filter(d => d.status?.toLowerCase() === 'rejected').length,
+            inProgress: disputes.filter(d => d.status?.toLowerCase() === 'in_progress').length,
+        };
+    } catch (error) {
+        console.error('Error fetching dispute stats:', error);
+        throw error;
+    }
 };
