@@ -629,11 +629,11 @@
     transition: var(--transition);
 }
 
-.DedicatedDeskDetail_section:hover {
+/* .DedicatedDeskDetail_section:hover {
     border-color: var(--blue-border);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-}
+} */
 
 .DedicatedDeskDetail_section:first-child,
 .DedicatedDeskDetail_section:has(.DedicatedDeskDetail_features) {

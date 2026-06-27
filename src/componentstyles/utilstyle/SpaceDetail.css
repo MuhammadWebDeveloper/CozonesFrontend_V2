@@ -506,11 +506,11 @@
     transition: var(--transition);
 }
 
-.SpaceDetail_section:hover {
+/* .SpaceDetail_section:hover {
     border-color: var(--blue-border);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-}
+} */
 
 .SpaceDetail_section:first-child,
 .SpaceDetail_section:has(.SpaceDetail_features) {
