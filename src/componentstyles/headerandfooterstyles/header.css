@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 /* Premium Navbar Styles with #011CCD Color Scheme - FULLY RESPONSIVE */
 
 .Navbar-container {
@@ -1238,4 +1245,99 @@ body.menu-open {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* ============================================ */
+/* IMPROVED CLICK-OUTSIDE BEHAVIOR STYLES */
+/* ============================================ */
+
+/* Ensure overlay covers entire viewport and allows click-through */
+.Navbar-mobileSearchOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+    cursor: pointer; /* Indicates clickable backdrop */
+}
+
+/* Make the modal container non-clickable (prevents propagation) */
+.Navbar-mobileSearchContainer {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    margin: 60px 20px;
+    border-radius: 32px;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    cursor: default; /* Reset cursor for modal content */
+}
+
+/* Prevent clicks on modal from closing it */
+.Navbar-mobileSearchContainer * {
+    cursor: default;
+}
+
+/* Clickable elements inside modal should have pointer cursor */
+.Navbar-mobileSearchBtn,
+.Navbar-mobileClearBtn,
+.Navbar-mobileQuickFilter,
+.Navbar-mobileSearchClose {
+    cursor: pointer !important;
+}
+
+/* Desktop search modal - ensure proper click handling */
+.Navbar-searchModal {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 32px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+    z-index: 1002;
+    animation: slideDown 0.2s ease;
+    cursor: default;
+}
+
+/* Ensure clickable elements inside desktop modal work */
+.Navbar-searchModal * {
+    cursor: default;
+}
+
+.Navbar-destinationItem,
+.Navbar-spaceTypeItem,
+.Navbar-quickTimeBtn,
+.Navbar-searchConfirmBtn,
+.Navbar-searchModalClose {
+    cursor: pointer !important;
+}
+
+/* Style the backdrop to be more visible as clickable area */
+.Navbar-mobileSearchOverlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: -1;
+}
+
+/* Hover effect for backdrop to indicate clickability */
+.Navbar-mobileSearchOverlay:hover {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* Smooth transition for backdrop */
+.Navbar-mobileSearchOverlay {
+    transition: background 0.2s ease;
 }
