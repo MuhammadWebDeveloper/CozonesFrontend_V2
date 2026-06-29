@@ -1,41 +1,49 @@
+// DateTimePicker.jsx - Updated with Booked Dates Support
 import React, { useState, useEffect, useRef } from 'react';
 import '../componentstyles/utilstyle/DateTimePicker.css';
 
 const DateTimePicker = ({
     value,
     onChange,
+    minDate,
     placeholder,
     label,
     type = 'start',
     startDate = null,
     rateType = 'daily',
     onWarning = null,
-    bookedSlots = [],        // array of {start, end} ISO strings
-    bookedDates = [],        // kept for daily/monthly (fully blocked days)
+    isHourlyOnly = false,
+    bookedDates = [],        // ✅ NEW: Array of booked date strings (YYYY-MM-DD)
+    unitId = null            // ✅ NEW: For debugging
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
     const [selectedTime, setSelectedTime] = useState(value ? new Date(value) : null);
-    const [timeString, setTimeString] = useState(value ? formatTime(new Date(value)) : '');
+    const [timeString, setTimeString] = useState('');
     const pickerRef = useRef(null);
 
-    function formatTime(date) {
-        if (!date) return '';
-        return `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-    }
+    const showWarning = (msg) => {
+        if (onWarning) onWarning(msg);
+    };
 
     const formatDisplayDate = () => {
         if (!value) return '';
+        if (isHourlyOnly) {
+            return formatTime(new Date(value));
+        }
         return new Date(value).toLocaleString('en-US', {
             weekday: 'short', year: 'numeric', month: 'short',
             day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
     };
 
+    // Timezone-safe day key
     const dayKey = (d) => {
-        const dt = d instanceof Date ? d : new Date(d);
+        if (!d) return null;
+        const dt = (d instanceof Date) ? d : new Date(d);
         if (isNaN(dt)) return null;
+        // Use UTC to avoid timezone issues
         return Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate());
     };
 
@@ -44,50 +52,29 @@ const DateTimePicker = ({
         return ka !== null && kb !== null && ka === kb;
     };
 
-    const toDateStr = (date) => {
-        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    // ✅ NEW: Check if a date is booked
+    const isDateBooked = (date) => {
+        if (!date || !bookedDates || bookedDates.length === 0) {
+            return false;
+        }
+
+        // Convert date to YYYY-MM-DD format
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        const isBooked = bookedDates.includes(dateStr);
+
+        // Debug logging (remove in production)
+        if (isBooked) {
+            console.log(`🔒 Date ${dateStr} is BOOKED`);
+        }
+
+        return isBooked;
     };
 
-    // For daily/monthly: is this entire day blocked?
-    const isDayFullyBlocked = (date) => {
-        const str = toDateStr(date);
-        return bookedDates.includes(str);
-    };
-
-    // For hourly: get all booked slots that overlap with the given date
-    const getSlotsForDate = (date) => {
-        if (!date) return [];
-        return bookedSlots.filter(slot => {
-            const slotStart = new Date(slot.start);
-            const slotEnd = new Date(slot.end);
-            return isSameDay(slotStart, date) || isSameDay(slotEnd, date) ||
-                   (slotStart < date && slotEnd > new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59));
-        });
-    };
-
-    // Check if a specific hour on a date is already booked
-    const isHourBooked = (date, hour) => {
-        if (!date) return false;
-        const slotStart = new Date(date);
-        slotStart.setHours(hour, 0, 0, 0);
-        const slotEnd = new Date(date);
-        slotEnd.setHours(hour, 59, 59, 999);
-        return bookedSlots.some(slot => {
-            const bStart = new Date(slot.start);
-            const bEnd = new Date(slot.end);
-            return bStart < slotEnd && bEnd > slotStart;
-        });
-    };
-
-    // Check if a proposed time range overlaps any existing booking
-    const doesTimeOverlapBookings = (startDt, endDt) => {
-        return bookedSlots.some(slot => {
-            const bStart = new Date(slot.start);
-            const bEnd = new Date(slot.end);
-            return bStart < endDt && bEnd > startDt;
-        });
-    };
-
+    // Close on outside click
     useEffect(() => {
         const h = (e) => {
             if (pickerRef.current && !pickerRef.current.contains(e.target)) setIsOpen(false);
@@ -96,6 +83,7 @@ const DateTimePicker = ({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
+    // Sync internal state when value prop changes
     useEffect(() => {
         if (value) {
             const dateValue = new Date(value);
@@ -109,6 +97,7 @@ const DateTimePicker = ({
         }
     }, [value]);
 
+    // When end picker opens, jump to startDate's month
     useEffect(() => {
         if (!isOpen) return;
         if (type === 'end' && startDate) {
@@ -119,132 +108,161 @@ const DateTimePicker = ({
         }
     }, [isOpen]);
 
+    const formatTime = (date) => {
+        if (!date) return '';
+        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    // ============================================================
+    // MODIFIED: isDateDisabled - Now checks booked dates
+    // ============================================================
     const isDateDisabled = (date) => {
         if (!date) return true;
         const dk = dayKey(date);
-        const todayKey = dayKey(new Date());
-        if (dk < todayKey) return true;
+        if (dk === null) return true;
 
-        if (rateType === 'hourly') {
-            // For hourly: only disable if ALL hours of the day are booked
-            // (a partial day should still be selectable)
-            const allHoursBooked = Array.from({length: 24}, (_, h) => h)
-                .every(h => isHourBooked(date, h));
-            return allHoursBooked;
+        const todayKey = dayKey(new Date());
+
+        // 1. Block past datesfetchBookingDates 
+        if (dk < todayKey) {
+            console.log('❌ Past date disabled:', date.toLocaleDateString());
+            return true;
         }
 
-        // For daily/monthly: disable fully blocked days
-        if (isDayFullyBlocked(date)) return true;
+        // 2. 🚀 CRITICAL: Check if date is BOOKED
+        if (isDateBooked(date)) {
+            console.log(`🔒 BOOKED date disabled: ${date.toLocaleDateString()}`);
+            return true;
+        }
 
-        // For end date: must be after start
+        // 3. For end date, ensure it's after start date
         if (type === 'end' && startDate) {
             const startDayKey = dayKey(startDate);
-            if (rateType === 'daily' || rateType === 'monthly') {
-                if (dk <= startDayKey) return true;
+            if (dk <= startDayKey) {
+                console.log(`📅 End date must be after start date: ${date.toLocaleDateString()}`);
+                return true;
             }
-            // For hourly, same day is allowed (different time)
+        }
+
+        // 4. For hourly rate, enable all dates
+        if (rateType === 'hourly') {
+            console.log('✅ HOURLY - Date ENABLED:', date.toLocaleDateString());
+            return false;
+        }
+
+        // 5. For daily/monthly, additional restrictions
+        if (rateType === 'daily' || rateType === 'monthly') {
+            // Only allow full day bookings - no time restrictions
+            console.log('✅ DAILY/MONTHLY - Date ENABLED:', date.toLocaleDateString());
+            return false;
         }
 
         return false;
     };
 
+    // ============================================================
+    // MODIFIED: handleDateSelect - With warning for booked dates
+    // ============================================================
     const handleDateSelect = (date) => {
+        console.log('📅 Date selected:', date.toLocaleDateString(), 'Rate:', rateType);
+
         if (!date || isDateDisabled(date)) {
-            if (onWarning) onWarning('This date is unavailable. Please select another date.');
+            console.log('❌ Date selection blocked');
+            if (isDateBooked(date)) {
+                showWarning('📅 This date is already booked. Please select another date.');
+            }
             return;
         }
+
         setSelectedDate(date);
-
-        // Build a datetime with existing or default time
         const newDateTime = new Date(date);
-        const baseTime = selectedTime || new Date();
 
-        if (rateType === 'hourly') {
-            // For hourly, keep the selected time or default to opening hour
-            if (type === 'start') {
-                newDateTime.setHours(baseTime.getHours() || 9, 0, 0, 0);
-            } else {
-                // End: default to start time + 1 hour
-                if (startDate) {
-                    const startDt = new Date(startDate);
-                    if (isSameDay(date, startDt)) {
-                        // Same day — default end = start + 1 hour
-                        newDateTime.setHours(startDt.getHours() + 1, startDt.getMinutes(), 0, 0);
-                    } else {
-                        newDateTime.setHours(10, 0, 0, 0);
-                    }
-                }
-            }
-        } else {
+        if (type === 'end' && startDate && isSameDay(date, new Date(startDate))) {
+            // Same-day booking: Set to start time + 1 hour
+            const startDT = new Date(startDate);
+            const defaultEnd = new Date(startDT.getTime() + 60 * 60 * 1000);
+            newDateTime.setHours(defaultEnd.getHours(), defaultEnd.getMinutes(), 0, 0);
+            setSelectedTime(newDateTime);
+            setTimeString(formatTime(newDateTime));
+            onChange({ target: { value: newDateTime.toISOString() } });
+            console.log('✅ Same-day booking set:', newDateTime.toLocaleString());
+        } else if (type === 'end' && startDate) {
+            // Different day booking
             if (selectedTime) {
                 newDateTime.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
             } else {
-                newDateTime.setHours(type === 'start' ? 9 : 10, 0, 0, 0);
+                newDateTime.setHours(10, 0, 0, 0);
+                setSelectedTime(newDateTime);
+                setTimeString(formatTime(newDateTime));
             }
+            onChange({ target: { value: newDateTime.toISOString() } });
+            console.log('✅ Different day booking set:', newDateTime.toLocaleString());
+        } else {
+            // Start picker
+            if (selectedTime) {
+                newDateTime.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+            } else {
+                newDateTime.setHours(9, 0, 0, 0);
+                setSelectedTime(newDateTime);
+                setTimeString(formatTime(newDateTime));
+            }
+            onChange({ target: { value: newDateTime.toISOString() } });
         }
-
-        setSelectedTime(newDateTime);
-        setTimeString(formatTime(newDateTime));
-        onChange({ target: { value: newDateTime.toISOString() } });
     };
 
+    // ============================================================
+    // handleTimeChange - Validate minimum 1 hour
+    // ============================================================
     const handleTimeChange = (e) => {
         if (!e.target.value) return;
+
         const [hours, minutes] = e.target.value.split(':').map(Number);
         const baseDate = selectedDate || (value ? new Date(value) : null);
+
         if (!baseDate) return;
 
         const newDateTime = new Date(baseDate);
         newDateTime.setHours(hours, minutes, 0, 0);
 
-        // Validate: end must be after start
-        if (type === 'end' && startDate) {
-            const startDt = new Date(startDate);
-            if (newDateTime <= startDt) {
-                if (onWarning) onWarning('End time must be after start time.');
-                return;
-            }
-            // Validate minimum 1 hour for hourly
-            if (rateType === 'hourly') {
-                const diffHours = (newDateTime - startDt) / (1000 * 60 * 60);
-                if (diffHours < 1) {
-                    if (onWarning) onWarning('Minimum booking duration is 1 hour.');
-                    return;
-                }
-            }
-        }
+        const isSameDayBooking = type === 'end' && startDate &&
+            isSameDay(selectedDate, new Date(startDate));
 
-        // Check if the proposed time overlaps any existing booking
-        if (rateType === 'hourly' && startDate && type === 'end') {
-            const startDt = new Date(startDate);
-            if (doesTimeOverlapBookings(startDt, newDateTime)) {
-                if (onWarning) onWarning('This time range overlaps an existing booking. Please select a different time.');
-                return;
-            }
-        }
-        if (rateType === 'hourly' && type === 'start' && value) {
-            const endDt = new Date(value);
-            const proposedStart = newDateTime;
-            if (doesTimeOverlapBookings(proposedStart, endDt)) {
-                if (onWarning) onWarning('This start time overlaps an existing booking.');
-                return;
-            }
-        }
+        if (isSameDayBooking && rateType === 'hourly') {
+            const startDT = new Date(startDate);
+            const diffMs = newDateTime.getTime() - startDT.getTime();
+            const diffHours = diffMs / (1000 * 60 * 60);
 
-        setTimeString(e.target.value);
-        setSelectedTime(newDateTime);
-        onChange({ target: { value: newDateTime.toISOString() } });
+            if (diffHours >= 1) {
+                setTimeString(e.target.value);
+                setSelectedTime(newDateTime);
+                onChange({ target: { value: newDateTime.toISOString() } });
+                console.log('✅ Time updated:', newDateTime.toLocaleString());
+            } else {
+                showWarning('End time must be at least 1 hour after start time');
+                return;
+            }
+        } else {
+            setTimeString(e.target.value);
+            setSelectedTime(newDateTime);
+            onChange({ target: { value: newDateTime.toISOString() } });
+        }
     };
 
     const changeMonth = (inc) =>
         setCurrentMonth(p => new Date(p.getFullYear(), p.getMonth() + inc, 1));
 
     const getMinTime = () => {
-        if (type === 'end' && startDate) {
-            if (isSameDay(selectedDate, new Date(startDate))) {
-                const minT = new Date(new Date(startDate).getTime() + 60 * 60 * 1000);
-                return formatTime(minT);
-            }
+        if (type === 'end' && startDate && selectedDate &&
+            isSameDay(selectedDate, new Date(startDate)) && rateType === 'hourly') {
+            const minT = new Date(new Date(startDate).getTime() + 60 * 60 * 1000);
+            return formatTime(minT);
+        }
+        return undefined;
+    };
+
+    const getMaxTime = () => {
+        if (rateType === 'hourly') {
+            return '23:59';
         }
         return undefined;
     };
@@ -257,48 +275,137 @@ const DateTimePicker = ({
         return days;
     };
 
-    // Render the booked hours timeline for the selected date (hourly mode only)
-    const renderHourlyTimeline = () => {
-        if (rateType !== 'hourly' || !selectedDate) return null;
-        const slotsToday = getSlotsForDate(selectedDate);
-        if (slotsToday.length === 0) return (
-            <div style={{ fontSize: '12px', color: 'var(--text-success, #2e7d32)', margin: '8px 0', padding: '6px 10px', background: 'var(--bg-success, #e8f5e9)', borderRadius: '6px' }}>
-                ✓ All hours available on this date
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = getDaysInMonth(currentMonth);
+
+    // ============================================================
+    // HOUR-ONLY MODE
+    // ============================================================
+    if (isHourlyOnly) {
+        return (
+            <div className="datetime-picker" ref={pickerRef}>
+                <label className="datetime-picker-label">{label}</label>
+                <div className="datetime-picker-input-wrapper">
+                    <input
+                        type="text"
+                        className="datetime-picker-input"
+                        value={formatDisplayDate()}
+                        placeholder={placeholder}
+                        readOnly
+                        onClick={() => setIsOpen(p => !p)}
+                    />
+                    <span className="datetime-picker-icon" onClick={() => setIsOpen(p => !p)}>🕐</span>
+                </div>
+
+                {isOpen && (
+                    <div className="datetime-picker-dropdown" style={{ width: '300px', padding: '20px' }}>
+                        <div className="datetime-picker-time">
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                                {type === 'start' ? 'Select Start Time' : 'Select End Time'}
+                            </label>
+                            <input
+                                type="time"
+                                className="time-input"
+                                value={timeString}
+                                onChange={handleTimeChange}
+                                step="1800"
+                                min={getMinTime()}
+                                max={getMaxTime()}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    fontSize: '16px',
+                                    border: '2px solid #ddd',
+                                    borderRadius: '8px',
+                                    outline: 'none'
+                                }}
+                            />
+                            {type === 'end' && startDate && (
+                                <small style={{
+                                    display: 'block',
+                                    marginTop: '8px',
+                                    color: '#01095A',
+                                    fontSize: '12px'
+                                }}>
+                                    ⏰ Min. 1 hour after start time
+                                </small>
+                            )}
+                        </div>
+                        <div className="datetime-picker-actions" style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+                            <button className="cancel-btn" onClick={() => setIsOpen(false)}>Cancel</button>
+                            <button className="confirm-btn" onClick={() => setIsOpen(false)}>Confirm</button>
+                        </div>
+                    </div>
+                )}
             </div>
         );
+    }
+
+    // ============================================================
+    // FULL CALENDAR MODE (Daily/Monthly) - WITH BOOKED DATES SUPPORT
+    // ============================================================
+
+    // ✅ NEW: Render legend
+    const renderLegend = () => {
+        if (!bookedDates || bookedDates.length === 0) return null;
 
         return (
-            <div style={{ margin: '8px 0' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    Booked hours on {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}:
+            <div style={{
+                display: 'flex',
+                gap: '16px',
+                padding: '8px 4px',
+                marginTop: '8px',
+                borderTop: '1px solid #eee',
+                fontSize: '12px',
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        background: '#ffebee',
+                        border: '1px solid #c62828'
+                    }}></span>
+                    <span>Booked (unavailable)</span>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
-                    {Array.from({ length: 24 }, (_, h) => {
-                        const booked = isHourBooked(selectedDate, h);
-                        return (
-                            <span key={h} style={{
-                                fontSize: '10px',
-                                padding: '2px 4px',
-                                borderRadius: '4px',
-                                background: booked ? 'var(--bg-danger, #ffebee)' : 'var(--surface-1, #f5f5f5)',
-                                color: booked ? 'var(--text-danger, #c62828)' : 'var(--text-secondary)',
-                                border: `1px solid ${booked ? 'var(--border-danger, #ef9a9a)' : 'var(--border, #ddd)'}`,
-                                fontFamily: 'monospace',
-                            }}>
-                                {String(h).padStart(2,'0')}
-                            </span>
-                        );
-                    })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        background: 'white',
+                        border: '1px solid #ddd'
+                    }}></span>
+                    <span>Available</span>
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                    Red = booked · Select your time below to avoid these hours
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        background: '#01095A'
+                    }}></span>
+                    <span>Selected</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{
+                        display: 'inline-block',
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        border: '2px solid #01095A',
+                        background: 'white'
+                    }}></span>
+                    <span>Today</span>
                 </div>
             </div>
         );
     };
-
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const days = getDaysInMonth(currentMonth);
 
     return (
         <div className="datetime-picker" ref={pickerRef}>
@@ -332,18 +439,21 @@ const DateTimePicker = ({
                         <div className="calendar-days">
                             {days.map((date, i) => {
                                 if (!date) return <div key={i} className="calendar-day-cell" />;
+
                                 const isDisabled = isDateDisabled(date);
                                 const isSelected = selectedDate && isSameDay(date, selectedDate);
                                 const isToday = dayKey(date) === dayKey(new Date());
-                                // For hourly: partially booked days get a dot indicator
-                                const hasPartialBooking = rateType === 'hourly' &&
-                                    getSlotsForDate(date).length > 0 && !isDisabled;
+                                const isBooked = isDateBooked(date);
+
+                                // Log each date (only when debugging)
+                                // console.log(`📅 ${date.toLocaleDateString()}: ${isBooked ? 'BOOKED' : 'AVAILABLE'}`);
 
                                 const classes = [
                                     'calendar-day',
                                     isSelected ? 'selected' : '',
                                     isDisabled ? 'disabled' : '',
                                     isToday ? 'today' : '',
+                                    isBooked ? 'booked' : '',  // ✅ NEW: Add booked class
                                 ].filter(Boolean).join(' ');
 
                                 return (
@@ -352,21 +462,26 @@ const DateTimePicker = ({
                                             className={classes}
                                             onClick={() => handleDateSelect(date)}
                                             disabled={isDisabled}
-                                            title={
-                                                isDisabled ? 'Not available' :
-                                                hasPartialBooking ? 'Partially booked — some hours taken' :
-                                                'Available'
-                                            }
-                                            style={{ cursor: isDisabled ? 'not-allowed' : 'pointer', position: 'relative' }}
+                                            title={isBooked ? '📅 Booked - Not Available' : isDisabled ? 'Not Available' : 'Click to select'}
+                                            style={{
+                                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                                position: 'relative'
+                                            }}
                                         >
                                             {date.getDate()}
-                                            {hasPartialBooking && (
+                                            {isToday && <span style={{ fontSize: '8px', marginLeft: '2px' }}>•</span>}
+
+                                            {/* ✅ NEW: Add a small indicator for booked dates */}
+                                            {isBooked && (
                                                 <span style={{
-                                                    position: 'absolute', bottom: '2px', left: '50%',
-                                                    transform: 'translateX(-50%)',
-                                                    width: '4px', height: '4px', borderRadius: '50%',
-                                                    background: '#f59e0b', display: 'block'
-                                                }} />
+                                                    position: 'absolute',
+                                                    bottom: '2px',
+                                                    right: '2px',
+                                                    fontSize: '8px',
+                                                    opacity: 0.7
+                                                }}>
+                                                    🔒
+                                                </span>
                                             )}
                                         </button>
                                     </div>
@@ -375,26 +490,11 @@ const DateTimePicker = ({
                         </div>
                     </div>
 
-                    {/* Legend */}
-                    <div style={{ display: 'flex', gap: '12px', padding: '6px 4px', fontSize: '11px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                        <span>⬜ Available</span>
-                        {rateType === 'hourly' && <span>🟡 Partially booked</span>}
-                        <span>⬛ Unavailable</span>
-                        <span style={{ background: '#01095A', color: '#fff', borderRadius: '3px', padding: '0 4px' }}>Selected</span>
-                    </div>
-
-                    {/* Hourly: show which hours on the selected date are taken */}
-                    {renderHourlyTimeline()}
+                    {/* ✅ NEW: Render legend */}
+                    {renderLegend()}
 
                     <div className="datetime-picker-time">
-                        <label>
-                            {rateType === 'hourly' ? 'Select time' : 'Select time'}
-                            {type === 'end' && startDate && isSameDay(selectedDate, new Date(startDate)) && (
-                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
-                                    (min. 1 hour after start)
-                                </span>
-                            )}
-                        </label>
+                        <label>Select Time</label>
                         <input
                             type="time"
                             className="time-input"
@@ -402,7 +502,14 @@ const DateTimePicker = ({
                             onChange={handleTimeChange}
                             step="1800"
                             min={getMinTime()}
+                            max={getMaxTime()}
                         />
+                        {type === 'end' && startDate && selectedDate &&
+                            isSameDay(selectedDate, new Date(startDate)) && (
+                                <small className="time-hint">
+                                    ⏰ Min. 1 hour after start time ({getMinTime() || 'N/A'})
+                                </small>
+                            )}
                     </div>
 
                     <div className="datetime-picker-actions">

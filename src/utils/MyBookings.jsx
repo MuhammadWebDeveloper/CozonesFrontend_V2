@@ -493,7 +493,7 @@ const MyBookings = () => {
                                                 </button>
 
                                                 <div onClick={(e) => e.stopPropagation()}>
-                                                    <ChatButton bookingId={booking.id} label="💬 Message Owner" variant="outline" />
+                                                    <ChatButton bookingId={booking.id} label="Message Owner" variant="outline" />
                                                 </div>
 
                                                 {canCancel(booking) && (
@@ -671,7 +671,7 @@ const MyBookings = () => {
                                 </div>
                                 <div className="modal-footer">
                                     <div onClick={(e) => e.stopPropagation()}>
-                                        <ChatButton bookingId={selectedBooking.id} label="💬 Message Owner" variant="primary" />
+                                        <ChatButton bookingId={selectedBooking.id} label=" Message Owner" variant="primary" />
                                     </div>
 
                                     {canDispute(selectedBooking) && (

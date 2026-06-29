@@ -267,25 +267,42 @@ const SpaceDetail = () => {
     // SpaceDetail.jsx - Update the fetchBookingDates function
 
     // ✅ NEW: Fetch booking dates function - FIXED URL
-    // Add this state alongside your existing bookedDates state
-    const [bookedSlots, setBookedSlots] = useState([]);
+    // In SpaceDetail.jsx - Replace the fetchBookingDates function with this
 
-    // Replace your existing fetchBookingDates with this:
+    // ✅ NEW: Fetch booking dates function - FIXED URL
     const fetchBookingDates = async () => {
         if (!id) return;
+
         try {
             setLoadingBookings(true);
-            const response = await apiClient.get(`api/spaces/unit/${id}/booked-slots`);
+            console.log('📅 Fetching booking dates for unit:', id);
+
+            // ✅ FIXED: Use the correct endpoint from spaces routes
+            const response = await apiClient.get(`api/spaces/unit/${id}/calendar-dates`);
+
             if (response.data?.success) {
                 const data = response.data.data;
-                setBookedSlots(data.bookedSlots || []);
-                setBookedDates(data.fullyBookedDates || []);
-                setBookingDetails({ totalBookings: data.totalBookings });
+                setBookedDates(data.bookedDates || []);
+                setBookingDetails(data.details || null);
+
+                console.log('✅ Booked dates loaded:', data.bookedDates?.length || 0, 'dates');
+
+                if (data.bookedDates && data.bookedDates.length > 0) {
+                    info(`📅 ${data.bookedDates.length} dates are already booked`);
+                }
+            } else {
+                setBookedDates([]);
+                setBookingDetails(null);
             }
         } catch (err) {
-            console.error('Error fetching booked slots:', err);
-            setBookedSlots([]);
+            console.error('❌ Error fetching booking dates:', err);
             setBookedDates([]);
+            setBookingDetails(null);
+
+            // Only show error toast if it's not a 404 (which is expected if no bookings exist)
+            if (err.response?.status !== 404) {
+                error('Failed to load booking dates. Please refresh the page.');
+            }
         } finally {
             setLoadingBookings(false);
         }
@@ -798,7 +815,7 @@ const SpaceDetail = () => {
                             )}
 
                             <div className="SpaceDetail_datetime_grid">
-                                {/* <DateTimePicker
+                                <DateTimePicker
                                     type="start"
                                     label="Start Date & Time"
                                     value={startDateTime}
@@ -832,40 +849,6 @@ const SpaceDetail = () => {
                                     bookedDates={bookedDates}
                                     rateType={selectedRateType}
                                     unitId={id}
-                                    onWarning={warning}
-                                /> */}
-
-                                <DateTimePicker
-                                    type="start"
-                                    label="Start Date & Time"
-                                    value={startDateTime}
-                                    onChange={(e) => {
-                                        const newValue = e.target.value;
-                                        setStartDateTime(newValue);
-                                        if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
-                                            setEndDateTime(null);
-                                            warning('End date must be after start date.');
-                                        }
-                                    }}
-                                    minDate={new Date()}
-                                    placeholder="Select start date and time"
-                                    bookedSlots={bookedSlots}      // ← new
-                                    bookedDates={bookedDates}      // ← kept for daily/monthly
-                                    rateType={selectedRateType}
-                                    onWarning={warning}
-                                />
-
-                                <DateTimePicker
-                                    type="end"
-                                    label="End Date & Time"
-                                    value={endDateTime}
-                                    onChange={(e) => setEndDateTime(e.target.value)}
-                                    minDate={startDateTime || new Date()}
-                                    startDate={startDateTime}
-                                    placeholder="Select end date and time"
-                                    bookedSlots={bookedSlots}      // ← new
-                                    bookedDates={bookedDates}      // ← kept for daily/monthly
-                                    rateType={selectedRateType}
                                     onWarning={warning}
                                 />
                             </div>
