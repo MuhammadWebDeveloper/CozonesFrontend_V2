@@ -653,11 +653,11 @@
     transition: var(--transition);
 }
 
-.MeetingRoomsDetail_section:hover {
+/* .MeetingRoomsDetail_section:hover {
     border-color: var(--blue-border);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-}
+} */
 
 .MeetingRoomsDetail_section:first-child,
 .MeetingRoomsDetail_section:has(.MeetingRoomsDetail_features) {

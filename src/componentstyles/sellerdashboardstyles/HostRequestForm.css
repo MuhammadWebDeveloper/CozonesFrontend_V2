@@ -135,7 +135,7 @@
 }
 
 .error-message {
-    color: #011CCD;
+    color: #ff0000;
     font-size: 12px;
     margin-top: 6px;
     display: block;
@@ -281,7 +281,7 @@
 }
 
 .warning-content h4 {
-    color: #011CCD;
+    color: #2d335a;
     margin: 0 0 8px 0;
     font-size: 16px;
     font-weight: 700;

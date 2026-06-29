@@ -1,5 +1,5 @@
-// Header.jsx - Updated with search only on button click
-import React, { useState, useEffect, useCallback } from 'react';
+// Header.jsx - Updated with click-outside-to-close for modals
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart, FiMessageCircle, FiCalendar, FiX, FiChevronDown } from 'react-icons/fi';
 import { MdOutlineLocationOn, MdOutlineDateRange } from 'react-icons/md';
@@ -26,6 +26,12 @@ const Header = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isTablet, setIsTablet] = useState(window.innerWidth > 768 && window.innerWidth <= 1024);
+
+    // Refs for click-outside detection
+    const desktopSearchRef = useRef(null);
+    const desktopSearchPillRef = useRef(null);
+    const mobileSearchRef = useRef(null);
+    const mobileSearchOverlayRef = useRef(null);
 
     // Search state
     const [destination, setDestination] = useState('');
@@ -74,15 +80,10 @@ const Header = () => {
 
     // Close mobile menu when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isMobileMenuOpen && !event.target.closest('.Navbar-mobileMenu') && !event.target.closest('.Navbar-menuBtn')) {
-                setIsMobileMenuOpen(false);
-            }
-        };
-
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, [isMobileMenuOpen]);
+        if (isMobileMenuOpen && !isMobile) {
+            setIsMobileMenuOpen(false);
+        }
+    }, [isMobile, isMobileMenuOpen]);
 
     // Prevent body scroll when mobile menu is open
     useEffect(() => {
@@ -96,6 +97,97 @@ const Header = () => {
             document.body.style.overflow = 'unset';
         };
     }, [isMobileMenuOpen, isMobileSearchOpen]);
+
+    // ============================================
+    // CLICK-OUTSIDE-TO-CLOSE FOR DESKTOP SEARCH MODAL
+    // ============================================
+    useEffect(() => {
+        if (!isSearchOpen) return;
+
+        const handleClickOutside = (event) => {
+            // Check if click is on the search modal
+            const modal = document.querySelector('.Navbar-searchModal');
+            // Check if click is on the search pill (to prevent closing when clicking on input fields)
+            const searchPill = document.querySelector('.Navbar-searchPill');
+            // Check if click is on the search wrapper
+            const searchWrapper = document.querySelector('.Navbar-searchWrapper');
+            
+            // If the click is outside the modal AND outside the search pill/wrapper
+            if (modal && !modal.contains(event.target) && 
+                searchPill && !searchPill.contains(event.target) &&
+                searchWrapper && !searchWrapper.contains(event.target)) {
+                closeSearch();
+            }
+        };
+
+        // Use mousedown for better UX (fires before click)
+        document.addEventListener('mousedown', handleClickOutside);
+        
+        // Also handle escape key
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                closeSearch();
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isSearchOpen]);
+
+    // ============================================
+    // CLICK-OUTSIDE-TO-CLOSE FOR MOBILE SEARCH MODAL
+    // ============================================
+    useEffect(() => {
+        if (!isMobileSearchOpen) return;
+
+        const handleClickOutside = (event) => {
+            const modal = document.querySelector('.Navbar-mobileSearchContainer');
+            const overlay = document.querySelector('.Navbar-mobileSearchOverlay');
+            
+            // Close if click is on the overlay backdrop (outside the modal)
+            if (event.target === overlay || overlay?.contains(event.target) && !modal?.contains(event.target)) {
+                closeMobileSearch();
+            }
+        };
+
+        // Also handle escape key for mobile
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                closeMobileSearch();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isMobileSearchOpen]);
+
+    // ============================================
+    // CLICK-OUTSIDE-TO-CLOSE FOR USER MENU DROPDOWN
+    // ============================================
+    useEffect(() => {
+        if (!isMenuDropdownOpen || isMobile) return;
+
+        const handleClickOutside = (event) => {
+            const menuBtn = document.querySelector('.Navbar-menuBtn');
+            const dropdown = document.querySelector('.Navbar-menuDropdown');
+            
+            if (menuBtn && !menuBtn.contains(event.target) && 
+                dropdown && !dropdown.contains(event.target)) {
+                setIsMenuDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMenuDropdownOpen, isMobile]);
 
     useEffect(() => {
         checkAuth();
@@ -303,8 +395,7 @@ const Header = () => {
         await performSearch();
     };
 
-    // REMOVED: handleQuickSearch - no longer auto-searching
-    // Instead, just set values without searching
+    // Set values without searching
     const handleQuickSearchValue = (type, value) => {
         switch (type) {
             case 'destination':
@@ -317,7 +408,6 @@ const Header = () => {
                 setTimeSlot({ startTime: "09:00", endTime: "17:00" });
                 break;
         }
-        // Do NOT call handleSearch() here - wait for button click
         closeSearch(); // Just close the modal
     };
 
@@ -328,7 +418,6 @@ const Header = () => {
             setTimeSlot({ startTime: tempTimeSlot.startTime, endTime: '' });
         }
         closeSearch();
-        // Do NOT call handleSearch() here - wait for button click
     };
 
     const clearFilters = () => {
@@ -336,7 +425,6 @@ const Header = () => {
         setSelectedSpaceType('');
         setTimeSlot({ startTime: '', endTime: '' });
         setTempTimeSlot({ startTime: '', endTime: '' });
-        // Do NOT call handleSearch() here
     };
 
     const handleBecomeHostClick = async () => {
@@ -416,7 +504,12 @@ const Header = () => {
 
     // Mobile Menu Component
     const MobileMenu = () => (
-        <div className="Navbar-mobileMenuOverlay">
+        <div className="Navbar-mobileMenuOverlay" onClick={(e) => {
+            // Close mobile menu when clicking overlay backdrop
+            if (e.target === e.currentTarget) {
+                setIsMobileMenuOpen(false);
+            }
+        }}>
             <div className="Navbar-mobileMenu">
                 <div className="Navbar-mobileMenuHeader">
                     <div className="Navbar-mobileMenuLogo">
@@ -481,10 +574,19 @@ const Header = () => {
         </div>
     );
 
-    // Mobile Search Component - Updated to NOT auto-search
+    // Mobile Search Component - Updated with click-outside support
     const MobileSearchModal = () => (
-        <div className="Navbar-mobileSearchOverlay">
-            <div className="Navbar-mobileSearchContainer">
+        <div 
+            className="Navbar-mobileSearchOverlay" 
+            ref={mobileSearchOverlayRef}
+            onClick={(e) => {
+                // Close when clicking the overlay backdrop
+                if (e.target === e.currentTarget) {
+                    closeMobileSearch();
+                }
+            }}
+        >
+            <div className="Navbar-mobileSearchContainer" ref={mobileSearchRef}>
                 <div className="Navbar-mobileSearchHeader">
                     <h3>Search Spaces</h3>
                     <button className="Navbar-mobileSearchClose" onClick={closeMobileSearch}>
@@ -530,7 +632,7 @@ const Header = () => {
                         Clear all
                     </button>
                     <button className="Navbar-mobileSearchBtn" onClick={() => {
-                        handleSearch(); // Only search on button click
+                        handleSearch();
                         closeMobileSearch();
                     }}>
                         <FiSearch size={20} />
@@ -546,7 +648,7 @@ const Header = () => {
                                 key={city}
                                 className="Navbar-mobileQuickFilter"
                                 onClick={() => {
-                                    setDestination(city); // Only set value, don't search
+                                    setDestination(city);
                                 }}
                             >
                                 {city}
@@ -558,9 +660,9 @@ const Header = () => {
         </div>
     );
 
-    // Desktop Search Modal - Updated to NOT auto-search
+    // Desktop Search Modal - Updated with ref for click-outside detection
     const DesktopSearchModal = () => (
-        <div className="Navbar-searchModal">
+        <div className="Navbar-searchModal" ref={desktopSearchRef}>
             <div className="Navbar-searchModalContent">
                 <div className="Navbar-searchModalHeader">
                     <h3>
@@ -591,8 +693,8 @@ const Header = () => {
                                         key={city}
                                         className="Navbar-destinationItem"
                                         onClick={() => {
-                                            setDestination(city); // Only set value, don't search
-                                            closeSearch(); // Just close the modal
+                                            setDestination(city);
+                                            closeSearch();
                                         }}
                                     >
                                         {city}
@@ -600,7 +702,6 @@ const Header = () => {
                                 ))}
                             </div>
                         </div>
-                        {/* No auto-search button - just close */}
                         <button className="Navbar-searchConfirmBtn" onClick={closeSearch}>
                             Done
                         </button>
@@ -615,8 +716,8 @@ const Header = () => {
                                     key={spaceType.value}
                                     className={`Navbar-spaceTypeItem ${selectedSpaceType === spaceType.value ? 'Navbar-selected' : ''}`}
                                     onClick={() => {
-                                        setSelectedSpaceType(spaceType.value); // Only set value, don't search
-                                        closeSearch(); // Just close the modal
+                                        setSelectedSpaceType(spaceType.value);
+                                        closeSearch();
                                     }}
                                 >
                                     <span className="Navbar-spaceTypeIcon">{spaceType.icon}</span>
@@ -678,7 +779,7 @@ const Header = () => {
         </div>
     );
 
-    // Compact search for tablet - Updated to NOT auto-search
+    // Compact search for tablet
     const TabletSearchBar = () => (
         <div className="Navbar-tabletSearch">
             <div className="Navbar-tabletSearchFields">
@@ -714,7 +815,7 @@ const Header = () => {
 
                     {/* Desktop Search (visible on >1024px) */}
                     {!isMobile && !isTablet && (
-                        <div className="Navbar-searchWrapper">
+                        <div className="Navbar-searchWrapper" ref={desktopSearchPillRef}>
                             <div className="Navbar-searchPill">
                                 <div className={`Navbar-searchField ${activeSearchField === 'where' ? 'Navbar-active' : ''}`} onClick={() => openSearch('where')}>
                                     <span className="Navbar-label">Where</span>
