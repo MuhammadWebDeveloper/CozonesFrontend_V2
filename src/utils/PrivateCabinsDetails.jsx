@@ -1,4 +1,4 @@
-// PrivateCabinsDetail.jsx - FIXED with DateTimePicker integration
+// PrivateCabinsDetail.jsx - Updated with Booking Dates Integration
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -23,7 +23,6 @@ const PrivateCabinsDetail = () => {
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
     const [imageLoading, setImageLoading] = useState(true);
-    // FIXED: Using consistent state names for dates
     const [startDateTime, setStartDateTime] = useState(null);
     const [endDateTime, setEndDateTime] = useState(null);
     const [selectedRateType, setSelectedRateType] = useState('daily');
@@ -32,6 +31,11 @@ const PrivateCabinsDetail = () => {
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
     const [images, setImages] = useState([]);
+    
+    // ✅ NEW: States for booking dates
+    const [bookedDates, setBookedDates] = useState([]);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [loadingBookings, setLoadingBookings] = useState(false);
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
@@ -124,12 +128,42 @@ const PrivateCabinsDetail = () => {
         }
     }, [location]);
 
+    // ✅ NEW: Fetch booking dates function
+    const fetchBookingDates = async () => {
+        if (!id) return;
+
+        try {
+            setLoadingBookings(true);
+            console.log('📅 Fetching booking dates for unit:', id);
+
+            const response = await apiClient.get(`api/spaces/unit/${id}/calendar-dates`);
+
+            if (response.data?.success) {
+                const data = response.data.data;
+                setBookedDates(data.bookedDates || []);
+                setBookingDetails(data.details || null);
+
+                console.log('✅ Booked dates loaded:', data.bookedDates.length, 'dates');
+                console.log('📅 Booked dates:', data.bookedDates);
+
+                if (data.bookedDates.length > 0) {
+                    info(`📅 ${data.bookedDates.length} dates are already booked`);
+                }
+            }
+        } catch (err) {
+            console.error('❌ Error fetching booking dates:', err);
+            setBookedDates([]);
+            setBookingDetails(null);
+        } finally {
+            setLoadingBookings(false);
+        }
+    };
+
     // Load space and images
     useEffect(() => {
         const fetchPrivateCabin = async () => {
             try {
                 setLoading(true);
-                // First fetch space details
                 const response = await apiClient.get(`api/spaces/unit/${id}`);
 
                 if (response.data?.success && response.data?.unit) {
@@ -176,6 +210,9 @@ const PrivateCabinsDetail = () => {
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
+
+                    // ✅ Fetch booking dates after space is loaded
+                    await fetchBookingDates();
 
                     // Now fetch images separately
                     try {
@@ -425,10 +462,6 @@ const PrivateCabinsDetail = () => {
         }
     };
 
-    const rateDisplay = getRateDisplay();
-    const quantity = getQuantity();
-    const total = calculateTotal();
-
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
@@ -457,6 +490,13 @@ const PrivateCabinsDetail = () => {
         }
         return types;
     };
+
+    const rateDisplay = getRateDisplay();
+    const quantity = getQuantity();
+    const total = calculateTotal();
+    const amenities = renderAmenities();
+    const availableRateTypes = getAvailableRateTypes();
+    const isOwner = isOwnSpace();
 
     if (loading) {
         return (
@@ -487,7 +527,7 @@ const PrivateCabinsDetail = () => {
 
                 <h2 className="PrivateCabinsDetail_page-title">Space Details</h2>
 
-                {isOwnSpace() && (
+                {isOwner && (
                     <div className="PrivateCabinsDetail_owner_warning" style={{
                         backgroundColor: '#fff3cd',
                         borderLeft: '4px solid #ffc107',
@@ -544,11 +584,11 @@ const PrivateCabinsDetail = () => {
                             </span>
                         </p>
 
-                        {getAvailableRateTypes().length > 1 && (
+                        {availableRateTypes.length > 1 && (
                             <div className="PrivateCabinsDetail_rate_selector">
                                 <label>Select Pricing Plan:</label>
                                 <div className="PrivateCabinsDetail_rate_options">
-                                    {getAvailableRateTypes().map(type => (
+                                    {availableRateTypes.map(type => (
                                         <button
                                             key={type.key}
                                             className={`PrivateCabinsDetail_rate_option ${selectedRateType === type.key ? 'active' : ''}`}
@@ -584,8 +624,48 @@ const PrivateCabinsDetail = () => {
                         </div>
 
                         {/* Date & Time Selection Section with DateTimePicker - FIXED */}
-                        <div className="PrivateCabinsDetail_datetime_section" style={{ opacity: isOwnSpace() ? 0.6 : 1 }}>
+                        <div className="PrivateCabinsDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="PrivateCabinsDetail_section_title">Select Date & Time</h3>
+                            
+                            {/* ✅ NEW: Show booking summary */}
+                            {bookingDetails && bookedDates.length > 0 && (
+                                <div style={{
+                                    background: '#f0f4ff',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #01095A'
+                                }}>
+                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
+                                    <span style={{ color: '#666', fontSize: '12px' }}>
+                                        ⚡ Booked dates are disabled in calendar
+                                    </span>
+                                </div>
+                            )}
+
+                            {bookingDetails && bookedDates.length === 0 && (
+                                <div style={{
+                                    background: '#e8f5e9',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #2e7d32'
+                                }}>
+                                    <span>✅ All dates are available for booking!</span>
+                                </div>
+                            )}
+
                             <div className="PrivateCabinsDetail_datetime_grid">
                                 <DateTimePicker
                                     type="start"
@@ -594,7 +674,6 @@ const PrivateCabinsDetail = () => {
                                     onChange={(e) => {
                                         const newValue = e.target.value;
                                         setStartDateTime(newValue);
-                                        // If end date is before start date, clear it
                                         if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
                                             setEndDateTime(null);
                                             warning('End date must be after start date. Please select a new end date.');
@@ -602,6 +681,10 @@ const PrivateCabinsDetail = () => {
                                     }}
                                     minDate={new Date()}
                                     placeholder="Select start date and time"
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
                                 />
 
                                 <DateTimePicker
@@ -612,11 +695,15 @@ const PrivateCabinsDetail = () => {
                                     minDate={startDateTime || new Date()}
                                     startDate={startDateTime}
                                     placeholder="Select end date and time"
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
                                 />
                             </div>
                         </div>
 
-                        {startDateTime && endDateTime && !isOwnSpace() && (
+                        {startDateTime && endDateTime && !isOwner && (
                             <div className="PrivateCabinsDetail_summary">
                                 <div className="PrivateCabinsDetail_summary-row">
                                     <span>Starting Date</span>
@@ -641,11 +728,11 @@ const PrivateCabinsDetail = () => {
 
                         <button
                             className="PrivateCabinsDetail_continue-btn"
-                            disabled={isOwnSpace() || !startDateTime || !endDateTime || bookingLoading || !user || space.is_active === false}
+                            disabled={isOwner || !startDateTime || !endDateTime || bookingLoading || !user || space.is_active === false}
                             onClick={handleBooking}
                             style={{
-                                backgroundColor: isOwnSpace() ? '#6c757d' : undefined,
-                                cursor: isOwnSpace() ? 'not-allowed' : 'pointer'
+                                backgroundColor: isOwner ? '#6c757d' : undefined,
+                                cursor: isOwner ? 'not-allowed' : 'pointer'
                             }}
                         >
                             {bookingLoading ? (
@@ -653,7 +740,7 @@ const PrivateCabinsDetail = () => {
                                     <span className="spinner-small"></span>
                                     Processing...
                                 </>
-                            ) : isOwnSpace() ? (
+                            ) : isOwner ? (
                                 '📝 Edit Your Space'
                             ) : space.is_active === false ? (
                                 'Currently Unavailable'
@@ -662,7 +749,7 @@ const PrivateCabinsDetail = () => {
                             )}
                         </button>
 
-                        {isOwnSpace() && (
+                        {isOwner && (
                             <div style={{ marginTop: '16px', textAlign: 'center' }}>
                                 <button
                                     onClick={() => navigate(`/edit-space/${space.id}`)}
@@ -881,7 +968,6 @@ const PrivateCabinsDetail = () => {
                         </p>
                     </div>
 
-                    {/* Working Hours */}
                     {(space.opening_time && space.closing_time) && (
                         <div className="PrivateCabinsDetail_section">
                             <h3 className="PrivateCabinsDetail_section-title">Working Hours</h3>
@@ -896,19 +982,17 @@ const PrivateCabinsDetail = () => {
                         </div>
                     )}
 
-                    {/* Amenities */}
-                    {renderAmenities().length > 0 && (
+                    {amenities.length > 0 && (
                         <div className="PrivateCabinsDetail_section">
                             <h3 className="PrivateCabinsDetail_section-title">Amenities</h3>
                             <div className="PrivateCabinsDetail_features">
-                                {renderAmenities().map((item, i) => (
+                                {amenities.map((item, i) => (
                                     <span key={i} className="PrivateCabinsDetail_feature-tag">✓ {item}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Space Information */}
                     <div className="PrivateCabinsDetail_section">
                         <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
                         <div className="PrivateCabinsDetail_space_info">
@@ -917,7 +1001,7 @@ const PrivateCabinsDetail = () => {
                             {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
                             {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
                             {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
-                            {isOwnSpace() && <p className="verified">👑 You are the owner of this space</p>}
+                            {isOwner && <p className="verified">👑 You are the owner of this space</p>}
                         </div>
                     </div>
                 </div>

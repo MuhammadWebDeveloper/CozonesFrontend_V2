@@ -1,4 +1,4 @@
-// DedicatedDeskDetail.jsx - Fixed with DateTimePicker integration
+// DedicatedDeskDetail.jsx - Updated with Booking Dates Integration
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -16,7 +16,6 @@ const DedicatedDeskDetail = () => {
     const [space, setSpace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
-    // FIXED: Using consistent state names for dates
     const [startDateTime, setStartDateTime] = useState(null);
     const [endDateTime, setEndDateTime] = useState(null);
     const [selectedRateType, setSelectedRateType] = useState('daily');
@@ -26,6 +25,11 @@ const DedicatedDeskDetail = () => {
     const [images, setImages] = useState([]);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
+    
+    // ✅ NEW: States for booking dates
+    const [bookedDates, setBookedDates] = useState([]);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [loadingBookings, setLoadingBookings] = useState(false);
 
     const apiClient = axios.create({
         baseURL: BaseUrl,
@@ -68,6 +72,37 @@ const DedicatedDeskDetail = () => {
             }
         }
     }, [location]);
+
+    // ✅ NEW: Fetch booking dates function
+    const fetchBookingDates = async () => {
+        if (!id) return;
+
+        try {
+            setLoadingBookings(true);
+            console.log('📅 Fetching booking dates for unit:', id);
+
+            const response = await apiClient.get(`api/spaces/unit/${id}/calendar-dates`);
+
+            if (response.data?.success) {
+                const data = response.data.data;
+                setBookedDates(data.bookedDates || []);
+                setBookingDetails(data.details || null);
+
+                console.log('✅ Booked dates loaded:', data.bookedDates.length, 'dates');
+                console.log('📅 Booked dates:', data.bookedDates);
+
+                if (data.bookedDates.length > 0) {
+                    info(`📅 ${data.bookedDates.length} dates are already booked`);
+                }
+            }
+        } catch (err) {
+            console.error('❌ Error fetching booking dates:', err);
+            setBookedDates([]);
+            setBookingDetails(null);
+        } finally {
+            setLoadingBookings(false);
+        }
+    };
 
     // Helper function to extract image URL from various formats
     const extractImageUrl = (img) => {
@@ -184,6 +219,10 @@ const DedicatedDeskDetail = () => {
                 setSelectedRateType(rateType);
                 setCurrentImage(0);
                 setImageLoading(false);
+
+                // ✅ Fetch booking dates after space is loaded
+                await fetchBookingDates();
+
                 success('Space details loaded successfully! 🎉');
 
             } catch (err) {
@@ -592,6 +631,46 @@ const DedicatedDeskDetail = () => {
                         {/* Date & Time Selection Section - FIXED */}
                         <div className="DedicatedDeskDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="DedicatedDeskDetail_section_title">Select Date & Time</h3>
+                            
+                            {/* ✅ NEW: Show booking summary */}
+                            {bookingDetails && bookedDates.length > 0 && (
+                                <div style={{
+                                    background: '#f0f4ff',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #01095A'
+                                }}>
+                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
+                                    <span style={{ color: '#666', fontSize: '12px' }}>
+                                        ⚡ Booked dates are disabled in calendar
+                                    </span>
+                                </div>
+                            )}
+
+                            {bookingDetails && bookedDates.length === 0 && (
+                                <div style={{
+                                    background: '#e8f5e9',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #2e7d32'
+                                }}>
+                                    <span>✅ All dates are available for booking!</span>
+                                </div>
+                            )}
+
                             <div className="DedicatedDeskDetail_datetime_grid">
                                 <DateTimePicker
                                     type="start"
@@ -600,7 +679,6 @@ const DedicatedDeskDetail = () => {
                                     onChange={(e) => {
                                         const newValue = e.target.value;
                                         setStartDateTime(newValue);
-                                        // If end date is before start date, clear it
                                         if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
                                             setEndDateTime(null);
                                             warning('End date must be after start date. Please select a new end date.');
@@ -608,6 +686,10 @@ const DedicatedDeskDetail = () => {
                                     }}
                                     minDate={new Date()}
                                     placeholder="Select start date and time"
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
                                 />
 
                                 <DateTimePicker
@@ -618,6 +700,10 @@ const DedicatedDeskDetail = () => {
                                     minDate={startDateTime || new Date()}
                                     startDate={startDateTime}
                                     placeholder="Select end date and time"
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
                                 />
                             </div>
                         </div>
@@ -916,7 +1002,7 @@ const DedicatedDeskDetail = () => {
                                     📅 {space.working_days.join(', ')}
                                 </p>
                             )}
-                        </div>
+                        </div>  
                     )}
 
                     {amenities.length > 0 && (

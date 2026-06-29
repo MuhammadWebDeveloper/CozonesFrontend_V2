@@ -1,4 +1,4 @@
-// SpaceDetail.jsx - Optimized version with lazy loading images and fixed image containers
+// SpaceDetail.jsx - Updated with Booking Dates Integration
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -212,6 +212,11 @@ const SpaceDetail = () => {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [user, setUser] = useState(null);
 
+    // ✅ NEW: States for booking dates
+    const [bookedDates, setBookedDates] = useState([]);
+    const [bookingDetails, setBookingDetails] = useState(null);
+    const [loadingBookings, setLoadingBookings] = useState(false);
+
     // Axios instance
     const apiClient = axios.create({
         baseURL: BaseUrl,
@@ -259,6 +264,32 @@ const SpaceDetail = () => {
         }
     }, [location]);
 
+    // SpaceDetail.jsx - Update the fetchBookingDates function
+
+    // ✅ NEW: Fetch booking dates function - FIXED URL
+    // Add this state alongside your existing bookedDates state
+    const [bookedSlots, setBookedSlots] = useState([]);
+
+    // Replace your existing fetchBookingDates with this:
+    const fetchBookingDates = async () => {
+        if (!id) return;
+        try {
+            setLoadingBookings(true);
+            const response = await apiClient.get(`api/spaces/unit/${id}/booked-slots`);
+            if (response.data?.success) {
+                const data = response.data.data;
+                setBookedSlots(data.bookedSlots || []);
+                setBookedDates(data.fullyBookedDates || []);
+                setBookingDetails({ totalBookings: data.totalBookings });
+            }
+        } catch (err) {
+            console.error('Error fetching booked slots:', err);
+            setBookedSlots([]);
+            setBookedDates([]);
+        } finally {
+            setLoadingBookings(false);
+        }
+    };
     // Load space details first (without images)
     useEffect(() => {
         const fetchSpaceDetails = async () => {
@@ -324,6 +355,9 @@ const SpaceDetail = () => {
                     setSpace(transformedSpace);
                     setSelectedRateType(rateType);
                     success('Space details loaded successfully! 🎉');
+
+                    // ✅ NEW: Fetch booking dates after space is loaded
+                    await fetchBookingDates();
 
                     // After space details are loaded, fetch images separately
                     fetchImages();
@@ -722,8 +756,49 @@ const SpaceDetail = () => {
 
                         <div className="SpaceDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="SpaceDetail_section_title">Select Date & Time</h3>
+
+                            {/* ✅ NEW: Show booking summary if available */}
+                            {bookingDetails && bookedDates.length > 0 && (
+                                <div style={{
+                                    background: '#f0f4ff',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #01095A'
+                                }}>
+                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
+                                    <span style={{ color: '#666', fontSize: '12px' }}>
+                                        ⚡ Booked dates are disabled in calendar
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* ✅ NEW: Show when no bookings exist */}
+                            {bookingDetails && bookedDates.length === 0 && (
+                                <div style={{
+                                    background: '#e8f5e9',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    flexWrap: 'wrap',
+                                    borderLeft: '4px solid #2e7d32'
+                                }}>
+                                    <span>✅ All dates are available for booking!</span>
+                                </div>
+                            )}
+
                             <div className="SpaceDetail_datetime_grid">
-                                <DateTimePicker
+                                {/* <DateTimePicker
                                     type="start"
                                     label="Start Date & Time"
                                     value={startDateTime}
@@ -738,6 +813,11 @@ const SpaceDetail = () => {
                                     }}
                                     minDate={new Date()}
                                     placeholder="Select start date and time"
+                                    // ✅ NEW: Pass booked dates
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
                                 />
 
                                 <DateTimePicker
@@ -748,6 +828,45 @@ const SpaceDetail = () => {
                                     minDate={startDateTime || new Date()}
                                     startDate={startDateTime}
                                     placeholder="Select end date and time"
+                                    // ✅ NEW: Pass booked dates
+                                    bookedDates={bookedDates}
+                                    rateType={selectedRateType}
+                                    unitId={id}
+                                    onWarning={warning}
+                                /> */}
+
+                                <DateTimePicker
+                                    type="start"
+                                    label="Start Date & Time"
+                                    value={startDateTime}
+                                    onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        setStartDateTime(newValue);
+                                        if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
+                                            setEndDateTime(null);
+                                            warning('End date must be after start date.');
+                                        }
+                                    }}
+                                    minDate={new Date()}
+                                    placeholder="Select start date and time"
+                                    bookedSlots={bookedSlots}      // ← new
+                                    bookedDates={bookedDates}      // ← kept for daily/monthly
+                                    rateType={selectedRateType}
+                                    onWarning={warning}
+                                />
+
+                                <DateTimePicker
+                                    type="end"
+                                    label="End Date & Time"
+                                    value={endDateTime}
+                                    onChange={(e) => setEndDateTime(e.target.value)}
+                                    minDate={startDateTime || new Date()}
+                                    startDate={startDateTime}
+                                    placeholder="Select end date and time"
+                                    bookedSlots={bookedSlots}      // ← new
+                                    bookedDates={bookedDates}      // ← kept for daily/monthly
+                                    rateType={selectedRateType}
+                                    onWarning={warning}
                                 />
                             </div>
                         </div>
