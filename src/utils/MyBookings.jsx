@@ -502,14 +502,14 @@ const MyBookings = () => {
                                                     </button>
                                                 )}
 
-                                                {canDispute(booking) && (
+                                                {/* {canDispute(booking) && (
                                                     <button
                                                         className="btn-dispute"
                                                         onClick={(e) => handleDisputeClick(booking, e)}
                                                     >
                                                         ⚠️ Raise Dispute
                                                     </button>
-                                                )}
+                                                )} */}
 
                                                 {isDisputePending && (
                                                     <button
