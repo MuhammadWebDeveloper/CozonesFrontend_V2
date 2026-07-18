@@ -35,6 +35,7 @@ const Header = () => {
 
     // Search state
     const [destination, setDestination] = useState('');
+    const [destinationDraft, setDestinationDraft] = useState('');
     const [selectedSpaceType, setSelectedSpaceType] = useState('');
     const [timeSlot, setTimeSlot] = useState({ startTime: '', endTime: '' });
     const [tempTimeSlot, setTempTimeSlot] = useState({ startTime: '', endTime: '' });
@@ -422,6 +423,7 @@ const Header = () => {
 
     const clearFilters = () => {
         setDestination('');
+        setDestinationDraft('');
         setSelectedSpaceType('');
         setTimeSlot({ startTime: '', endTime: '' });
         setTempTimeSlot({ startTime: '', endTime: '' });
@@ -475,6 +477,9 @@ const Header = () => {
         setIsSearchOpen(true);
         setIsLangDropdownOpen(false);
         setIsMenuDropdownOpen(false);
+        if (field === 'where') {
+            setDestinationDraft(destination);
+        }
     };
 
     const closeSearch = () => {
@@ -681,8 +686,8 @@ const Header = () => {
                             type="text"
                             className="Navbar-searchModalInput"
                             placeholder="Search for cities or spaces"
-                            value={destination}
-                            onChange={(e) => setDestination(e.target.value)}
+                            value={destinationDraft}
+                            onChange={(e) => setDestinationDraft(e.target.value)}
                             autoFocus
                         />
                         <div className="Navbar-popularDestinations">
@@ -702,7 +707,10 @@ const Header = () => {
                                 ))}
                             </div>
                         </div>
-                        <button className="Navbar-searchConfirmBtn" onClick={closeSearch}>
+                        <button className="Navbar-searchConfirmBtn" onClick={() => {
+                            setDestination(destinationDraft.trim());
+                            closeSearch();
+                        }}>
                             Done
                         </button>
                     </div>
@@ -826,7 +834,7 @@ const Header = () => {
                                             type="text"
                                             placeholder="Search destinations"
                                             value={destination}
-                                            onChange={(e) => setDestination(e.target.value)}
+                                            readOnly
                                             onFocus={() => openSearch('where')}
                                         />
                                     </div>
