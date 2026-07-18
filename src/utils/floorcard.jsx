@@ -67,7 +67,7 @@ const FloorCard = ({
                         size={20}
                         strokeWidth={2}
                         stroke="white"
-                        fill={isFavorite ? "white" : "rgba(0,0,0,0.3)"}
+                        fill={isFavorite ? "#ff4d4f" : "rgba(0,0,0,0.3)"}
                     />
                 </button>
             </div>

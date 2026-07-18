@@ -165,7 +165,7 @@ const SpaceCard = ({
                         size={24}
                         stroke="white"
                         strokeWidth={2}
-                        fill={isLiked ? "white" : "rgba(0, 0, 0, 0.5)"}
+                        fill={isLiked ? "#ff4d4f" : "rgba(0, 0, 0, 0.5)"}
                     />
                 </button>
             </div>

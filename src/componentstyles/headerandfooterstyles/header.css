@@ -910,8 +910,9 @@
 }
 
 .Navbar-searchModalInput:focus {
-    border-color: #011CCD;
-    box-shadow: 0 0 0 3px rgba(1, 28, 205, 0.1);
+    border-color: #e0e0e0;
+    box-shadow: none;
+    outline: none;
 }
 
 .Navbar-popularDestinations {
@@ -972,7 +973,6 @@
 .Navbar-spaceTypeItem:hover {
     border-color: #011CCD;
     background: rgba(1, 28, 205, 0.03);
-    transform: translateX(4px);
 }
 
 .Navbar-spaceTypeItem.Navbar-selected {
