@@ -35,7 +35,8 @@ const Header = () => {
 
     // Search state
     const [destination, setDestination] = useState('');
-    const [destinationDraft, setDestinationDraft] = useState('');
+    const destinationDraftRef = useRef('');
+    const destinationInputRef = useRef(null);
     const [selectedSpaceType, setSelectedSpaceType] = useState('');
     const [timeSlot, setTimeSlot] = useState({ startTime: '', endTime: '' });
     const [tempTimeSlot, setTempTimeSlot] = useState({ startTime: '', endTime: '' });
@@ -423,7 +424,7 @@ const Header = () => {
 
     const clearFilters = () => {
         setDestination('');
-        setDestinationDraft('');
+        destinationDraftRef.current = '';
         setSelectedSpaceType('');
         setTimeSlot({ startTime: '', endTime: '' });
         setTempTimeSlot({ startTime: '', endTime: '' });
@@ -478,7 +479,12 @@ const Header = () => {
         setIsLangDropdownOpen(false);
         setIsMenuDropdownOpen(false);
         if (field === 'where') {
-            setDestinationDraft(destination);
+            destinationDraftRef.current = destination;
+            requestAnimationFrame(() => {
+                if (destinationInputRef.current) {
+                    destinationInputRef.current.value = destinationDraftRef.current;
+                }
+            });
         }
     };
 
@@ -683,11 +689,14 @@ const Header = () => {
                 {activeSearchField === 'where' && (
                     <div className="Navbar-searchModalBody">
                         <input
+                            ref={destinationInputRef}
                             type="text"
                             className="Navbar-searchModalInput"
                             placeholder="Search for cities or spaces"
-                            value={destinationDraft}
-                            onChange={(e) => setDestinationDraft(e.target.value)}
+                            defaultValue={destination}
+                            onChange={(e) => {
+                                destinationDraftRef.current = e.target.value;
+                            }}
                             autoFocus
                         />
                         <div className="Navbar-popularDestinations">
@@ -698,6 +707,7 @@ const Header = () => {
                                         key={city}
                                         className="Navbar-destinationItem"
                                         onClick={() => {
+                                            destinationDraftRef.current = city;
                                             setDestination(city);
                                             closeSearch();
                                         }}
@@ -708,7 +718,7 @@ const Header = () => {
                             </div>
                         </div>
                         <button className="Navbar-searchConfirmBtn" onClick={() => {
-                            setDestination(destinationDraft.trim());
+                            setDestination(destinationDraftRef.current.trim());
                             closeSearch();
                         }}>
                             Done
