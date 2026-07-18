@@ -1,8 +1,9 @@
-// MeetingRoomsDetail.jsx - Updated with Booking Dates Integration
+// MeetingRoomsDetail.jsx - Fixed version with proper onChange handlers
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import DateTimePicker from './DateTimePicker';
+import MeetingRoomDateTimePicker from './MeetingRoomDateTimePicker';
 import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/meetingRoomsDetail.css';
@@ -32,8 +33,8 @@ const MeetingRoomsDetail = () => {
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
     const [images, setImages] = useState([]);
-    
-    // ✅ NEW: States for booking dates
+
+    // States for booking dates
     const [bookedDates, setBookedDates] = useState([]);
     const [bookingDetails, setBookingDetails] = useState(null);
     const [loadingBookings, setLoadingBookings] = useState(false);
@@ -129,7 +130,7 @@ const MeetingRoomsDetail = () => {
         }
     }, [location]);
 
-    // ✅ NEW: Fetch booking dates function
+    // Fetch booking dates function
     const fetchBookingDates = async () => {
         if (!id) return;
 
@@ -212,7 +213,7 @@ const MeetingRoomsDetail = () => {
                     setSelectedRateType(rateType);
                     setCurrentImage(0);
 
-                    // ✅ Fetch booking dates after space is loaded
+                    // Fetch booking dates after space is loaded
                     await fetchBookingDates();
 
                     // Now fetch images separately
@@ -314,6 +315,60 @@ const MeetingRoomsDetail = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [nextImage, prevImage]);
+
+    // ============================================================
+    // DateTime Change Handlers
+    // ============================================================
+
+    const handleStartDateTimeChange = (dateValue) => {
+        console.log('📅 Start DateTime changed:', dateValue);
+
+        if (!dateValue) {
+            setStartDateTime(null);
+            return;
+        }
+
+        // If dateValue is a string, convert to Date
+        const dateObj = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+
+        if (isNaN(dateObj.getTime())) {
+            console.warn('Invalid date value:', dateValue);
+            return;
+        }
+
+        setStartDateTime(dateObj);
+
+        // If end time is before or equal to start time, clear it
+        if (endDateTime && new Date(endDateTime) <= dateObj) {
+            setEndDateTime(null);
+            warning('End time must be after start time. Please select a new end time.');
+        }
+    };
+
+    const handleEndDateTimeChange = (dateValue) => {
+        console.log('📅 End DateTime changed:', dateValue);
+
+        if (!dateValue) {
+            setEndDateTime(null);
+            return;
+        }
+
+        // If dateValue is a string, convert to Date
+        const dateObj = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+
+        if (isNaN(dateObj.getTime())) {
+            console.warn('Invalid date value:', dateValue);
+            return;
+        }
+
+        // Validate that end time is after start time
+        if (startDateTime && dateObj <= new Date(startDateTime)) {
+            warning('End time must be after start time');
+            return;
+        }
+
+        setEndDateTime(dateObj);
+    };
 
     // ============================================================
     // CALCULATION FUNCTIONS
@@ -655,8 +710,8 @@ const MeetingRoomsDetail = () => {
                         {/* Date & Time Selection Section */}
                         <div className="MeetingRoomsDetail_datetime_section" style={{ opacity: isOwner ? 0.6 : 1 }}>
                             <h3 className="MeetingRoomsDetail_section_title">Select Date & Time</h3>
-                            
-                            {/* ✅ NEW: Show booking summary */}
+
+                            {/* Show booking summary */}
                             {bookingDetails && bookedDates.length > 0 && (
                                 <div style={{
                                     background: '#f0f4ff',
@@ -697,59 +752,41 @@ const MeetingRoomsDetail = () => {
 
                             <div className="MeetingRoomsDetail_datetime_grid">
                                 {selectedRateType === 'hourly' ? (
-                                    // HOURLY: Show time-only pickers with same-day support
                                     <>
-                                        <DateTimePicker
+                                        <MeetingRoomDateTimePicker
                                             type="start"
-                                            label="Start Time"
+                                            label="Start Date & Time"
                                             value={startDateTime}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-                                                setStartDateTime(newValue);
-                                                if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
-                                                    setEndDateTime(null);
-                                                    warning('End time must be after start time. Please select a new end time.');
-                                                }
-                                            }}
+                                            onChange={handleStartDateTimeChange}
                                             minDate={new Date()}
-                                            placeholder="Select start time"
+                                            placeholder="Select start date and hour"
                                             rateType={selectedRateType}
                                             onWarning={warning}
-                                            isHourlyOnly={true}
                                             bookedDates={bookedDates}
                                             unitId={id}
                                         />
 
-                                        <DateTimePicker
+                                        <MeetingRoomDateTimePicker
                                             type="end"
-                                            label="End Time"
+                                            label="End Date & Time"
                                             value={endDateTime}
-                                            onChange={(e) => setEndDateTime(e.target.value)}
+                                            onChange={handleEndDateTimeChange}
                                             minDate={startDateTime || new Date()}
                                             startDate={startDateTime}
-                                            placeholder="Select end time"
+                                            placeholder="Select end date and hour"
                                             rateType={selectedRateType}
                                             onWarning={warning}
-                                            isHourlyOnly={true}
                                             bookedDates={bookedDates}
                                             unitId={id}
                                         />
                                     </>
                                 ) : (
-                                    // DAILY/MONTHLY: Show full date-time pickers
                                     <>
-                                        <DateTimePicker
+                                        <MeetingRoomDateTimePicker
                                             type="start"
                                             label="Start Date & Time"
                                             value={startDateTime}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-                                                setStartDateTime(newValue);
-                                                if (endDateTime && new Date(endDateTime) <= new Date(newValue)) {
-                                                    setEndDateTime(null);
-                                                    warning('End date must be after start date. Please select a new end date.');
-                                                }
-                                            }}
+                                            onChange={handleStartDateTimeChange}
                                             minDate={new Date()}
                                             placeholder="Select start date and time"
                                             rateType={selectedRateType}
@@ -758,11 +795,11 @@ const MeetingRoomsDetail = () => {
                                             unitId={id}
                                         />
 
-                                        <DateTimePicker
+                                        <MeetingRoomDateTimePicker
                                             type="end"
                                             label="End Date & Time"
                                             value={endDateTime}
-                                            onChange={(e) => setEndDateTime(e.target.value)}
+                                            onChange={handleEndDateTimeChange}
                                             minDate={startDateTime || new Date()}
                                             startDate={startDateTime}
                                             placeholder="Select end date and time"
@@ -785,7 +822,7 @@ const MeetingRoomsDetail = () => {
                                     borderRadius: '4px',
                                     textAlign: 'center'
                                 }}>
-                                    ⏰ Hourly bookings: minimum 1 hour, same-day allowed
+                                    ⏰ Hourly bookings: minimum 1 hour, whole hours only, same-day or later allowed
                                 </div>
                             )}
 

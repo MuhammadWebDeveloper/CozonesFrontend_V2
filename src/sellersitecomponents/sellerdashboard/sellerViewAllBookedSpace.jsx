@@ -355,47 +355,6 @@ function SellerViewAllBookedSpace() {
         return new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    // const fetchBookings = async () => {
-    //     try {
-    //         setLoading(true);
-    //         const token = localStorage.getItem('token');
-    //         if (!token) { toast.error('Please login first'); navigate('/login'); return; }
-
-    //         const response = await bookingService.getOwnerBookings();
-    //         console.log('Full API Response:', response);
-
-    //         if (response.success) {
-    //             console.log('Total bookings:', response.bookings.length);
-
-    //             // Check for bookings with disputes
-    //             const bookingsWithDisputes = response.bookings.filter(b =>
-    //                 b.disputes && Array.isArray(b.disputes) && b.disputes.length > 0
-    //             );
-    //             console.log('Bookings with disputes:', bookingsWithDisputes.length);
-
-    //             if (bookingsWithDisputes.length > 0) {
-    //                 console.log('First booking with dispute:', bookingsWithDisputes[0]);
-    //                 console.log('Dispute data:', bookingsWithDisputes[0].disputes);
-    //             }
-
-    //             setBookings(response.bookings);
-    //             setFilteredBookings(response.bookings);
-    //             if (response.count > 0) toast.success(`Loaded ${response.count} bookings`);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching bookings:', error);
-    //         if (error.response?.status === 401) {
-    //             toast.error('Session expired. Please login again.');
-    //             localStorage.removeItem('token');
-    //             localStorage.removeItem('user');
-    //             navigate('/login');
-    //         } else {
-    //             toast.error(error.response?.data?.message || 'Failed to load bookings');
-    //         }
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
     const fetchBookings = async () => {
         try {
             setLoading(true);
@@ -409,38 +368,20 @@ function SellerViewAllBookedSpace() {
             console.log('Full Response:', JSON.stringify(response, null, 2));
             console.log('===============================================');
 
-            // 🔍 DEBUG: Check if disputes exist in the response
             if (response.success && response.bookings) {
                 console.log('📊 Total Bookings:', response.bookings.length);
-
-                // Check each booking for disputes
+                
+                // Log each booking's status
                 response.bookings.forEach((booking, index) => {
-                    console.log(`\n📋 Booking ${index + 1}:`, {
+                    console.log(`📋 Booking ${index + 1}:`, {
                         id: booking.id,
                         status: booking.status,
-                        hasDisputes: !!booking.disputes,
-                        disputesType: typeof booking.disputes,
-                        disputesLength: booking.disputes?.length || 0,
-                        disputes: booking.disputes || 'No disputes'
+                        isPending: booking.status === 'pending',
+                        start_time: booking.start_time,
+                        isPast: new Date(booking.start_time) < new Date()
                     });
                 });
 
-                // Find bookings with disputes
-                const bookingsWithDisputes = response.bookings.filter(b =>
-                    b.disputes && Array.isArray(b.disputes) && b.disputes.length > 0
-                );
-
-                console.log('\n⚠️ Bookings WITH Disputes:', bookingsWithDisputes.length);
-                if (bookingsWithDisputes.length > 0) {
-                    console.log('🔍 Sample dispute data:', JSON.stringify(bookingsWithDisputes[0].disputes, null, 2));
-                } else {
-                    console.log('❌ No bookings with disputes found in the response');
-                    console.log('💡 Check if there are any disputes in the database');
-                }
-            }
-            console.log('===============================================\n');
-
-            if (response.success) {
                 setBookings(response.bookings);
                 setFilteredBookings(response.bookings);
                 if (response.count > 0) toast.success(`Loaded ${response.count} bookings`);
@@ -459,12 +400,16 @@ function SellerViewAllBookedSpace() {
             setLoading(false);
         }
     };
+
     const handleConfirmBooking = async (bookingId) => {
         if (!window.confirm('✅ Approve this booking?\n\nThe customer will receive a confirmation email.')) return;
         setActionLoading(bookingId);
         try {
             const response = await bookingService.confirmBooking(bookingId);
-            if (response.success) { toast.success('✅ Booking confirmed! Email sent to customer.'); fetchBookings(); }
+            if (response.success) { 
+                toast.success('✅ Booking confirmed! Email sent to customer.'); 
+                fetchBookings(); 
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to confirm booking');
         } finally { setActionLoading(null); }
@@ -475,7 +420,10 @@ function SellerViewAllBookedSpace() {
         setActionLoading(bookingId);
         try {
             const response = await bookingService.rejectBooking(bookingId);
-            if (response.success) { toast.success('❌ Booking rejected successfully'); fetchBookings(); }
+            if (response.success) { 
+                toast.success('❌ Booking rejected successfully'); 
+                fetchBookings(); 
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to reject booking');
         } finally { setActionLoading(null); }
@@ -651,7 +599,7 @@ function SellerViewAllBookedSpace() {
                             const isLoading = actionLoading === booking.id;
                             const showDelete = canDelete(booking.status);
 
-                            // Check if booking has disputes - ensure disputes is an array and has items
+                            // Check if booking has disputes
                             const hasDisputes = booking.disputes &&
                                 Array.isArray(booking.disputes) &&
                                 booking.disputes.length > 0;
@@ -729,13 +677,21 @@ function SellerViewAllBookedSpace() {
                                     {/* Show Disputes */}
                                     {hasDisputes && <DisputeDisplay disputes={booking.disputes} />}
 
-                                    {/* Pending Actions */}
-                                    {isPending && !isPastBooking && (
+                                    {/* ✅ FIXED: Pending Actions - Show for ALL pending bookings */}
+                                    {isPending && (
                                         <div className="card-actions">
-                                            <button onClick={() => handleConfirmBooking(booking.id)} disabled={isLoading} className="btn-approve">
+                                            <button 
+                                                onClick={() => handleConfirmBooking(booking.id)} 
+                                                disabled={isLoading} 
+                                                className="btn-approve"
+                                            >
                                                 {isLoading ? <div className="spinner-small"></div> : <><Check size={16} /> Approve Booking</>}
                                             </button>
-                                            <button onClick={() => handleRejectBooking(booking.id)} disabled={isLoading} className="btn-reject">
+                                            <button 
+                                                onClick={() => handleRejectBooking(booking.id)} 
+                                                disabled={isLoading} 
+                                                className="btn-reject"
+                                            >
                                                 {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Reject Booking</>}
                                             </button>
                                         </div>
