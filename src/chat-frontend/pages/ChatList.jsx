@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyChats } from '../services/chat.service.js';
 import '../styles/ChatList.css';
+import { 
+    AlertTriangle, 
+    MessageCircle, 
+    User, 
+    Clock, 
+    Loader2,
+    ChevronRight,
+    Mail,
+    Calendar,
+    MessageSquare
+} from 'lucide-react';
 
 const formatTime = (dateStr) => {
   if (!dateStr) return '';
@@ -41,7 +52,6 @@ const ChatList = () => {
     const fetchChats = async () => {
       try {
         const data = await getMyChats();
-        // Support both { chats: [] } and direct array responses
         const chatsArray = Array.isArray(data) ? data : data.chats || data.data || [];
         setChats(chatsArray);
       } catch (err) {
@@ -54,7 +64,6 @@ const ChatList = () => {
     fetchChats();
   }, []);
 
-  // Get the "other" participant's name from the chat
   const getOtherName = (chat) => {
     const currentUserId = JSON.parse(localStorage.getItem('user') || '{}')?.id;
     if (chat.user_id === currentUserId) {
@@ -66,14 +75,19 @@ const ChatList = () => {
   return (
     <div className="chat-list-page">
       <div className="chat-list-container">
-        <h1>Messages</h1>
+        <h1>
+          <MessageCircle size={24} style={{ marginRight: '10px', display: 'inline' }} />
+          Messages
+        </h1>
         <p className="chat-list-subtitle">Your booking conversations</p>
 
         {loading && [1, 2, 3].map((i) => <SkeletonCard key={i} />)}
 
         {error && (
           <div className="chat-empty">
-            <div className="chat-empty-icon">⚠️</div>
+            <div className="chat-empty-icon">
+              <AlertTriangle size={40} />
+            </div>
             <h3>Something went wrong</h3>
             <p>{error}</p>
           </div>
@@ -81,7 +95,9 @@ const ChatList = () => {
 
         {!loading && !error && chats.length === 0 && (
           <div className="chat-empty">
-            <div className="chat-empty-icon">💬</div>
+            <div className="chat-empty-icon">
+              <MessageSquare size={40} />
+            </div>
             <h3>No conversations yet</h3>
             <p>When you make a booking, a chat will appear here.</p>
           </div>
@@ -98,19 +114,26 @@ const ChatList = () => {
                 className="chat-card"
                 onClick={() => navigate(`/chats/${chat.id}`)}
               >
-                <div className="chat-avatar">{getInitials(otherName)}</div>
+                <div className="chat-avatar">
+                  {getInitials(otherName)}
+                </div>
 
                 <div className="chat-info">
                   <div className="chat-info-top">
                     <span className="chat-booking-ref">
+                      <Calendar size={12} style={{ marginRight: '4px', display: 'inline' }} />
                       #{chat.booking_ref || chat.booking_id?.slice(0, 8).toUpperCase()}
                     </span>
                     <span className="chat-time">
+                      <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} />
                       {formatTime(chat.last_message_at || chat.updated_at)}
                     </span>
                   </div>
 
-                  <div className="chat-other-name">{otherName}</div>
+                  <div className="chat-other-name">
+                    <User size={14} style={{ marginRight: '6px', display: 'inline' }} />
+                    {otherName}
+                  </div>
 
                   <div className={`chat-last-msg ${hasUnread ? 'unread' : ''}`}>
                     {chat.last_message || 'No messages yet'}

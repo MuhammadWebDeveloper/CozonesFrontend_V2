@@ -1,9 +1,35 @@
 // Header.jsx - Updated with click-outside-to-close for modals
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FiSearch, FiGlobe, FiMenu, FiUser, FiHome, FiStar, FiLogIn, FiUserPlus, FiLogOut, FiUserCheck, FiHeart, FiMessageCircle, FiCalendar, FiX, FiChevronDown } from 'react-icons/fi';
-import { MdOutlineLocationOn, MdOutlineDateRange } from 'react-icons/md';
-import { IoCloseOutline } from 'react-icons/io5';
+import { 
+  Search, 
+  Globe, 
+  Menu, 
+  User, 
+  Home, 
+  Star, 
+  LogIn, 
+  UserPlus, 
+  LogOut, 
+  UserCheck, 
+  Heart, 
+  MessageCircle, 
+  Calendar, 
+  X, 
+  ChevronDown,
+  MapPin,
+  Clock,
+  Check,
+  Building,
+  Users,
+  Briefcase,
+  DoorClosed,
+  CalendarDays,
+  Award,
+  MessageSquare,
+  BookOpen,
+  PlusCircle
+} from 'lucide-react';
 import axios from 'axios';
 import '../../componentstyles/headerandfooterstyles/header.css';
 import favicon from '../../assets/favicon.png';
@@ -47,12 +73,12 @@ const Header = () => {
     const [locationsList, setLocationsList] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
-    // Space type options
+    // Space type options with Lucide icons
     const spaceTypes = [
-        { value: 'open_desk', label: 'Open Desk', icon: '🖥️' },
-        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: '💺' },
-        { value: 'private_cabin', label: 'Private Desk', icon: '🚪' },
-        { value: 'meeting_room', label: 'Meeting Rooms', icon: '👥' }
+        { value: 'open_desk', label: 'Open Desk', icon: <Users size={24} /> },
+        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: <Briefcase size={24} /> },
+        { value: 'private_cabin', label: 'Private Desk', icon: <DoorClosed size={24} /> },
+        { value: 'meeting_room', label: 'Meeting Rooms', icon: <Users size={24} /> }
     ];
 
     const apiClient = axios.create({
@@ -354,13 +380,13 @@ const Header = () => {
     const getSpaceTypeDisplayText = () => {
         if (!selectedSpaceType) return "Select space type";
         const spaceType = spaceTypes.find(st => st.value === selectedSpaceType);
-        return spaceType ? `${spaceType.icon} ${spaceType.label}` : "Select space type";
+        return spaceType ? `${spaceType.label}` : "Select space type";
     };
 
     const getShortSpaceTypeDisplayText = () => {
         if (!selectedSpaceType) return "Type";
         const spaceType = spaceTypes.find(st => st.value === selectedSpaceType);
-        return spaceType ? spaceType.icon : "🏢";
+        return spaceType ? "🏢" : "🏢";
     };
 
     // Perform search - ONLY called when search button is clicked
@@ -527,7 +553,7 @@ const Header = () => {
                         <LogoContent />
                     </div>
                     <button className="Navbar-mobileMenuClose" onClick={() => setIsMobileMenuOpen(false)}>
-                        <FiX size={24} />
+                        <X size={24} />
                     </button>
                 </div>
 
@@ -535,45 +561,45 @@ const Header = () => {
                     {!isAuthenticated ? (
                         <>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }}>
-                                <FiLogIn size={20} />
+                                <LogIn size={20} />
                                 Log in
                             </button>
                             <button className="Navbar-mobileMenuItem Navbar-mobileMenuItemPrimary" onClick={() => { navigate('/register'); setIsMobileMenuOpen(false); }}>
-                                <FiUserPlus size={20} />
+                                <UserPlus size={20} />
                                 Sign up
                             </button>
                         </>
                     ) : (
                         <>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/My-Profile'); setIsMobileMenuOpen(false); }}>
-                                <FiUserCheck size={20} />
+                                <UserCheck size={20} />
                                 My Profile
                             </button>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/chats'); setIsMobileMenuOpen(false); }}>
-                                <FiMessageCircle size={20} />
+                                <MessageCircle size={20} />
                                 Messages
                                 {unreadCount > 0 && <span className="Navbar-mobileUnreadBadge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                             </button>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/my-bookings'); setIsMobileMenuOpen(false); }}>
-                                <FiHome size={20} />
+                                <Home size={20} />
                                 My Bookings
                             </button>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/my-favorites'); setIsMobileMenuOpen(false); }}>
-                                <FiHeart size={20} />
+                                <Heart size={20} />
                                 My Favorites
                             </button>
                             <div className="Navbar-mobileDivider"></div>
                             <button className="Navbar-mobileMenuItem" onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}>
-                                <FiStar size={20} />
+                                <Award size={20} />
                                 Cozones Home
                             </button>
                             <button className="Navbar-mobileMenuItem" onClick={handleBecomeHostClick}>
-                                <FiStar size={20} />
+                                <PlusCircle size={20} />
                                 Become a host
                             </button>
                             <div className="Navbar-mobileDivider"></div>
                             <button className="Navbar-mobileMenuItem Navbar-mobileMenuItemLogout" onClick={handleLogout}>
-                                <FiLogOut size={20} />
+                                <LogOut size={20} />
                                 Log out
                             </button>
                         </>
@@ -601,14 +627,14 @@ const Header = () => {
                 <div className="Navbar-mobileSearchHeader">
                     <h3>Search Spaces</h3>
                     <button className="Navbar-mobileSearchClose" onClick={closeMobileSearch}>
-                        <FiX size={24} />
+                        <X size={24} />
                     </button>
                 </div>
 
                 <div className="Navbar-mobileSearchFields">
                     <div className="Navbar-mobileSearchField">
                         <label>
-                            <MdOutlineLocationOn className="Navbar-mobileFieldIcon" />
+                            <MapPin className="Navbar-mobileFieldIcon" size={18} />
                             Where
                         </label>
                         <input
@@ -621,7 +647,7 @@ const Header = () => {
 
                     <div className="Navbar-mobileSearchField">
                         <label>
-                            <span className="Navbar-mobileFieldIcon">🏢</span>
+                            <Building className="Navbar-mobileFieldIcon" size={18} />
                             Which
                         </label>
                         <select
@@ -631,7 +657,7 @@ const Header = () => {
                             <option value="">Select space type</option>
                             {spaceTypes.map(type => (
                                 <option key={type.value} value={type.value}>
-                                    {type.icon} {type.label}
+                                    {type.label}
                                 </option>
                             ))}
                         </select>
@@ -646,7 +672,7 @@ const Header = () => {
                         handleSearch();
                         closeMobileSearch();
                     }}>
-                        <FiSearch size={20} />
+                        <Search size={20} />
                         Search
                     </button>
                 </div>
@@ -682,7 +708,7 @@ const Header = () => {
                         {activeSearchField === 'when' && 'Select time'}
                     </h3>
                     <button className="Navbar-searchModalClose" onClick={closeSearch}>
-                        <IoCloseOutline size={24} />
+                        <X size={24} />
                     </button>
                 </div>
 
@@ -743,7 +769,7 @@ const Header = () => {
                                         <h4>{spaceType.label}</h4>
                                     </div>
                                     {selectedSpaceType === spaceType.value && (
-                                        <span className="Navbar-checkMark">✓</span>
+                                        <span className="Navbar-checkMark"><Check size={16} /></span>
                                     )}
                                 </div>
                             ))}
@@ -802,18 +828,18 @@ const Header = () => {
         <div className="Navbar-tabletSearch">
             <div className="Navbar-tabletSearchFields">
                 <div className="Navbar-tabletSearchField" onClick={() => openSearch('where')}>
-                    <MdOutlineLocationOn size={18} />
+                    <MapPin size={18} />
                     <span>{destination || "Where"}</span>
                 </div>
                 <div className="Navbar-tabletSearchField" onClick={() => openSearch('which')}>
                     <span>{getShortSpaceTypeDisplayText()}</span>
                 </div>
                 <div className="Navbar-tabletSearchField" onClick={() => openSearch('when')}>
-                    <FiCalendar size={18} />
+                    <Calendar size={18} />
                     <span>{formatTimeDisplay() || "When"}</span>
                 </div>
                 <button className="Navbar-tabletSearchBtn" onClick={handleSearch}>
-                    <FiSearch size={18} />
+                    <Search size={18} />
                 </button>
             </div>
             {isSearchOpen && <DesktopSearchModal />}
@@ -838,7 +864,7 @@ const Header = () => {
                                 <div className={`Navbar-searchField ${activeSearchField === 'where' ? 'Navbar-active' : ''}`} onClick={() => openSearch('where')}>
                                     <span className="Navbar-label">Where</span>
                                     <div className="Navbar-inputWrapper">
-                                        <MdOutlineLocationOn className="Navbar-fieldIcon" />
+                                        <MapPin className="Navbar-fieldIcon" size={16} />
                                         <input
                                             className="Navbar-input"
                                             type="text"
@@ -854,7 +880,7 @@ const Header = () => {
                                 <div className={`Navbar-searchField ${activeSearchField === 'which' ? 'Navbar-active' : ''}`} onClick={() => openSearch('which')}>
                                     <span className="Navbar-label">Which</span>
                                     <div className="Navbar-inputWrapper">
-                                        <span className="Navbar-fieldIcon">🏢</span>
+                                        <Building className="Navbar-fieldIcon" size={16} />
                                         <input
                                             className="Navbar-input"
                                             type="text"
@@ -868,7 +894,7 @@ const Header = () => {
                                 <div className="Navbar-divider"></div>
 
                                 <button className="Navbar-searchSubmit" onClick={handleSearch}>
-                                    <FiSearch size={20} color="white" />
+                                    <Search size={20} color="white" />
                                 </button>
                             </div>
 
@@ -890,15 +916,15 @@ const Header = () => {
                         {/* Mobile Search Button */}
                         {isMobile && (
                             <button className="Navbar-mobileSearchBtn" onClick={openMobileSearch}>
-                                <FiSearch size={20} />
+                                <Search size={20} />
                             </button>
                         )}
 
                         {/* User Menu Button */}
                         <div className="Navbar-menuBtn" onClick={toggleMenuDropdown}>
-                            <FiMenu size={18} />
+                            <Menu size={18} />
                             <div className="Navbar-avatar">
-                                {user?.avatar ? <img src={user.avatar} alt="avatar" /> : <FiUser size={18} />}
+                                {user?.avatar ? <img src={user.avatar} alt="avatar" /> : <User size={18} />}
                             </div>
 
                             {/* Desktop Dropdown Menu */}
@@ -907,39 +933,39 @@ const Header = () => {
                                     {!isAuthenticated ? (
                                         <>
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/register')}>
-                                                <FiUserPlus size={16} /> Sign up
+                                                <UserPlus size={16} /> Sign up
                                             </div>
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/login')}>
-                                                <FiLogIn size={16} /> Log in
+                                                <LogIn size={16} /> Log in
                                             </div>
                                         </>
                                     ) : (
                                         <>
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/My-Profile')}>
-                                                <FiUserCheck size={16} /> My Profile
+                                                <UserCheck size={16} /> My Profile
                                             </div>
                                             <div className="Navbar-dropdownItem" onClick={() => { navigate('/chats'); setIsMenuDropdownOpen(false); }}>
-                                                <FiMessageCircle size={16} />
+                                                <MessageCircle size={16} />
                                                 Messages
                                                 {unreadCount > 0 && <span className="Navbar-unreadBadge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                                             </div>
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/my-bookings')}>
-                                                <FiHome size={16} /> My Bookings
+                                                <Home size={16} /> My Bookings
                                             </div>
                                             <div className="Navbar-dropdownItem" onClick={() => { navigate('/my-favorites'); setIsMenuDropdownOpen(false); }}>
-                                                <FiHeart size={16} /> My Favorites
+                                                <Heart size={16} /> My Favorites
                                             </div>
                                             <div className="Navbar-dropdownDivider"></div>
                                             <div className="Navbar-dropdownItem" onClick={() => navigate('/')}>
-                                                <FiStar size={16} /> Cozones Home
+                                                <Award size={16} /> Cozones Home
                                             </div>
                                             <div className="Navbar-dropdownDivider"></div>
                                             <div className="Navbar-dropdownItem" onClick={handleBecomeHostClick}>
-                                                <FiStar size={16} /> Become a host
+                                                <PlusCircle size={16} /> Become a host
                                             </div>
                                             <div className="Navbar-dropdownDivider"></div>
                                             <div className="Navbar-dropdownItem" onClick={handleLogout}>
-                                                <FiLogOut size={16} /> Log out
+                                                <LogOut size={16} /> Log out
                                             </div>
                                         </>
                                     )}

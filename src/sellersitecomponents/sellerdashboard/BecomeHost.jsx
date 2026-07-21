@@ -3,6 +3,24 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../../componentstyles/sellerdashboardstyles/HostRequestForm.css';
 import BaseUrl from '../../utils/AppConstants';
+import { 
+    AlertTriangle, 
+    X, 
+    CheckCircle, 
+    Clock, 
+    Camera,
+    FileText,
+    Phone,
+    User,
+    Info,
+    Send,
+    RefreshCw,
+    Loader2,
+    ChevronRight,
+    List,
+    Eye,
+    AlertCircle
+} from 'lucide-react';
 
 const HostRequestForm = () => {
     const navigate = useNavigate();
@@ -338,7 +356,8 @@ const HostRequestForm = () => {
                             onClick={viewMyRequests}
                             className="view-requests-btn"
                         >
-                            📋 View My Requests
+                            <List size={16} style={{ marginRight: '6px' }} />
+                            View My Requests
                         </button>
                     </div>
                 </div>
@@ -346,7 +365,9 @@ const HostRequestForm = () => {
                 {/* Rejected Warning Message */}
                 {showRejectedWarning && (
                     <div className="warning-message">
-                        <span className="warning-icon">⚠️</span>
+                        <span className="warning-icon">
+                            <AlertTriangle size={20} />
+                        </span>
                         <div className="warning-content">
                             <h4>Previous Request Was Rejected</h4>
                             <p>Your previous host request was rejected. You can submit a new request with corrected information.</p>
@@ -355,12 +376,13 @@ const HostRequestForm = () => {
                                     onClick={() => navigate(`/host-requests/status/${previousRequestDetails.requestId}`)}
                                     className="view-rejected-btn"
                                 >
+                                    <Eye size={14} style={{ marginRight: '4px' }} />
                                     View Previous Request
                                 </button>
                             )}
                         </div>
                         <button onClick={() => setShowRejectedWarning(false)} className="close-warning">
-                            ×
+                            <X size={18} />
                         </button>
                     </div>
                 )}
@@ -368,7 +390,9 @@ const HostRequestForm = () => {
                 {/* Success Message */}
                 {submitSuccess && (
                     <div className="success-message">
-                        <span className="success-icon">✅</span>
+                        <span className="success-icon">
+                            <CheckCircle size={20} style={{ color: '#16a34a' }} />
+                        </span>
                         <div className="success-content">
                             <h4>Request Submitted Successfully!</h4>
                             <p>Your host request has been submitted. Redirecting to status page...</p>
@@ -380,12 +404,13 @@ const HostRequestForm = () => {
                                     }}
                                     className="track-status-btn"
                                 >
+                                    <ChevronRight size={14} style={{ marginRight: '4px' }} />
                                     Track This Request Now
                                 </button>
                             )}
                         </div>
                         <button onClick={() => setSubmitSuccess(false)} className="close-success">
-                            ×
+                            <X size={18} />
                         </button>
                     </div>
                 )}
@@ -394,6 +419,7 @@ const HostRequestForm = () => {
                     {/* CNIC Number Field */}
                     <div className="form-group">
                         <label htmlFor="cnic_number">
+                            <FileText size={14} style={{ marginRight: '6px', display: 'inline' }} />
                             CNIC Number <span className="required">*</span>
                         </label>
                         <input
@@ -413,6 +439,7 @@ const HostRequestForm = () => {
                     {/* CNIC Front Image */}
                     <div className="form-group">
                         <label>
+                            <Camera size={14} style={{ marginRight: '6px', display: 'inline' }} />
                             CNIC Front Image <span className="required">*</span>
                         </label>
                         <div className="file-upload-container">
@@ -425,7 +452,7 @@ const HostRequestForm = () => {
                                         style={{ display: 'none' }}
                                     />
                                     <div className="upload-area">
-                                        <span className="upload-icon">📸</span>
+                                        <Camera size={24} />
                                         <span>Click to upload CNIC front</span>
                                         <small>JPEG, PNG, JPG (max 5MB)</small>
                                     </div>
@@ -434,6 +461,7 @@ const HostRequestForm = () => {
                                 <div className="image-preview">
                                     <img src={cnicFrontPreview} alt="CNIC Front" />
                                     <button type="button" onClick={() => removeImage('front')} className="remove-btn">
+                                        <X size={14} />
                                         Remove
                                     </button>
                                 </div>
@@ -445,6 +473,7 @@ const HostRequestForm = () => {
                     {/* CNIC Back Image */}
                     <div className="form-group">
                         <label>
+                            <Camera size={14} style={{ marginRight: '6px', display: 'inline' }} />
                             CNIC Back Image <span className="required">*</span>
                         </label>
                         <div className="file-upload-container">
@@ -457,7 +486,7 @@ const HostRequestForm = () => {
                                         style={{ display: 'none' }}
                                     />
                                     <div className="upload-area">
-                                        <span className="upload-icon">📸</span>
+                                        <Camera size={24} />
                                         <span>Click to upload CNIC back</span>
                                         <small>JPEG, PNG, JPG (max 5MB)</small>
                                     </div>
@@ -466,6 +495,7 @@ const HostRequestForm = () => {
                                 <div className="image-preview">
                                     <img src={cnicBackPreview} alt="CNIC Back" />
                                     <button type="button" onClick={() => removeImage('back')} className="remove-btn">
+                                        <X size={14} />
                                         Remove
                                     </button>
                                 </div>
@@ -477,6 +507,7 @@ const HostRequestForm = () => {
                     {/* Phone Number */}
                     <div className="form-group">
                         <label htmlFor="phone_number">
+                            <Phone size={14} style={{ marginRight: '6px', display: 'inline' }} />
                             Phone Number <span className="required">*</span>
                         </label>
                         <input
@@ -495,7 +526,10 @@ const HostRequestForm = () => {
 
                     {/* Additional Info */}
                     <div className="form-group">
-                        <label htmlFor="additional_info">Additional Information (Optional)</label>
+                        <label htmlFor="additional_info">
+                            <Info size={14} style={{ marginRight: '6px', display: 'inline' }} />
+                            Additional Information (Optional)
+                        </label>
                         <textarea
                             id="additional_info"
                             name="additional_info"
@@ -514,16 +548,20 @@ const HostRequestForm = () => {
                             className="reset-btn"
                             disabled={loading}
                         >
+                            <RefreshCw size={16} style={{ marginRight: '6px' }} />
                             Reset Form
                         </button>
                         <button type="submit" disabled={loading} className="submit-btn">
                             {loading ? (
                                 <>
-                                    <span className="spinner"></span>
+                                    <Loader2 size={18} style={{ animation: 'spin 1s linear infinite', marginRight: '8px' }} />
                                     Submitting...
                                 </>
                             ) : (
-                                'Submit Request'
+                                <>
+                                    <Send size={16} style={{ marginRight: '6px' }} />
+                                    Submit Request
+                                </>
                             )}
                         </button>
                     </div>
@@ -531,7 +569,10 @@ const HostRequestForm = () => {
 
                 {/* Info Box */}
                 <div className="info-box">
-                    <h4>📌 What happens after submission?</h4>
+                    <h4>
+                        <Info size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                        What happens after submission?
+                    </h4>
                     <ul>
                         <li>Your request will be reviewed by our admin team</li>
                         <li>You will receive updates on your request status</li>

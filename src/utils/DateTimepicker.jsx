@@ -1,6 +1,19 @@
 // DateTimePicker.jsx - Updated with Booked Dates Support
 import React, { useState, useEffect, useRef } from 'react';
 import '../componentstyles/utilstyle/DateTimePicker.css';
+import { 
+    Calendar, 
+    Clock, 
+    ChevronLeft, 
+    ChevronRight, 
+    Lock, 
+    Check, 
+    X,
+    AlertCircle,
+    CalendarDays,
+    CheckCircle,
+    XCircle
+} from 'lucide-react';
 
 const DateTimePicker = ({
     value,
@@ -294,7 +307,9 @@ const DateTimePicker = ({
                         readOnly
                         onClick={() => setIsOpen(p => !p)}
                     />
-                    <span className="datetime-picker-icon" onClick={() => setIsOpen(p => !p)}>🕐</span>
+                    <span className="datetime-picker-icon" onClick={() => setIsOpen(p => !p)}>
+                        <Clock size={20} />
+                    </span>
                 </div>
 
                 {isOpen && (
@@ -327,13 +342,20 @@ const DateTimePicker = ({
                                     color: '#01095A',
                                     fontSize: '12px'
                                 }}>
-                                    ⏰ Min. 1 hour after start time
+                                    <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} />
+                                    Min. 1 hour after start time
                                 </small>
                             )}
                         </div>
                         <div className="datetime-picker-actions" style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
-                            <button className="cancel-btn" onClick={() => setIsOpen(false)}>Cancel</button>
-                            <button className="confirm-btn" onClick={() => setIsOpen(false)}>Confirm</button>
+                            <button className="cancel-btn" onClick={() => setIsOpen(false)}>
+                                <X size={16} style={{ marginRight: '6px' }} />
+                                Cancel
+                            </button>
+                            <button className="confirm-btn" onClick={() => setIsOpen(false)}>
+                                <Check size={16} style={{ marginRight: '6px' }} />
+                                Confirm
+                            </button>
                         </div>
                     </div>
                 )}
@@ -419,17 +441,23 @@ const DateTimePicker = ({
                     readOnly
                     onClick={() => setIsOpen(p => !p)}
                 />
-                <span className="datetime-picker-icon" onClick={() => setIsOpen(p => !p)}>📅</span>
+                <span className="datetime-picker-icon" onClick={() => setIsOpen(p => !p)}>
+                    <Calendar size={20} />
+                </span>
             </div>
 
             {isOpen && (
                 <div className="datetime-picker-dropdown">
                     <div className="datetime-picker-header">
-                        <button onClick={() => changeMonth(-1)} className="month-nav">←</button>
+                        <button onClick={() => changeMonth(-1)} className="month-nav">
+                            <ChevronLeft size={20} />
+                        </button>
                         <span className="current-month">
                             {currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}
                         </span>
-                        <button onClick={() => changeMonth(1)} className="month-nav">→</button>
+                        <button onClick={() => changeMonth(1)} className="month-nav">
+                            <ChevronRight size={20} />
+                        </button>
                     </div>
 
                     <div className="datetime-picker-calendar">
@@ -480,7 +508,7 @@ const DateTimePicker = ({
                                                     fontSize: '8px',
                                                     opacity: 0.7
                                                 }}>
-                                                    🔒
+                                                    <Lock size={10} />
                                                 </span>
                                             )}
                                         </button>
@@ -507,14 +535,21 @@ const DateTimePicker = ({
                         {type === 'end' && startDate && selectedDate &&
                             isSameDay(selectedDate, new Date(startDate)) && (
                                 <small className="time-hint">
-                                    ⏰ Min. 1 hour after start time ({getMinTime() || 'N/A'})
+                                    <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} />
+                                    Min. 1 hour after start time ({getMinTime() || 'N/A'})
                                 </small>
                             )}
                     </div>
 
                     <div className="datetime-picker-actions">
-                        <button className="cancel-btn" onClick={() => setIsOpen(false)}>Cancel</button>
-                        <button className="confirm-btn" onClick={() => setIsOpen(false)}>Confirm</button>
+                        <button className="cancel-btn" onClick={() => setIsOpen(false)}>
+                            <X size={16} style={{ marginRight: '6px' }} />
+                            Cancel
+                        </button>
+                        <button className="confirm-btn" onClick={() => setIsOpen(false)}>
+                            <Check size={16} style={{ marginRight: '6px' }} />
+                            Confirm
+                        </button>
                     </div>
                 </div>
             )}

@@ -3,6 +3,19 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/sellerdashboardstyles/UpdateSpace.css';
 import BaseUrl from '../../utils/AppConstants';
+import {
+    ArrowLeft,
+    AlertTriangle,
+    X,
+    CheckCircle,
+    Wifi,
+    Snowflake,
+    Coffee,
+    Printer,
+    ParkingSquare,
+    ShieldCheck,
+    Zap
+} from 'lucide-react';
 
 export default function UpdateSpace() {
     const { id } = useParams();
@@ -316,9 +329,7 @@ export default function UpdateSpace() {
                 <div className="us__header">
                     <div className="us__header-left">
                         <button className="us__back-btn" onClick={handleCancel}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
+                            <ArrowLeft size={20} />
                         </button>
                         <div>
                             <h1 className="us__title">Update Space</h1>
@@ -330,17 +341,19 @@ export default function UpdateSpace() {
                 <form onSubmit={handleSubmit} className="us__form">
                     {error && (
                         <div className="us__alert us__alert-error">
-                            <div className="us__alert-icon">⚠️</div>
+                            <div className="us__alert-icon"><AlertTriangle size={18} /></div>
                             <div className="us__alert-content">
                                 <strong>Error:</strong> {error}
                             </div>
-                            <button type="button" className="us__alert-close" onClick={() => setError(null)}>×</button>
+                            <button type="button" className="us__alert-close" onClick={() => setError(null)}>
+                                <X size={16} />
+                            </button>
                         </div>
                     )}
 
                     {success && (
                         <div className="us__alert us__alert-success">
-                            <div className="us__alert-icon">✓</div>
+                            <div className="us__alert-icon"><CheckCircle size={18} /></div>
                             <div className="us__alert-content">
                                 <strong>Success!</strong> {success}
                             </div>
@@ -478,7 +491,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_wifi}
                                             onChange={handleInputChange}
                                         />
-                                        <span>✓ WiFi</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <Wifi size={16} /> WiFi
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -488,7 +503,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_ac}
                                             onChange={handleInputChange}
                                         />
-                                        <span>❄️ Air Conditioning</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <Snowflake size={16} /> Air Conditioning
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -498,7 +515,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_coffee}
                                             onChange={handleInputChange}
                                         />
-                                        <span>☕ Coffee Machine</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <Coffee size={16} /> Coffee Machine
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -508,7 +527,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_printer}
                                             onChange={handleInputChange}
                                         />
-                                        <span>🖨️ Printer</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <Printer size={16} /> Printer
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -518,7 +539,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_parking}
                                             onChange={handleInputChange}
                                         />
-                                        <span>🅿️ Parking</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <ParkingSquare size={16} /> Parking
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -528,7 +551,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_security}
                                             onChange={handleInputChange}
                                         />
-                                        <span>🔒 Security</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <ShieldCheck size={16} /> Security
+                                        </span>
                                     </label>
 
                                     <label className="us__checkbox-label">
@@ -538,7 +563,9 @@ export default function UpdateSpace() {
                                             checked={formData.has_backup_power}
                                             onChange={handleInputChange}
                                         />
-                                        <span>⚡ Backup Power</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <Zap size={16} /> Backup Power
+                                        </span>
                                     </label>
                                 </div>
                             </div>

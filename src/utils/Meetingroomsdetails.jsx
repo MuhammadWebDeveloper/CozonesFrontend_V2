@@ -8,6 +8,31 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/meetingRoomsDetail.css';
 import BaseUrl from './AppConstants';
+import {
+    ArrowLeft,
+    RefreshCw,
+    Calendar,
+    Lock,
+    MapPin,
+    Users,
+    AlertTriangle,
+    Pencil,
+    FileEdit,
+    Crown,
+    Check,
+    Clock,
+    BarChart2,
+    Zap,
+    CheckCircle,
+    Building2,
+    Landmark,
+    Pin,
+    Lightbulb,
+    ChevronLeft,
+    ChevronRight,
+    PartyPopper,
+    Hand
+} from 'lucide-react';
 
 // Local fallback images
 const FALLBACK_IMAGES = {
@@ -136,7 +161,7 @@ const MeetingRoomsDetail = () => {
 
         try {
             setLoadingBookings(true);
-            console.log('📅 Fetching booking dates for unit:', id);
+            console.log('Fetching booking dates for unit:', id);
 
             const response = await apiClient.get(`api/spaces/unit/${id}/calendar-dates`);
 
@@ -145,15 +170,15 @@ const MeetingRoomsDetail = () => {
                 setBookedDates(data.bookedDates || []);
                 setBookingDetails(data.details || null);
 
-                console.log('✅ Booked dates loaded:', data.bookedDates.length, 'dates');
-                console.log('📅 Booked dates:', data.bookedDates);
+                console.log('Booked dates loaded:', data.bookedDates.length, 'dates');
+                console.log('Booked dates:', data.bookedDates);
 
                 if (data.bookedDates.length > 0) {
                     info(`📅 ${data.bookedDates.length} dates are already booked`);
                 }
             }
         } catch (err) {
-            console.error('❌ Error fetching booking dates:', err);
+            console.error('Error fetching booking dates:', err);
             setBookedDates([]);
             setBookingDetails(null);
         } finally {
@@ -321,7 +346,7 @@ const MeetingRoomsDetail = () => {
     // ============================================================
 
     const handleStartDateTimeChange = (dateValue) => {
-        console.log('📅 Start DateTime changed:', dateValue);
+        console.log('Start DateTime changed:', dateValue);
 
         if (!dateValue) {
             setStartDateTime(null);
@@ -346,7 +371,7 @@ const MeetingRoomsDetail = () => {
     };
 
     const handleEndDateTimeChange = (dateValue) => {
-        console.log('📅 End DateTime changed:', dateValue);
+        console.log('End DateTime changed:', dateValue);
 
         if (!dateValue) {
             setEndDateTime(null);
@@ -595,8 +620,14 @@ const MeetingRoomsDetail = () => {
         return (
             <div className="MeetingRoomsDetail_loading">
                 <p>Unable to load meeting room details.</p>
-                <button onClick={() => navigate(-1)} className="MeetingRoomsDetail_back-btn">Go Back</button>
-                <button onClick={() => window.location.reload()} className="MeetingRoomsDetail_retry-btn">Retry</button>
+                <button onClick={() => navigate(-1)} className="MeetingRoomsDetail_back-btn">
+                    <ArrowLeft size={18} style={{ marginRight: '6px' }} />
+                    Go Back
+                </button>
+                <button onClick={() => window.location.reload()} className="MeetingRoomsDetail_retry-btn">
+                    <RefreshCw size={18} style={{ marginRight: '6px' }} />
+                    Retry
+                </button>
             </div>
         );
     }
@@ -606,6 +637,7 @@ const MeetingRoomsDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="MeetingRoomsDetail_page">
                 <button className="MeetingRoomsDetail_back-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={18} style={{ marginRight: '6px' }} />
                     Back to spaces
                 </button>
 
@@ -622,7 +654,7 @@ const MeetingRoomsDetail = () => {
                         alignItems: 'center',
                         gap: '12px'
                     }}>
-                        <span style={{ fontSize: '24px' }}>⚠️</span>
+                        <AlertTriangle size={24} style={{ color: '#856404' }} />
                         <div>
                             <strong style={{ display: 'block', marginBottom: '4px', color: '#856404' }}>
                                 You are viewing your own space
@@ -635,8 +667,9 @@ const MeetingRoomsDetail = () => {
                 )}
 
                 {!user && (
-                    <div className="MeetingRoomsDetail_login_warning">
-                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    <div className="MeetingRoomsDetail_login_warning" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Lock size={16} />
+                        Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
                     </div>
                 )}
 
@@ -650,15 +683,15 @@ const MeetingRoomsDetail = () => {
                     <div className="MeetingRoomsDetail_left">
                         <h1 className="MeetingRoomsDetail_title">{space.title}</h1>
 
-                        <p className="MeetingRoomsDetail_meta">
-                            📍 {space.city || space.location}
+                        <p className="MeetingRoomsDetail_meta" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={16} /> {space.city || space.location}
                             {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
                         {space.total_capacity && (
-                            <p className="MeetingRoomsDetail_meta">
-                                👥 Capacity: {space.total_capacity} people
+                            <p className="MeetingRoomsDetail_meta" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Users size={16} /> Capacity: {space.total_capacity} people
                             </p>
                         )}
 
@@ -696,13 +729,13 @@ const MeetingRoomsDetail = () => {
                                 {rateDisplay.rate?.toLocaleString()} PKR per {rateDisplay.unit}
                             </p>
                             {selectedRateType === 'hourly' && space.daily_rate && space.daily_rate > 0 && (
-                                <p className="MeetingRoomsDetail_note">
-                                    💡 Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
+                                <p className="MeetingRoomsDetail_note" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Lightbulb size={14} /> Daily rate available: {space.daily_rate.toLocaleString()} PKR/day
                                 </p>
                             )}
                             {selectedRateType === 'daily' && space.monthly_rate && space.monthly_rate > 0 && (
-                                <p className="MeetingRoomsDetail_note">
-                                    💡 Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
+                                <p className="MeetingRoomsDetail_note" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Lightbulb size={14} /> Monthly rate available: {space.monthly_rate.toLocaleString()} PKR/month
                                 </p>
                             )}
                         </div>
@@ -725,10 +758,14 @@ const MeetingRoomsDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #01095A'
                                 }}>
-                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
-                                    <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
-                                    <span style={{ color: '#666', fontSize: '12px' }}>
-                                        ⚡ Booked dates are disabled in calendar
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Calendar size={14} /> <strong>{bookedDates.length}</strong> dates already booked
+                                    </span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <BarChart2 size={14} /> <strong>{bookingDetails.totalBookings || 0}</strong> total bookings
+                                    </span>
+                                    <span style={{ color: '#666', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Zap size={12} /> Booked dates are disabled in calendar
                                     </span>
                                 </div>
                             )}
@@ -746,7 +783,9 @@ const MeetingRoomsDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #2e7d32'
                                 }}>
-                                    <span>✅ All dates are available for booking!</span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <CheckCircle size={14} /> All dates are available for booking!
+                                    </span>
                                 </div>
                             )}
 
@@ -820,9 +859,13 @@ const MeetingRoomsDetail = () => {
                                     padding: '6px 12px',
                                     background: 'rgba(1, 9, 90, 0.05)',
                                     borderRadius: '4px',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px'
                                 }}>
-                                    ⏰ Hourly bookings: minimum 1 hour, whole hours only, same-day or later allowed
+                                    <Clock size={14} /> Hourly bookings: minimum 1 hour, whole hours only, same-day or later allowed
                                 </div>
                             )}
 
@@ -834,9 +877,13 @@ const MeetingRoomsDetail = () => {
                                     padding: '6px 12px',
                                     background: 'rgba(108, 117, 125, 0.05)',
                                     borderRadius: '4px',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px'
                                 }}>
-                                    📅 Daily bookings: minimum 24 hours (1 day)
+                                    <Calendar size={14} /> Daily bookings: minimum 24 hours (1 day)
                                 </div>
                             )}
                         </div>
@@ -884,7 +931,11 @@ const MeetingRoomsDetail = () => {
                             onClick={handleBooking}
                             style={{
                                 backgroundColor: isOwner ? '#6c757d' : undefined,
-                                cursor: isOwner ? 'not-allowed' : 'pointer'
+                                cursor: isOwner ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
                             }}
                         >
                             {bookingLoading ? (
@@ -893,7 +944,9 @@ const MeetingRoomsDetail = () => {
                                     Processing...
                                 </>
                             ) : isOwner ? (
-                                '📝 Edit Your Space'
+                                <>
+                                    <FileEdit size={16} /> Edit Your Space
+                                </>
                             ) : space.is_active === false ? (
                                 'Currently Unavailable'
                             ) : (
@@ -913,10 +966,14 @@ const MeetingRoomsDetail = () => {
                                         borderRadius: '8px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
-                                        width: '100%'
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px'
                                     }}
                                 >
-                                    ✏️ Edit Space Details
+                                    <Pencil size={16} /> Edit Space Details
                                 </button>
                             </div>
                         )}
@@ -997,14 +1054,16 @@ const MeetingRoomsDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
                                                 }}
                                             >
-                                                ‹
+                                                <ChevronLeft size={20} />
                                             </button>
                                             <button
                                                 className="MeetingRoomsDetail_img-nav MeetingRoomsDetail_next"
@@ -1018,14 +1077,16 @@ const MeetingRoomsDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
                                                 }}
                                             >
-                                                ›
+                                                <ChevronRight size={20} />
                                             </button>
                                             <div className="MeetingRoomsDetail_img-counter" style={{
                                                 position: 'absolute',
@@ -1123,12 +1184,12 @@ const MeetingRoomsDetail = () => {
                     {(space.opening_time && space.closing_time) && (
                         <div className="MeetingRoomsDetail_section">
                             <h3 className="MeetingRoomsDetail_section-title">Working Hours</h3>
-                            <p className="MeetingRoomsDetail_working_hours">
-                                ⏰ {space.opening_time} - {space.closing_time}
+                            <p className="MeetingRoomsDetail_working_hours" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Clock size={16} /> {space.opening_time} - {space.closing_time}
                             </p>
                             {space.working_days && space.working_days.length > 0 && (
-                                <p className="MeetingRoomsDetail_working_days">
-                                    📅 {space.working_days.join(', ')}
+                                <p className="MeetingRoomsDetail_working_days" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Calendar size={16} /> {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
@@ -1139,7 +1200,9 @@ const MeetingRoomsDetail = () => {
                             <h3 className="MeetingRoomsDetail_section-title">Amenities</h3>
                             <div className="MeetingRoomsDetail_features">
                                 {amenities.map((item, i) => (
-                                    <span key={i} className="MeetingRoomsDetail_feature-tag">✓ {item}</span>
+                                    <span key={i} className="MeetingRoomsDetail_feature-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                        <Check size={14} /> {item}
+                                    </span>
                                 ))}
                             </div>
                         </div>
@@ -1148,12 +1211,34 @@ const MeetingRoomsDetail = () => {
                     <div className="MeetingRoomsDetail_section">
                         <h3 className="MeetingRoomsDetail_section-title">Space Information</h3>
                         <div className="MeetingRoomsDetail_space_info">
-                            {space.space_name && <p><strong>🏢 Space Name:</strong> {space.space_name}</p>}
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
-                            {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
-                            {isOwner && <p className="verified">👑 You are the owner of this space</p>}
+                            {space.space_name && (
+                                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Building2 size={16} /> <strong>Space Name:</strong> {space.space_name}
+                                </p>
+                            )}
+                            <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Pin size={16} /> <strong>Unit Type:</strong> {space.unit_type?.replace('_', ' ')}
+                            </p>
+                            {space.total_capacity && (
+                                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Users size={16} /> <strong>Total Capacity:</strong> {space.total_capacity} seats
+                                </p>
+                            )}
+                            {space.address && (
+                                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <MapPin size={16} /> <strong>Address:</strong> {space.address}
+                                </p>
+                            )}
+                            {space.city && (
+                                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Landmark size={16} /> <strong>City:</strong> {space.city}
+                                </p>
+                            )}
+                            {isOwner && (
+                                <p className="verified" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Crown size={16} /> You are the owner of this space
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

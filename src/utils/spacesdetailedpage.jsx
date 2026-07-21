@@ -7,6 +7,36 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import DateTimePicker from './DateTimePicker';
 import BaseUrl from './AppConstants';
+import {
+    ArrowLeft,
+    RefreshCw,
+    AlertTriangle,
+    MapPin,
+    Users,
+    Calendar,
+    Clock,
+    CalendarDays,
+    CheckCircle,
+    Check,
+    Wifi,
+    Wind,
+    Coffee,
+    Printer,
+    ParkingCircle,
+    Shield,
+    Zap,
+    Building2,
+    User,
+    Edit3,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    Lock,
+    Info,
+    Crown,
+    Image as ImageIcon,
+    Camera
+} from 'lucide-react';
 
 // Image Component with lazy loading, skeleton, and FIXED dimensions
 const LazyImage = ({ src, alt, className, onError }) => {
@@ -115,7 +145,8 @@ const LazyImage = ({ src, alt, className, onError }) => {
                     background: '#f5f5f5',
                     borderRadius: '12px'
                 }}>
-                    <span>📷 Failed to load</span>
+                    <ImageIcon size={24} style={{ marginRight: '8px' }} />
+                    <span>Failed to load</span>
                 </div>
             )}
         </div>
@@ -264,11 +295,6 @@ const SpaceDetail = () => {
         }
     }, [location]);
 
-    // SpaceDetail.jsx - Update the fetchBookingDates function
-
-    // ✅ NEW: Fetch booking dates function - FIXED URL
-    // In SpaceDetail.jsx - Replace the fetchBookingDates function with this
-
     // ✅ NEW: Fetch booking dates function - FIXED URL
     const fetchBookingDates = async () => {
         if (!id) return;
@@ -277,7 +303,6 @@ const SpaceDetail = () => {
             setLoadingBookings(true);
             console.log('📅 Fetching booking dates for unit:', id);
 
-            // ✅ FIXED: Use the correct endpoint from spaces routes
             const response = await apiClient.get(`api/spaces/unit/${id}/calendar-dates`);
 
             if (response.data?.success) {
@@ -299,7 +324,6 @@ const SpaceDetail = () => {
             setBookedDates([]);
             setBookingDetails(null);
 
-            // Only show error toast if it's not a 404 (which is expected if no bookings exist)
             if (err.response?.status !== 404) {
                 error('Failed to load booking dates. Please refresh the page.');
             }
@@ -307,6 +331,7 @@ const SpaceDetail = () => {
             setLoadingBookings(false);
         }
     };
+
     // Load space details first (without images)
     useEffect(() => {
         const fetchSpaceDetails = async () => {
@@ -596,13 +621,13 @@ const SpaceDetail = () => {
     const renderAmenities = () => {
         if (!space) return [];
         const amenities = [];
-        if (space.has_wifi) amenities.push('WiFi');
-        if (space.has_ac) amenities.push('Air Conditioning');
-        if (space.has_coffee) amenities.push('Free Coffee');
-        if (space.has_printer) amenities.push('Printer');
-        if (space.has_parking) amenities.push('Parking');
-        if (space.has_security) amenities.push('24/7 Security');
-        if (space.has_backup_power) amenities.push('Backup Power');
+        if (space.has_wifi) amenities.push({ icon: Wifi, label: 'WiFi' });
+        if (space.has_ac) amenities.push({ icon: Wind, label: 'Air Conditioning' });
+        if (space.has_coffee) amenities.push({ icon: Coffee, label: 'Free Coffee' });
+        if (space.has_printer) amenities.push({ icon: Printer, label: 'Printer' });
+        if (space.has_parking) amenities.push({ icon: ParkingCircle, label: 'Parking' });
+        if (space.has_security) amenities.push({ icon: Shield, label: '24/7 Security' });
+        if (space.has_backup_power) amenities.push({ icon: Zap, label: 'Backup Power' });
         return amenities;
     };
 
@@ -660,8 +685,14 @@ const SpaceDetail = () => {
     if (!space) return (
         <div className="SpaceDetail_loading">
             <p>Unable to load space details.</p>
-            <button onClick={() => navigate(-1)} className="SpaceDetail_back-btn">Go Back</button>
-            <button onClick={() => window.location.reload()} className="SpaceDetail_retry-btn">Retry</button>
+            <button onClick={() => navigate(-1)} className="SpaceDetail_back-btn">
+                <ArrowLeft size={18} style={{ marginRight: '8px' }} />
+                Go Back
+            </button>
+            <button onClick={() => window.location.reload()} className="SpaceDetail_retry-btn">
+                <RefreshCw size={18} style={{ marginRight: '8px' }} />
+                Retry
+            </button>
         </div>
     );
 
@@ -670,6 +701,7 @@ const SpaceDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="SpaceDetail_page">
                 <button className="SpaceDetail_back-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={18} style={{ marginRight: '8px' }} />
                     Back to spaces
                 </button>
 
@@ -686,7 +718,7 @@ const SpaceDetail = () => {
                         alignItems: 'center',
                         gap: '12px'
                     }}>
-                        <span style={{ fontSize: '24px' }}>⚠️</span>
+                        <AlertTriangle size={24} style={{ color: '#856404' }} />
                         <div>
                             <strong style={{ display: 'block', marginBottom: '4px', color: '#856404' }}>
                                 You are viewing your own space
@@ -699,8 +731,24 @@ const SpaceDetail = () => {
                 )}
 
                 {!user && (
-                    <div className="SpaceDetail_login_warning">
-                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    <div className="SpaceDetail_login_warning" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        backgroundColor: '#e8f0fe',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}>
+                        <Lock size={18} style={{ color: '#01095A' }} />
+                        Please <button onClick={() => navigate('/login')} className="login-link" style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#01095A',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                        }}>login</button> to book this space
                     </div>
                 )}
 
@@ -715,18 +763,21 @@ const SpaceDetail = () => {
                         <h1 className="SpaceDetail_title">{space.title}</h1>
 
                         <p className="SpaceDetail_meta">
-                            📍 {space.city || 'City not specified'}
+                            <MapPin size={18} style={{ marginRight: '6px' }} />
+                            {space.city || 'City not specified'}
                             {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
                         {space.total_capacity && (
                             <p className="SpaceDetail_meta">
-                                👥 Capacity: {space.total_capacity} people
+                                <Users size={18} style={{ marginRight: '6px' }} />
+                                Capacity: {space.total_capacity} people
                             </p>
                         )}
 
                         <p className="SpaceDetail_meta">
+                            <Calendar size={18} style={{ marginRight: '6px' }} />
                             Availability: <span className={space.is_active ? "SpaceDetail_available" : "SpaceDetail_unavailable"}>
                                 {space.is_active ? 'Available' : 'Currently Unavailable'}
                             </span>
@@ -788,7 +839,8 @@ const SpaceDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #01095A'
                                 }}>
-                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <CalendarDays size={18} style={{ color: '#01095A' }} />
+                                    <span><strong>{bookedDates.length}</strong> dates already booked</span>
                                     <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
                                     <span style={{ color: '#666', fontSize: '12px' }}>
                                         ⚡ Booked dates are disabled in calendar
@@ -810,7 +862,8 @@ const SpaceDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #2e7d32'
                                 }}>
-                                    <span>✅ All dates are available for booking!</span>
+                                    <CheckCircle size={18} style={{ color: '#2e7d32' }} />
+                                    <span>All dates are available for booking!</span>
                                 </div>
                             )}
 
@@ -888,11 +941,14 @@ const SpaceDetail = () => {
                         >
                             {bookingLoading ? (
                                 <>
-                                    <span className="spinner-small"></span>
+                                    <Loader2 size={20} style={{ animation: 'spin 1s linear infinite', marginRight: '8px' }} />
                                     Processing...
                                 </>
                             ) : isOwner ? (
-                                '📝 Edit Your Space'
+                                <>
+                                    <Edit3 size={18} style={{ marginRight: '8px' }} />
+                                    Edit Your Space
+                                </>
                             ) : !space.is_active ? (
                                 'Currently Unavailable'
                             ) : (
@@ -912,10 +968,15 @@ const SpaceDetail = () => {
                                         borderRadius: '8px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
-                                        width: '100%'
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
                                     }}
                                 >
-                                    ✏️ Edit Space Details
+                                    <Edit3 size={18} />
+                                    Edit Space Details
                                 </button>
                             </div>
                         )}
@@ -959,7 +1020,12 @@ const SpaceDetail = () => {
                                         }}>
                                             <div className="loading-spinner-small"></div>
                                         </div>
-                                    ) : 'No image available'}
+                                    ) : (
+                                        <>
+                                            <Camera size={24} style={{ marginRight: '8px' }} />
+                                            No image available
+                                        </>
+                                    )}
                                 </div>
                             )}
 
@@ -973,9 +1039,21 @@ const SpaceDetail = () => {
                                             left: '10px',
                                             top: '50%',
                                             transform: 'translateY(-50%)',
-                                            zIndex: 10
+                                            zIndex: 10,
+                                            background: 'rgba(0,0,0,0.6)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
-                                    >‹</button>
+                                    >
+                                        <ChevronLeft size={24} />
+                                    </button>
                                     <button
                                         className="SpaceDetail_img-nav SpaceDetail_next"
                                         onClick={nextImage}
@@ -984,9 +1062,21 @@ const SpaceDetail = () => {
                                             right: '10px',
                                             top: '50%',
                                             transform: 'translateY(-50%)',
-                                            zIndex: 10
+                                            zIndex: 10,
+                                            background: 'rgba(0,0,0,0.6)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
-                                    >›</button>
+                                    >
+                                        <ChevronRight size={24} />
+                                    </button>
                                     <div className="SpaceDetail_img-counter" style={{
                                         position: 'absolute',
                                         bottom: '10px',
@@ -1029,7 +1119,10 @@ const SpaceDetail = () => {
 
                 <div className="SpaceDetail_bottom">
                     <div className="SpaceDetail_section">
-                        <h3 className="SpaceDetail_section-title">About this space</h3>
+                        <h3 className="SpaceDetail_section-title">
+                            <Info size={20} style={{ marginRight: '8px' }} />
+                            About this space
+                        </h3>
                         <p className="SpaceDetail_description">
                             {space.description}
                         </p>
@@ -1037,13 +1130,18 @@ const SpaceDetail = () => {
 
                     {(space.opening_time && space.closing_time) && (
                         <div className="SpaceDetail_section">
-                            <h3 className="SpaceDetail_section-title">Working Hours</h3>
+                            <h3 className="SpaceDetail_section-title">
+                                <Clock size={20} style={{ marginRight: '8px' }} />
+                                Working Hours
+                            </h3>
                             <p className="SpaceDetail_working_hours">
-                                ⏰ {space.opening_time} - {space.closing_time}
+                                <Clock size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                {space.opening_time} - {space.closing_time}
                             </p>
                             {space.working_days && space.working_days.length > 0 && (
                                 <p className="SpaceDetail_working_days">
-                                    📅 {space.working_days.join(', ')}
+                                    <Calendar size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                    {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
@@ -1051,34 +1149,47 @@ const SpaceDetail = () => {
 
                     {amenities.length > 0 && (
                         <div className="SpaceDetail_section">
-                            <h3 className="SpaceDetail_section-title">Amenities</h3>
+                            <h3 className="SpaceDetail_section-title">
+                                <Check size={20} style={{ marginRight: '8px' }} />
+                                Amenities
+                            </h3>
                             <div className="SpaceDetail_features">
-                                {amenities.map((item, i) => (
-                                    <span key={i} className="SpaceDetail_feature-tag">✓ {item}</span>
-                                ))}
+                                {amenities.map((item, i) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <span key={i} className="SpaceDetail_feature-tag">
+                                            <Icon size={16} style={{ marginRight: '6px' }} />
+                                            {item.label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
 
                     <div className="SpaceDetail_section">
-                        <h3 className="SpaceDetail_section-title">Space Information</h3>
+                        <h3 className="SpaceDetail_section-title">
+                            <Building2 size={20} style={{ marginRight: '8px' }} />
+                            Space Information
+                        </h3>
                         <div className="SpaceDetail_space_info">
                             {space.space_name && (
-                                <p><strong>🏢 Space Name:</strong> {space.space_name}</p>
+                                <p><strong><Building2 size={16} style={{ marginRight: '4px', display: 'inline' }} /> Space Name:</strong> {space.space_name}</p>
                             )}
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            <p><strong><Check size={16} style={{ marginRight: '4px', display: 'inline' }} /> Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
                             {space.total_capacity && (
-                                <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>
+                                <p><strong><Users size={16} style={{ marginRight: '4px', display: 'inline' }} /> Total Capacity:</strong> {space.total_capacity} seats</p>
                             )}
                             {space.address && (
-                                <p><strong>📍 Address:</strong> {space.address}</p>
+                                <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> Address:</strong> {space.address}</p>
                             )}
                             {space.city && (
-                                <p><strong>🌆 City:</strong> {space.city}</p>
+                                <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> City:</strong> {space.city}</p>
                             )}
                             {isOwner && (
                                 <p style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e8eaf0', color: '#01095A' }}>
-                                    👑 You are the owner of this space
+                                    <Crown size={16} style={{ marginRight: '6px' }} />
+                                    You are the owner of this space
                                 </p>
                             )}
                         </div>

@@ -7,6 +7,38 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/privateCabinsDetail.css';
 import BaseUrl from './AppConstants';
+import { 
+    ArrowLeft, 
+    RefreshCw, 
+    AlertTriangle, 
+    MapPin, 
+    Users, 
+    Calendar, 
+    Clock, 
+    CalendarDays,
+    CheckCircle,
+    Check,
+    Wifi,
+    Wind,
+    Coffee,
+    Printer,
+    ParkingCircle,
+    Shield,
+    Zap,
+    Building2,
+    User,
+    Edit3,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    Lock,
+    Info,
+    Crown,
+    Bath,
+    Table,
+    Image as ImageIcon,
+    Camera
+} from 'lucide-react';
 
 // Local fallback images - USE RELIABLE URLs
 const FALLBACK_IMAGES = {
@@ -465,15 +497,15 @@ const PrivateCabinsDetail = () => {
     const renderAmenities = () => {
         const amenities = space?.space_amenities || {};
         const amenityList = [];
-        if (amenities.wifi) amenityList.push('WiFi');
-        if (amenities.ac) amenityList.push('Air Conditioning');
-        if (amenities.coffee) amenityList.push('Free Coffee');
-        if (amenities.printer) amenityList.push('Printer');
-        if (amenities.parking) amenityList.push('Parking');
-        if (amenities.security) amenityList.push('24/7 Security');
-        if (amenities.backup_power) amenityList.push('Backup Power');
-        if (amenities.private_bathroom) amenityList.push('Private Bathroom');
-        if (amenities.meeting_table) amenityList.push('Meeting Table');
+        if (amenities.wifi) amenityList.push({ icon: Wifi, label: 'WiFi' });
+        if (amenities.ac) amenityList.push({ icon: Wind, label: 'Air Conditioning' });
+        if (amenities.coffee) amenityList.push({ icon: Coffee, label: 'Free Coffee' });
+        if (amenities.printer) amenityList.push({ icon: Printer, label: 'Printer' });
+        if (amenities.parking) amenityList.push({ icon: ParkingCircle, label: 'Parking' });
+        if (amenities.security) amenityList.push({ icon: Shield, label: '24/7 Security' });
+        if (amenities.backup_power) amenityList.push({ icon: Zap, label: 'Backup Power' });
+        if (amenities.private_bathroom) amenityList.push({ icon: Bath, label: 'Private Bathroom' });
+        if (amenities.meeting_table) amenityList.push({ icon: Table, label: 'Meeting Table' });
         return amenityList;
     };
 
@@ -511,8 +543,14 @@ const PrivateCabinsDetail = () => {
         return (
             <div className="PrivateCabinsDetail_loading">
                 <p>Unable to load private cabin details.</p>
-                <button onClick={() => navigate(-1)} className="PrivateCabinsDetail_back-btn">Go Back</button>
-                <button onClick={() => window.location.reload()} className="PrivateCabinsDetail_retry-btn">Retry</button>
+                <button onClick={() => navigate(-1)} className="PrivateCabinsDetail_back-btn">
+                    <ArrowLeft size={18} style={{ marginRight: '8px' }} />
+                    Go Back
+                </button>
+                <button onClick={() => window.location.reload()} className="PrivateCabinsDetail_retry-btn">
+                    <RefreshCw size={18} style={{ marginRight: '8px' }} />
+                    Retry
+                </button>
             </div>
         );
     }
@@ -522,6 +560,7 @@ const PrivateCabinsDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="PrivateCabinsDetail_page">
                 <button className="PrivateCabinsDetail_back-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={18} style={{ marginRight: '8px' }} />
                     Back to spaces
                 </button>
 
@@ -538,7 +577,7 @@ const PrivateCabinsDetail = () => {
                         alignItems: 'center',
                         gap: '12px'
                     }}>
-                        <span style={{ fontSize: '24px' }}>⚠️</span>
+                        <AlertTriangle size={24} style={{ color: '#856404' }} />
                         <div>
                             <strong style={{ display: 'block', marginBottom: '4px', color: '#856404' }}>
                                 You are viewing your own space
@@ -551,8 +590,24 @@ const PrivateCabinsDetail = () => {
                 )}
 
                 {!user && (
-                    <div className="PrivateCabinsDetail_login_warning">
-                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    <div className="PrivateCabinsDetail_login_warning" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        backgroundColor: '#e8f0fe',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}>
+                        <Lock size={18} style={{ color: '#01095A' }} />
+                        Please <button onClick={() => navigate('/login')} className="login-link" style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#01095A',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                        }}>login</button> to book this space
                     </div>
                 )}
 
@@ -567,18 +622,21 @@ const PrivateCabinsDetail = () => {
                         <h1 className="PrivateCabinsDetail_title">{space.title}</h1>
 
                         <p className="PrivateCabinsDetail_meta">
-                            📍 {space.city || space.location}
+                            <MapPin size={18} style={{ marginRight: '6px' }} />
+                            {space.city || space.location}
                             {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
                         {space.total_capacity && (
                             <p className="PrivateCabinsDetail_meta">
-                                👥 Capacity: {space.total_capacity} people
+                                <Users size={18} style={{ marginRight: '6px' }} />
+                                Capacity: {space.total_capacity} people
                             </p>
                         )}
 
                         <p className="PrivateCabinsDetail_meta">
+                            <Calendar size={18} style={{ marginRight: '6px' }} />
                             Availability: <span className={space.is_active !== false ? "PrivateCabinsDetail_available" : "PrivateCabinsDetail_unavailable"}>
                                 {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
                             </span>
@@ -641,7 +699,8 @@ const PrivateCabinsDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #01095A'
                                 }}>
-                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <CalendarDays size={18} style={{ color: '#01095A' }} />
+                                    <span><strong>{bookedDates.length}</strong> dates already booked</span>
                                     <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
                                     <span style={{ color: '#666', fontSize: '12px' }}>
                                         ⚡ Booked dates are disabled in calendar
@@ -662,7 +721,8 @@ const PrivateCabinsDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #2e7d32'
                                 }}>
-                                    <span>✅ All dates are available for booking!</span>
+                                    <CheckCircle size={18} style={{ color: '#2e7d32' }} />
+                                    <span>All dates are available for booking!</span>
                                 </div>
                             )}
 
@@ -737,11 +797,14 @@ const PrivateCabinsDetail = () => {
                         >
                             {bookingLoading ? (
                                 <>
-                                    <span className="spinner-small"></span>
+                                    <Loader2 size={20} style={{ animation: 'spin 1s linear infinite', marginRight: '8px' }} />
                                     Processing...
                                 </>
                             ) : isOwner ? (
-                                '📝 Edit Your Space'
+                                <>
+                                    <Edit3 size={18} style={{ marginRight: '8px' }} />
+                                    Edit Your Space
+                                </>
                             ) : space.is_active === false ? (
                                 'Currently Unavailable'
                             ) : (
@@ -761,10 +824,15 @@ const PrivateCabinsDetail = () => {
                                         borderRadius: '8px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
-                                        width: '100%'
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
                                     }}
                                 >
-                                    ✏️ Edit Space Details
+                                    <Edit3 size={18} />
+                                    Edit Space Details
                                 </button>
                             </div>
                         )}
@@ -845,14 +913,16 @@ const PrivateCabinsDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
                                                 }}
                                             >
-                                                ‹
+                                                <ChevronLeft size={24} />
                                             </button>
                                             <button
                                                 className="PrivateCabinsDetail_img-nav PrivateCabinsDetail_next"
@@ -866,14 +936,16 @@ const PrivateCabinsDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
                                                 }}
                                             >
-                                                ›
+                                                <ChevronRight size={24} />
                                             </button>
                                             <div className="PrivateCabinsDetail_img-counter" style={{
                                                 position: 'absolute',
@@ -962,7 +1034,10 @@ const PrivateCabinsDetail = () => {
 
                 <div className="PrivateCabinsDetail_bottom">
                     <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">About this space</h3>
+                        <h3 className="PrivateCabinsDetail_section-title">
+                            <Info size={20} style={{ marginRight: '8px' }} />
+                            About this space
+                        </h3>
                         <p className="PrivateCabinsDetail_description">
                             {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'private cabin'} located in the heart of ${space.city}. Perfect for professionals, freelancers, and teams looking for a productive and private environment.`}
                         </p>
@@ -970,13 +1045,18 @@ const PrivateCabinsDetail = () => {
 
                     {(space.opening_time && space.closing_time) && (
                         <div className="PrivateCabinsDetail_section">
-                            <h3 className="PrivateCabinsDetail_section-title">Working Hours</h3>
+                            <h3 className="PrivateCabinsDetail_section-title">
+                                <Clock size={20} style={{ marginRight: '8px' }} />
+                                Working Hours
+                            </h3>
                             <p className="PrivateCabinsDetail_working_hours">
-                                ⏰ {space.opening_time} - {space.closing_time}
+                                <Clock size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                {space.opening_time} - {space.closing_time}
                             </p>
                             {space.working_days && space.working_days.length > 0 && (
                                 <p className="PrivateCabinsDetail_working_days">
-                                    📅 {space.working_days.join(', ')}
+                                    <Calendar size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                    {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>
@@ -984,24 +1064,38 @@ const PrivateCabinsDetail = () => {
 
                     {amenities.length > 0 && (
                         <div className="PrivateCabinsDetail_section">
-                            <h3 className="PrivateCabinsDetail_section-title">Amenities</h3>
+                            <h3 className="PrivateCabinsDetail_section-title">
+                                <Check size={20} style={{ marginRight: '8px' }} />
+                                Amenities
+                            </h3>
                             <div className="PrivateCabinsDetail_features">
-                                {amenities.map((item, i) => (
-                                    <span key={i} className="PrivateCabinsDetail_feature-tag">✓ {item}</span>
-                                ))}
+                                {amenities.map((item, i) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <span key={i} className="PrivateCabinsDetail_feature-tag">
+                                            <Icon size={16} style={{ marginRight: '6px' }} />
+                                            {item.label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
 
                     <div className="PrivateCabinsDetail_section">
-                        <h3 className="PrivateCabinsDetail_section-title">Space Information</h3>
+                        <h3 className="PrivateCabinsDetail_section-title">
+                            <Building2 size={20} style={{ marginRight: '8px' }} />
+                            Space Information
+                        </h3>
                         <div className="PrivateCabinsDetail_space_info">
-                            {space.space_name && <p><strong>🏢 Space Name:</strong> {space.space_name}</p>}
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
-                            {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
-                            {isOwner && <p className="verified">👑 You are the owner of this space</p>}
+                            {space.space_name && <p><strong><Building2 size={16} style={{ marginRight: '4px', display: 'inline' }} /> Space Name:</strong> {space.space_name}</p>}
+                            <p><strong><Check size={16} style={{ marginRight: '4px', display: 'inline' }} /> Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            {space.total_capacity && <p><strong><Users size={16} style={{ marginRight: '4px', display: 'inline' }} /> Total Capacity:</strong> {space.total_capacity} seats</p>}
+                            {space.address && <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> Address:</strong> {space.address}</p>}
+                            {space.city && <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> City:</strong> {space.city}</p>}
+                            {isOwner && <p className="verified" style={{ color: '#01095A', fontWeight: '600' }}>
+                                <Crown size={16} style={{ marginRight: '6px' }} /> You are the owner of this space
+                            </p>}
                         </div>
                     </div>
                 </div>

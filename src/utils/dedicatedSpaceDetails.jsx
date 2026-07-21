@@ -7,6 +7,37 @@ import { useToast } from './UseTost';
 import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/dedicatedDesksDetailed.css';
 import BaseUrl from './AppConstants';
+import { 
+    ArrowLeft, 
+    RefreshCw, 
+    AlertTriangle, 
+    MapPin, 
+    Users, 
+    Calendar, 
+    Clock, 
+    CalendarDays,
+    CheckCircle,
+    Check,
+    Wifi,
+    Wind,
+    Coffee,
+    Printer,
+    ParkingCircle,
+    Shield,
+    Zap,
+    Building2,
+    User,
+    Edit3,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    Lock,
+    Info,
+    Crown,
+    Image as ImageIcon,
+    Camera,
+    Eye
+} from 'lucide-react';
 
 const DedicatedDeskDetail = () => {
     const { id } = useParams();
@@ -460,13 +491,13 @@ const DedicatedDeskDetail = () => {
 
     const renderAmenities = () => {
         const amenities = [];
-        if (space?.has_wifi) amenities.push('WiFi');
-        if (space?.has_ac) amenities.push('Air Conditioning');
-        if (space?.has_coffee) amenities.push('Free Coffee');
-        if (space?.has_printer) amenities.push('Printer');
-        if (space?.has_parking) amenities.push('Parking');
-        if (space?.has_security) amenities.push('24/7 Security');
-        if (space?.has_backup_power) amenities.push('Backup Power');
+        if (space?.has_wifi) amenities.push({ icon: Wifi, label: 'WiFi' });
+        if (space?.has_ac) amenities.push({ icon: Wind, label: 'Air Conditioning' });
+        if (space?.has_coffee) amenities.push({ icon: Coffee, label: 'Free Coffee' });
+        if (space?.has_printer) amenities.push({ icon: Printer, label: 'Printer' });
+        if (space?.has_parking) amenities.push({ icon: ParkingCircle, label: 'Parking' });
+        if (space?.has_security) amenities.push({ icon: Shield, label: '24/7 Security' });
+        if (space?.has_backup_power) amenities.push({ icon: Zap, label: 'Backup Power' });
         return amenities;
     };
 
@@ -533,8 +564,14 @@ const DedicatedDeskDetail = () => {
         return (
             <div className="DedicatedDeskDetail_loading">
                 <p>Unable to load space details.</p>
-                <button onClick={() => navigate(-1)} className="DedicatedDeskDetail_back-btn">Go Back</button>
-                <button onClick={() => window.location.reload()} className="DedicatedDeskDetail_retry-btn">Retry</button>
+                <button onClick={() => navigate(-1)} className="DedicatedDeskDetail_back-btn">
+                    <ArrowLeft size={18} style={{ marginRight: '8px' }} />
+                    Go Back
+                </button>
+                <button onClick={() => window.location.reload()} className="DedicatedDeskDetail_retry-btn">
+                    <RefreshCw size={18} style={{ marginRight: '8px' }} />
+                    Retry
+                </button>
             </div>
         );
     }
@@ -544,20 +581,47 @@ const DedicatedDeskDetail = () => {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
             <div className="DedicatedDeskDetail_page">
                 <button className="DedicatedDeskDetail_back-btn" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={18} style={{ marginRight: '8px' }} />
                     Back to spaces
                 </button>
 
                 <h2 className="DedicatedDeskDetail_page-title">Space Details</h2>
 
                 {isOwner && (
-                    <div className="DedicatedDeskDetail_owner_warning">
-                        ⚠️ This is your own space. You cannot book it.
+                    <div className="DedicatedDeskDetail_owner_warning" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '16px 20px',
+                        backgroundColor: '#fff3cd',
+                        borderLeft: '4px solid #ffc107',
+                        borderRadius: '12px',
+                        marginBottom: '24px'
+                    }}>
+                        <AlertTriangle size={24} style={{ color: '#856404' }} />
+                        <span style={{ color: '#856404' }}>This is your own space. You cannot book it.</span>
                     </div>
                 )}
 
                 {!user && (
-                    <div className="DedicatedDeskDetail_login_warning">
-                        🔐 Please <button onClick={() => navigate('/login')} className="login-link">login</button> to book this space
+                    <div className="DedicatedDeskDetail_login_warning" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        backgroundColor: '#e8f0fe',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}>
+                        <Lock size={18} style={{ color: '#01095A' }} />
+                        Please <button onClick={() => navigate('/login')} className="login-link" style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#01095A',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                        }}>login</button> to book this space
                     </div>
                 )}
 
@@ -572,18 +636,21 @@ const DedicatedDeskDetail = () => {
                         <h1 className="DedicatedDeskDetail_title">{space.title}</h1>
 
                         <p className="DedicatedDeskDetail_meta">
-                            📍 {space.city || space.location}
+                            <MapPin size={18} style={{ marginRight: '6px' }} />
+                            {space.city || space.location}
                             {space.area && `, ${space.area}`}
                             {space.address && <span> - {space.address}</span>}
                         </p>
 
                         {space.total_capacity && (
                             <p className="DedicatedDeskDetail_meta">
-                                👥 Capacity: {space.total_capacity} people
+                                <Users size={18} style={{ marginRight: '6px' }} />
+                                Capacity: {space.total_capacity} people
                             </p>
                         )}
 
                         <p className="DedicatedDeskDetail_meta">
+                            <Calendar size={18} style={{ marginRight: '6px' }} />
                             Availability: <span className={space.is_active ? "DedicatedDeskDetail_available" : "DedicatedDeskDetail_unavailable"}>
                                 {space.is_active !== false ? 'Available' : 'Currently Unavailable'}
                             </span>
@@ -646,7 +713,8 @@ const DedicatedDeskDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #01095A'
                                 }}>
-                                    <span>📅 <strong>{bookedDates.length}</strong> dates already booked</span>
+                                    <CalendarDays size={18} style={{ color: '#01095A' }} />
+                                    <span><strong>{bookedDates.length}</strong> dates already booked</span>
                                     <span>📊 <strong>{bookingDetails.totalBookings || 0}</strong> total bookings</span>
                                     <span style={{ color: '#666', fontSize: '12px' }}>
                                         ⚡ Booked dates are disabled in calendar
@@ -667,7 +735,8 @@ const DedicatedDeskDetail = () => {
                                     flexWrap: 'wrap',
                                     borderLeft: '4px solid #2e7d32'
                                 }}>
-                                    <span>✅ All dates are available for booking!</span>
+                                    <CheckCircle size={18} style={{ color: '#2e7d32' }} />
+                                    <span>All dates are available for booking!</span>
                                 </div>
                             )}
 
@@ -742,11 +811,14 @@ const DedicatedDeskDetail = () => {
                         >
                             {bookingLoading ? (
                                 <>
-                                    <span className="spinner-small"></span>
+                                    <Loader2 size={20} style={{ animation: 'spin 1s linear infinite', marginRight: '8px' }} />
                                     Processing...
                                 </>
                             ) : isOwner ? (
-                                '📝 Edit Your Space'
+                                <>
+                                    <Edit3 size={18} style={{ marginRight: '8px' }} />
+                                    Edit Your Space
+                                </>
                             ) : !space.is_active ? (
                                 'Currently Unavailable'
                             ) : (
@@ -766,10 +838,15 @@ const DedicatedDeskDetail = () => {
                                         borderRadius: '8px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
-                                        width: '100%'
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
                                     }}
                                 >
-                                    ✏️ Edit Space Details
+                                    <Edit3 size={18} />
+                                    Edit Space Details
                                 </button>
                             </div>
                         )}
@@ -851,7 +928,6 @@ const DedicatedDeskDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
@@ -861,7 +937,7 @@ const DedicatedDeskDetail = () => {
                                                     justifyContent: 'center'
                                                 }}
                                             >
-                                                ‹
+                                                <ChevronLeft size={24} />
                                             </button>
                                             <button
                                                 className="DedicatedDeskDetail_img-nav DedicatedDeskDetail_next"
@@ -876,7 +952,6 @@ const DedicatedDeskDetail = () => {
                                                     background: 'rgba(0,0,0,0.5)',
                                                     border: 'none',
                                                     color: 'white',
-                                                    fontSize: '24px',
                                                     width: '36px',
                                                     height: '36px',
                                                     borderRadius: '50%',
@@ -886,7 +961,7 @@ const DedicatedDeskDetail = () => {
                                                     justifyContent: 'center'
                                                 }}
                                             >
-                                                ›
+                                                <ChevronRight size={24} />
                                             </button>
                                             <div className="DedicatedDeskDetail_img-counter" style={{
                                                 position: 'absolute',
@@ -985,7 +1060,10 @@ const DedicatedDeskDetail = () => {
 
                 <div className="DedicatedDeskDetail_bottom">
                     <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">About this space</h3>
+                        <h3 className="DedicatedDeskDetail_section-title">
+                            <Info size={20} style={{ marginRight: '8px' }} />
+                            About this space
+                        </h3>
                         <p className="DedicatedDeskDetail_description">
                             {space.description || `A premium ${space.unit_type?.replace('_', ' ') || 'workspace'} located in the heart of ${space.city || space.location}. Perfect for professionals, freelancers, and teams looking for a productive environment.`}
                         </p>
@@ -993,13 +1071,18 @@ const DedicatedDeskDetail = () => {
 
                     {(space.opening_time && space.closing_time) && (
                         <div className="DedicatedDeskDetail_section">
-                            <h3 className="DedicatedDeskDetail_section-title">Working Hours</h3>
+                            <h3 className="DedicatedDeskDetail_section-title">
+                                <Clock size={20} style={{ marginRight: '8px' }} />
+                                Working Hours
+                            </h3>
                             <p className="DedicatedDeskDetail_working_hours">
-                                ⏰ {space.opening_time} - {space.closing_time}
+                                <Clock size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                {space.opening_time} - {space.closing_time}
                             </p>
                             {space.working_days && space.working_days.length > 0 && (
                                 <p className="DedicatedDeskDetail_working_days">
-                                    📅 {space.working_days.join(', ')}
+                                    <Calendar size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                    {space.working_days.join(', ')}
                                 </p>
                             )}
                         </div>  
@@ -1007,24 +1090,38 @@ const DedicatedDeskDetail = () => {
 
                     {amenities.length > 0 && (
                         <div className="DedicatedDeskDetail_section">
-                            <h3 className="DedicatedDeskDetail_section-title">Amenities</h3>
+                            <h3 className="DedicatedDeskDetail_section-title">
+                                <Check size={20} style={{ marginRight: '8px' }} />
+                                Amenities
+                            </h3>
                             <div className="DedicatedDeskDetail_features">
-                                {amenities.map((item, i) => (
-                                    <span key={i} className="DedicatedDeskDetail_feature-tag">✓ {item}</span>
-                                ))}
+                                {amenities.map((item, i) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <span key={i} className="DedicatedDeskDetail_feature-tag">
+                                            <Icon size={16} style={{ marginRight: '6px' }} />
+                                            {item.label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
 
                     <div className="DedicatedDeskDetail_section">
-                        <h3 className="DedicatedDeskDetail_section-title">Space Information</h3>
+                        <h3 className="DedicatedDeskDetail_section-title">
+                            <Building2 size={20} style={{ marginRight: '8px' }} />
+                            Space Information
+                        </h3>
                         <div className="DedicatedDeskDetail_space_info">
-                            {space.space_name && <p><strong>🏢 Space Name:</strong> {space.space_name}</p>}
-                            <p><strong>📌 Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
-                            {space.total_capacity && <p><strong>👥 Total Capacity:</strong> {space.total_capacity} seats</p>}
-                            {space.address && <p><strong>📍 Address:</strong> {space.address}</p>}
-                            {space.city && <p><strong>🌆 City:</strong> {space.city}</p>}
-                            {isOwner && <p className="verified">👑 You are the owner of this space</p>}
+                            {space.space_name && <p><strong><Building2 size={16} style={{ marginRight: '4px', display: 'inline' }} /> Space Name:</strong> {space.space_name}</p>}
+                            <p><strong><Check size={16} style={{ marginRight: '4px', display: 'inline' }} /> Unit Type:</strong> {space.unit_type?.replace('_', ' ')}</p>
+                            {space.total_capacity && <p><strong><Users size={16} style={{ marginRight: '4px', display: 'inline' }} /> Total Capacity:</strong> {space.total_capacity} seats</p>}
+                            {space.address && <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> Address:</strong> {space.address}</p>}
+                            {space.city && <p><strong><MapPin size={16} style={{ marginRight: '4px', display: 'inline' }} /> City:</strong> {space.city}</p>}
+                            {isOwner && <p className="verified" style={{ color: '#01095A', fontWeight: '600' }}>
+                                <Crown size={16} style={{ marginRight: '6px' }} /> You are the owner of this space
+                            </p>}
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/sellerdashboardstyles/AddUnit.css';
 import BaseUrl from '../../utils/AppConstants';
+import {
+    ChevronLeft,
+    Plus,
+    X,
+    CheckCircle,
+    AlertTriangle,
+    Lightbulb,
+    Timer,
+    Calendar,
+    CalendarDays,
+    Monitor,
+    Armchair,
+    DoorClosed,
+    Presentation
+} from 'lucide-react';
 
 export default function AddUnit() {
     const { spaceId } = useParams();
@@ -87,9 +102,9 @@ export default function AddUnit() {
 
     const getPricingLabel = (type) => {
         const labels = {
-            hourly: { title: '⏱️ Hourly Rate', description: 'Best for short-term bookings and meeting rooms', unit: '/hour (PKR)' },
-            daily: { title: '📅 Daily Rate', description: 'Perfect for daily workspace rentals', unit: '/day (PKR)' },
-            monthly: { title: '📆 Monthly Rate', description: 'Best value for long-term commitments', unit: '/month (PKR)' }
+            hourly: { icon: Timer, title: 'Hourly Rate', description: 'Best for short-term bookings and meeting rooms', unit: '/hour (PKR)' },
+            daily: { icon: Calendar, title: 'Daily Rate', description: 'Perfect for daily workspace rentals', unit: '/day (PKR)' },
+            monthly: { icon: CalendarDays, title: 'Monthly Rate', description: 'Best value for long-term commitments', unit: '/month (PKR)' }
         };
         return labels[type];
     };
@@ -352,10 +367,10 @@ export default function AddUnit() {
     };
 
     const unitTypes = [
-        { value: 'open_desk', label: 'Open Desk', icon: '🖥️', description: 'Shared workspace in open area' },
-        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: '💺', description: 'Your own reserved desk' },
-        { value: 'private_cabin', label: 'Private Cabin', icon: '🚪', description: 'Lockable private office' },
-        { value: 'meeting_room', label: 'Meeting Room', icon: '📊', description: 'Conference room for meetings' }
+        { value: 'open_desk', label: 'Open Desk', icon: Monitor, description: 'Shared workspace in open area' },
+        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: Armchair, description: 'Your own reserved desk' },
+        { value: 'private_cabin', label: 'Private Cabin', icon: DoorClosed, description: 'Lockable private office' },
+        { value: 'meeting_room', label: 'Meeting Room', icon: Presentation, description: 'Conference room for meetings' }
     ];
 
     const getPricingMessage = () => {
@@ -363,10 +378,10 @@ export default function AddUnit() {
         if (!unitType) return 'Please select a unit type first to see available pricing options';
 
         if (unitType === 'meeting_room') {
-            return '💡 Meeting rooms can only be booked hourly or daily. Monthly plans are not available for meeting rooms.';
+            return 'Meeting rooms can only be booked hourly or daily. Monthly plans are not available for meeting rooms.';
         }
 
-        return '💡 Choose your preferred pricing plan. Only one plan will be active for this unit.';
+        return 'Choose your preferred pricing plan. Only one plan will be active for this unit.';
     };
 
     const SuccessModal = () => {
@@ -375,7 +390,7 @@ export default function AddUnit() {
         return (
             <div className="au__modal-overlay" onClick={() => setShowSuccessModal(false)}>
                 <div className="au__modal-content" onClick={(e) => e.stopPropagation()}>
-                    <div className="au__modal-icon">✅</div>
+                    <div className="au__modal-icon"><CheckCircle size={40} /></div>
                     <h3>Unit Added Successfully!</h3>
                     <p>"{addedUnitName}" has been added to your space.</p>
                     <div className="au__modal-actions">
@@ -683,9 +698,7 @@ export default function AddUnit() {
 
             <div className="au__header">
                 <button onClick={() => navigate(`/space/${spaceId}`)} className="au__back-button">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
+                    <ChevronLeft size={20} />
                     Back to Space
                 </button>
                 <div className="au__header-title">
@@ -722,6 +735,7 @@ export default function AddUnit() {
                     <div className="au__unit-types">
                         {unitTypes.map(type => {
                             const existingCount = getUnitTypeCount(type.value);
+                            const UnitIcon = type.icon;
                             return (
                                 <label
                                     key={type.value}
@@ -735,7 +749,7 @@ export default function AddUnit() {
                                         onChange={handleInputChange}
                                         className="au__radio"
                                     />
-                                    <div className="au__unit-icon">{type.icon}</div>
+                                    <div className="au__unit-icon"><UnitIcon /></div>
                                     <div className="au__unit-info">
                                         <h3>{type.label}</h3>
                                         <p>{type.description}</p>
@@ -786,12 +800,15 @@ export default function AddUnit() {
                 {formData.unit_type && (
                     <div className="au__section">
                         <h2 className="au__section-title">Select Pricing Plan</h2>
-                        <p className="au__section-hint">{getPricingMessage()}</p>
+                        <p className="au__section-hint" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Lightbulb size={14} /> {getPricingMessage()}
+                        </p>
 
                         <div className="au__pricing-plans">
                             {getAvailablePricingOptions().map(pricingType => {
                                 const pricing = getPricingLabel(pricingType);
                                 const isActive = activePricing === pricingType;
+                                const PricingIcon = pricing.icon;
 
                                 return (
                                     <div
@@ -805,7 +822,9 @@ export default function AddUnit() {
                                             </div>
                                         </div>
                                         <div className="au__pricing-content">
-                                            <h3>{pricing.title}</h3>
+                                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <PricingIcon size={18} /> {pricing.title}
+                                            </h3>
                                             <p>{pricing.description}</p>
                                             <div className="au__pricing-input">
                                                 <input
@@ -845,9 +864,7 @@ export default function AddUnit() {
                                 disabled={imageUploading || formData.images.length >= 5}
                             />
                             <div className="au__upload-content">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
-                                </svg>
+                                <Plus size={40} />
                                 <p>{imageUploading ? 'Uploading...' : formData.images.length >= 5 ? 'Maximum 5 images reached' : 'Click or drag to upload images'}</p>
                                 <span>PNG, JPG, WEBP up to 5MB each (Max 5 images)</span>
                             </div>
@@ -866,7 +883,7 @@ export default function AddUnit() {
                                             onClick={() => removeImage(index)}
                                             className="au__remove-image"
                                         >
-                                            ×
+                                            <X size={16} />
                                         </button>
                                     </div>
                                 ))}
@@ -907,8 +924,8 @@ export default function AddUnit() {
                 </div>
 
                 {message.text && (
-                    <div className={`au__message au__message-${message.type}`}>
-                        {message.type === 'success' ? '✅' : '⚠️'} {message.text}
+                    <div className={`au__message au__message-${message.type}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {message.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />} {message.text}
                     </div>
                 )}
 

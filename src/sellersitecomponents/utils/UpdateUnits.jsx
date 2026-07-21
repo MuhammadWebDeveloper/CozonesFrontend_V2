@@ -3,6 +3,30 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../../componentstyles/sellerdashboardstyles/UpdateUnit.css';
 import BaseUrl from '../../utils/AppConstants';
+import { 
+    ArrowLeft, 
+    AlertCircle, 
+    CheckCircle, 
+    X, 
+    Plus,
+    Clock,
+    Calendar,
+    CalendarDays,
+    Image as ImageIcon,
+    Upload,
+    Loader2,
+    Computer,
+    Armchair,
+    DoorClosed,
+    Presentation,
+    Package,
+    Users,
+    DollarSign,
+    Tag,
+    Trash2,
+    Eye,
+    EyeOff
+} from 'lucide-react';
 
 export default function UpdateUnit() {
     const { spaceId, unitId } = useParams();
@@ -29,15 +53,15 @@ export default function UpdateUnit() {
     });
 
     const [activePricing, setActivePricing] = useState('');
-    const [imagesToDelete, setImagesToDelete] = useState([]); // Track images to delete
+    const [imagesToDelete, setImagesToDelete] = useState([]);
 
     const getAuthToken = () => localStorage.getItem('token');
 
     const unitTypes = [
-        { value: 'open_desk', label: 'Open Desk', icon: '🖥️', description: 'Shared workspace in open area' },
-        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: '💺', description: 'Your own reserved desk' },
-        { value: 'private_cabin', label: 'Private Cabin', icon: '🚪', description: 'Lockable private office' },
-        { value: 'meeting_room', label: 'Meeting Room', icon: '📊', description: 'Conference room for meetings' }
+        { value: 'open_desk', label: 'Open Desk', icon: Computer, description: 'Shared workspace in open area' },
+        { value: 'dedicated_desk', label: 'Dedicated Desk', icon: Armchair, description: 'Your own reserved desk' },
+        { value: 'private_cabin', label: 'Private Cabin', icon: DoorClosed, description: 'Lockable private office' },
+        { value: 'meeting_room', label: 'Meeting Room', icon: Presentation, description: 'Conference room for meetings' }
     ];
 
     useEffect(() => {
@@ -119,7 +143,6 @@ export default function UpdateUnit() {
         }));
     };
 
-    // Convert a File to Base64 string
     const fileToBase64 = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -129,7 +152,6 @@ export default function UpdateUnit() {
         });
     };
 
-    // Handle new file uploads — convert to Base64 and append
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
@@ -147,14 +169,11 @@ export default function UpdateUnit() {
         fileInputRef.current.value = '';
     };
 
-    // Remove image from the form (works for both existing and new images)
     const removeImage = (index, imageUrl) => {
-        // If this is an existing image (URL from server), mark it for deletion
         if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/uploads'))) {
             setImagesToDelete(prev => [...prev, imageUrl]);
         }
         
-        // Remove from formData.images
         setFormData(prev => ({
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
@@ -200,7 +219,6 @@ export default function UpdateUnit() {
         try {
             const token = getAuthToken();
 
-            // First, delete any images marked for removal (if your backend supports it)
             if (imagesToDelete.length > 0) {
                 try {
                     await axios.post(
@@ -210,7 +228,6 @@ export default function UpdateUnit() {
                     );
                 } catch (err) {
                     console.warn('Failed to delete some images:', err);
-                    // Continue anyway - the update will overwrite the images array
                 }
             }
 
@@ -254,7 +271,7 @@ export default function UpdateUnit() {
 
     const getUnitTypeIcon = (type) => {
         const found = unitTypes.find(t => t.value === type);
-        return found ? found.icon : '📦';
+        return found ? found.icon : Package;
     };
 
     if (loading) {
@@ -275,9 +292,7 @@ export default function UpdateUnit() {
                 <div className="uu__header">
                     <div className="uu__header-left">
                         <button className="uu__back-btn" onClick={handleCancel}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
+                            <ArrowLeft size={20} />
                         </button>
                         <div>
                             <h1 className="uu__title">Update Unit</h1>
@@ -292,17 +307,23 @@ export default function UpdateUnit() {
                     {/* Alerts */}
                     {error && (
                         <div className="uu__alert uu__alert-error">
-                            <div className="uu__alert-icon">⚠️</div>
+                            <div className="uu__alert-icon">
+                                <AlertCircle size={20} />
+                            </div>
                             <div className="uu__alert-content">
                                 <strong>Error:</strong> {error}
                             </div>
-                            <button type="button" className="uu__alert-close" onClick={() => setError(null)}>×</button>
+                            <button type="button" className="uu__alert-close" onClick={() => setError(null)}>
+                                <X size={18} />
+                            </button>
                         </div>
                     )}
 
                     {success && (
                         <div className="uu__alert uu__alert-success">
-                            <div className="uu__alert-icon">✓</div>
+                            <div className="uu__alert-icon">
+                                <CheckCircle size={20} />
+                            </div>
                             <div className="uu__alert-content">
                                 <strong>Success!</strong> {success}
                             </div>
@@ -316,7 +337,9 @@ export default function UpdateUnit() {
                             <div className="uu__section">
                                 <h2 className="uu__section-title">Unit Type</h2>
                                 <div className="uu__unit-type-display">
-                                    <span className="uu__unit-icon">{getUnitTypeIcon(formData.unit_type)}</span>
+                                    <span className="uu__unit-icon">
+                                        {React.createElement(getUnitTypeIcon(formData.unit_type), { size: 24 })}
+                                    </span>
                                     <div>
                                         <h3>{unitTypes.find(t => t.value === formData.unit_type)?.label || formData.unit_type}</h3>
                                         <p>{unitTypes.find(t => t.value === formData.unit_type)?.description}</p>
@@ -389,7 +412,7 @@ export default function UpdateUnit() {
                                             </div>
                                         </div>
                                         <div className="uu__pricing-content">
-                                            <h3>⏱️ Hourly Rate</h3>
+                                            <h3><Clock size={18} style={{ marginRight: '8px', display: 'inline' }} /> Hourly Rate</h3>
                                             <p>Best for short-term bookings</p>
                                             <div className="uu__pricing-input">
                                                 <input
@@ -420,7 +443,7 @@ export default function UpdateUnit() {
                                             </div>
                                         </div>
                                         <div className="uu__pricing-content">
-                                            <h3>📅 Daily Rate</h3>
+                                            <h3><Calendar size={18} style={{ marginRight: '8px', display: 'inline' }} /> Daily Rate</h3>
                                             <p>Perfect for daily workspace rentals</p>
                                             <div className="uu__pricing-input">
                                                 <input
@@ -451,7 +474,7 @@ export default function UpdateUnit() {
                                             </div>
                                         </div>
                                         <div className="uu__pricing-content">
-                                            <h3>📆 Monthly Rate</h3>
+                                            <h3><CalendarDays size={18} style={{ marginRight: '8px', display: 'inline' }} /> Monthly Rate</h3>
                                             <p>Best value for long-term commitments</p>
                                             <div className="uu__pricing-input">
                                                 <input
@@ -494,9 +517,7 @@ export default function UpdateUnit() {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="uu__add-image-btn"
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
+                                    <Plus size={16} style={{ marginRight: '8px' }} />
                                     {formData.images.length > 0 ? 'Add More Images' : 'Upload Images'}
                                 </button>
 
@@ -514,7 +535,7 @@ export default function UpdateUnit() {
                                                         onClick={() => removeImage(idx, img)}
                                                         title="Remove image"
                                                     >
-                                                        ×
+                                                        <X size={16} />
                                                     </button>
                                                 </div>
                                             ))}
@@ -537,7 +558,19 @@ export default function UpdateUnit() {
                                         <span className="uu__toggle-slider"></span>
                                     </label>
                                     <div className="uu__status-text">
-                                        <strong>{formData.is_active ? 'Active' : 'Inactive'}</strong>
+                                        <strong>
+                                            {formData.is_active ? (
+                                                <>
+                                                    <Eye size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                                    Active
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <EyeOff size={16} style={{ marginRight: '6px', display: 'inline' }} />
+                                                    Inactive
+                                                </>
+                                            )}
+                                        </strong>
                                         <p>{formData.is_active ? 'Unit is visible and available for booking' : 'Unit is hidden from customers'}</p>
                                     </div>
                                 </div>
@@ -562,7 +595,7 @@ export default function UpdateUnit() {
                         >
                             {submitting ? (
                                 <>
-                                    <div className="uu__spinner"></div>
+                                    <Loader2 size={18} style={{ animation: 'spin 1s linear infinite', marginRight: '8px' }} />
                                     Updating...
                                 </>
                             ) : (

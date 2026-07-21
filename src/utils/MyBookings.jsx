@@ -6,6 +6,39 @@ import ToastContainer from './Tostercontainer';
 import '../componentstyles/utilstyle/MyBookings.css';
 import BaseUrl from './AppConstants.jsx';
 import ChatButton from '../chat-frontend/components/ChatButton.jsx';
+import { 
+    AlertTriangle, 
+    X, 
+    CheckCircle, 
+    Clock, 
+    XCircle, 
+    Info,
+    Calendar,
+    MapPin,
+    DollarSign,
+    Eye,
+    MessageCircle,
+    Trash2,
+    RefreshCw,
+    ArrowLeft,
+    Home,
+    FileText,
+    AlertCircle,
+    Check,
+    BookOpen,
+    RotateCcw,
+    Phone,
+    Mail,
+    User,
+    Briefcase,
+    Building2,
+    Users,
+    CreditCard,
+    CalendarDays,
+    Clock as ClockIcon,
+    ChevronRight,
+    Loader2
+} from 'lucide-react';
 
 // ─── Dispute Modal ────────────────────────────────────────────────────────────
 const DisputeModal = ({ isOpen, onClose, onConfirm, existingDispute }) => {
@@ -35,8 +68,13 @@ const DisputeModal = ({ isOpen, onClose, onConfirm, existingDispute }) => {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-container" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>⚠️ {existingDispute ? 'View Dispute' : 'Raise a Dispute'}</h3>
-                    <button className="modal-close" onClick={onClose}>×</button>
+                    <h3>
+                        <AlertTriangle size={20} style={{ marginRight: '8px', display: 'inline' }} />
+                        {existingDispute ? 'View Dispute' : 'Raise a Dispute'}
+                    </h3>
+                    <button className="modal-close" onClick={onClose}>
+                        <X size={20} />
+                    </button>
                 </div>
                 <div className="modal-body">
                     {existingDispute && (
@@ -95,12 +133,15 @@ const DisputeModal = ({ isOpen, onClose, onConfirm, existingDispute }) => {
 
                     {!existingDispute && (
                         <div style={{ marginTop: '12px', padding: '12px', background: '#fee2e2', borderRadius: '8px', color: '#991b1b', fontSize: '13px' }}>
-                            ⚠️ Once submitted, your dispute cannot be withdrawn. Admin will contact both parties.
+                            <AlertCircle size={14} style={{ marginRight: '6px', display: 'inline' }} />
+                            Once submitted, your dispute cannot be withdrawn. Admin will contact both parties.
                         </div>
                     )}
                 </div>
                 <div className="modal-footer">
-                    <button className="btn-secondary" onClick={onClose}>{existingDispute ? 'Close' : 'Cancel'}</button>
+                    <button className="btn-secondary" onClick={onClose}>
+                        {existingDispute ? 'Close' : 'Cancel'}
+                    </button>
                     {!existingDispute && (
                         <button
                             className="btn-danger"
@@ -164,7 +205,6 @@ const MyBookings = () => {
             setLoading(true);
             const response = await apiClient.get('api/bookings/my-bookings');
             if (response.data.success) {
-                // ✅ FIX: Normalize dispute data - only keep if it has a status
                 const normalizedBookings = response.data.bookings.map(booking => ({
                     ...booking,
                     dispute: booking.dispute?.status ? booking.dispute : null
@@ -288,20 +328,20 @@ const MyBookings = () => {
 
     const getStatusInfo = (status) => {
         switch (status) {
-            case 'confirmed': return { class: 'status-confirmed', text: 'Confirmed', icon: '✓' };
-            case 'pending': return { class: 'status-pending', text: 'Pending', icon: '⏳' };
-            case 'cancelled': return { class: 'status-cancelled', text: 'Cancelled', icon: '✗' };
-            case 'completed': return { class: 'status-completed', text: 'Completed', icon: '✔' };
-            default: return { class: 'status-default', text: status, icon: '📌' };
+            case 'confirmed': return { class: 'status-confirmed', text: 'Confirmed', icon: CheckCircle };
+            case 'pending': return { class: 'status-pending', text: 'Pending', icon: Clock };
+            case 'cancelled': return { class: 'status-cancelled', text: 'Cancelled', icon: XCircle };
+            case 'completed': return { class: 'status-completed', text: 'Completed', icon: Check };
+            default: return { class: 'status-default', text: status, icon: Info };
         }
     };
 
     const getDisputeStatusInfo = (dispute) => {
         if (!dispute) return null;
         switch (dispute.status) {
-            case 'pending': return { class: 'dispute-pending', text: 'Dispute Pending', icon: '⏳' };
-            case 'resolved': return { class: 'dispute-resolved', text: 'Dispute Resolved', icon: '✅' };
-            default: return { class: 'dispute-default', text: 'Dispute', icon: '⚠️' };
+            case 'pending': return { class: 'dispute-pending', text: 'Dispute Pending', icon: Clock };
+            case 'resolved': return { class: 'dispute-resolved', text: 'Dispute Resolved', icon: CheckCircle };
+            default: return { class: 'dispute-default', text: 'Dispute', icon: AlertTriangle };
         }
     };
 
@@ -358,7 +398,10 @@ const MyBookings = () => {
                 <div className="mybookings-container">
                     {/* Header */}
                     <div className="bookings-header">
-                        <button className="back-button" onClick={() => navigate(-1)}>← Back</button>
+                        <button className="back-button" onClick={() => navigate(-1)}>
+                            <ArrowLeft size={18} style={{ marginRight: '6px' }} />
+                            Back
+                        </button>
                         <h1 className="page-title">My Bookings</h1>
                         <div className="header-spacer"></div>
                     </div>
@@ -366,25 +409,50 @@ const MyBookings = () => {
                     {/* Stats */}
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-icon total">📊</div>
-                            <div className="stat-content"><span className="stat-value">{stats.total}</span><span className="stat-label">Total Bookings</span></div>
+                            <div className="stat-icon">
+                                <FileText size={20} />
+                            </div>
+                            <div className="stat-content">
+                                <span className="stat-value">{stats.total}</span>
+                                <span className="stat-label">Total Bookings</span>
+                            </div>
                         </div>
                         <div className="stat-card confirmed">
-                            <div className="stat-icon">✓</div>
-                            <div className="stat-content"><span className="stat-value">{stats.confirmed}</span><span className="stat-label">Confirmed</span></div>
+                            <div className="stat-icon">
+                                <CheckCircle size={20} />
+                            </div>
+                            <div className="stat-content">
+                                <span className="stat-value">{stats.confirmed}</span>
+                                <span className="stat-label">Confirmed</span>
+                            </div>
                         </div>
                         <div className="stat-card cancelled">
-                            <div className="stat-icon">✗</div>
-                            <div className="stat-content"><span className="stat-value">{stats.cancelled}</span><span className="stat-label">Cancelled</span></div>
+                            <div className="stat-icon">
+                                <XCircle size={20} />
+                            </div>
+                            <div className="stat-content">
+                                <span className="stat-value">{stats.cancelled}</span>
+                                <span className="stat-label">Cancelled</span>
+                            </div>
                         </div>
                         <div className="stat-card completed">
-                            <div className="stat-icon">✔</div>
-                            <div className="stat-content"><span className="stat-value">{stats.completed}</span><span className="stat-label">Completed</span></div>
+                            <div className="stat-icon">
+                                <Check size={20} />
+                            </div>
+                            <div className="stat-content">
+                                <span className="stat-value">{stats.completed}</span>
+                                <span className="stat-label">Completed</span>
+                            </div>
                         </div>
                         {stats.disputed > 0 && (
                             <div className="stat-card disputed">
-                                <div className="stat-icon">⚠️</div>
-                                <div className="stat-content"><span className="stat-value">{stats.disputed}</span><span className="stat-label">Disputed</span></div>
+                                <div className="stat-icon">
+                                    <AlertTriangle size={20} />
+                                </div>
+                                <div className="stat-content">
+                                    <span className="stat-value">{stats.disputed}</span>
+                                    <span className="stat-label">Disputed</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -393,6 +461,7 @@ const MyBookings = () => {
                     <div className="action-buttons">
                         {bookings.length > 0 && (
                             <button className="delete-all-btn" onClick={() => setShowDeleteAllModal(true)}>
+                                <Trash2 size={16} style={{ marginRight: '6px' }} />
                                 Delete All Bookings
                             </button>
                         )}
@@ -414,19 +483,26 @@ const MyBookings = () => {
                     {/* Bookings List */}
                     {filteredBookings.length === 0 ? (
                         <div className="empty-state">
-                            <div className="empty-icon">📅</div>
+                            <div className="empty-icon">
+                                <CalendarDays size={48} />
+                            </div>
                             <h3>No bookings found</h3>
                             <p>You haven't made any bookings yet.</p>
-                            <button className="browse-button" onClick={() => navigate('/')}>🏠 Browse Spaces</button>
+                            <button className="browse-button" onClick={() => navigate('/')}>
+                                <Home size={16} style={{ marginRight: '6px' }} />
+                                Browse Spaces
+                            </button>
                         </div>
                     ) : (
                         <div className="bookings-list">
                             {filteredBookings.map((booking) => {
                                 const statusInfo = getStatusInfo(booking.status);
+                                const StatusIcon = statusInfo.icon;
                                 const disputeInfo = booking.dispute ? getDisputeStatusInfo(booking.dispute) : null;
                                 const unitImage = extractImageUrl(booking.unit?.images);
                                 const isDisputePending = booking.dispute && booking.dispute.status === 'pending';
                                 const isDisputeResolved = booking.dispute && booking.dispute.status === 'resolved';
+                                const DisputeIcon = disputeInfo?.icon || AlertTriangle;
 
                                 return (
                                     <div
@@ -439,12 +515,14 @@ const MyBookings = () => {
                                             <img src={unitImage} alt={booking.unit?.name || 'Space'} onError={(e) => { e.target.src = getFallbackImage(); }} />
                                             <span className="booking-duration">{getDuration(booking.start_time, booking.end_time)}</span>
                                             {canBookAgain(booking) && (
-                                                <div className="book-again-overlay"><span>Click to book again 🔄</span></div>
+                                                <div className="book-again-overlay">
+                                                    <span>Click to book again <RotateCcw size={14} style={{ marginLeft: '4px', display: 'inline' }} /></span>
+                                                </div>
                                             )}
-                                            {/* ✅ FIX: Only show if dispute has a status */}
                                             {booking.dispute?.status && (
                                                 <div className={`dispute-badge ${booking.dispute.status}`}>
-                                                    ⚠️ {booking.dispute.status.charAt(0).toUpperCase() + booking.dispute.status.slice(1)}
+                                                    <AlertTriangle size={12} style={{ marginRight: '4px', display: 'inline' }} />
+                                                    {booking.dispute.status.charAt(0).toUpperCase() + booking.dispute.status.slice(1)}
                                                 </div>
                                             )}
                                         </div>
@@ -457,31 +535,52 @@ const MyBookings = () => {
                                                     </h3>
                                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                                                         <span className={`status-badge ${statusInfo.class}`}>
-                                                            {statusInfo.icon} {statusInfo.text}
+                                                            <StatusIcon size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                                            {statusInfo.text}
                                                         </span>
-                                                        {/* ✅ FIX: Only show if dispute has a status */}
                                                         {booking.dispute?.status && disputeInfo && (
                                                             <span className={`dispute-badge-small ${booking.dispute.status}`}>
-                                                                {disputeInfo.icon} {disputeInfo.text}
+                                                                <DisputeIcon size={12} style={{ marginRight: '4px', display: 'inline' }} />
+                                                                {disputeInfo.text}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
                                                 <div className="booking-details-grid">
-                                                    <div className="detail-item"><span>📍</span><span>{booking.space?.name}, {booking.space?.city}</span></div>
-                                                    <div className="detail-item"><span>#</span><span>{booking.booking_ref}</span></div>
-                                                    <div className="detail-item"><span>📅</span><span>{formatDateSimple(booking.start_time)} - {formatDateSimple(booking.end_time)}</span></div>
-                                                    <div className="detail-item"><span>💰</span><span className="price">PKR {parseFloat(booking.total_price).toLocaleString()}</span></div>
+                                                    <div className="detail-item">
+                                                        <MapPin size={14} style={{ marginRight: '4px' }} />
+                                                        <span>{booking.space?.name}, {booking.space?.city}</span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <FileText size={14} style={{ marginRight: '4px' }} />
+                                                        <span>{booking.booking_ref}</span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <Calendar size={14} style={{ marginRight: '4px' }} />
+                                                        <span>{formatDateSimple(booking.start_time)} - {formatDateSimple(booking.end_time)}</span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <DollarSign size={14} style={{ marginRight: '4px' }} />
+                                                        <span className="price">PKR {parseFloat(booking.total_price).toLocaleString()}</span>
+                                                    </div>
                                                 </div>
-                                                {/* ✅ FIX: Only show if dispute has a status */}
                                                 {booking.dispute?.status && (
                                                     <div className="dispute-info">
-                                                        <span className="dispute-reason">📝 {booking.dispute.reason || 'No reason provided'}</span>
+                                                        <span className="dispute-reason">
+                                                            <FileText size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                                            {booking.dispute.reason || 'No reason provided'}
+                                                        </span>
                                                         {booking.dispute.status === 'pending' && (
-                                                            <span className="dispute-pending-text">⏳ Awaiting admin review...</span>
+                                                            <span className="dispute-pending-text">
+                                                                <Clock size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                                                Awaiting admin review...
+                                                            </span>
                                                         )}
                                                         {booking.dispute.status === 'resolved' && booking.dispute.resolution && (
-                                                            <span className="dispute-resolution">✅ Resolution: {booking.dispute.resolution}</span>
+                                                            <span className="dispute-resolution">
+                                                                <CheckCircle size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                                                Resolution: {booking.dispute.resolution}
+                                                            </span>
                                                         )}
                                                     </div>
                                                 )}
@@ -489,7 +588,8 @@ const MyBookings = () => {
 
                                             <div className="booking-actions">
                                                 <button className="btn-view" onClick={(e) => handleViewDetails(booking, e)}>
-                                                    👁️ Details
+                                                    <Eye size={16} style={{ marginRight: '4px' }} />
+                                                    Details
                                                 </button>
 
                                                 <div onClick={(e) => e.stopPropagation()}>
@@ -498,25 +598,18 @@ const MyBookings = () => {
 
                                                 {canCancel(booking) && (
                                                     <button className="btn-cancel" onClick={(e) => handleCancelClick(booking, e)}>
-                                                        🗑️ Cancel
+                                                        <XCircle size={16} style={{ marginRight: '4px' }} />
+                                                        Cancel
                                                     </button>
                                                 )}
-
-                                                {/* {canDispute(booking) && (
-                                                    <button
-                                                        className="btn-dispute"
-                                                        onClick={(e) => handleDisputeClick(booking, e)}
-                                                    >
-                                                        ⚠️ Raise Dispute
-                                                    </button>
-                                                )} */}
 
                                                 {isDisputePending && (
                                                     <button
                                                         className="btn-dispute-pending"
                                                         onClick={(e) => handleViewDetails(booking, e)}
                                                     >
-                                                        👁️ View Dispute
+                                                        <Eye size={16} style={{ marginRight: '4px' }} />
+                                                        View Dispute
                                                     </button>
                                                 )}
 
@@ -525,13 +618,15 @@ const MyBookings = () => {
                                                         className="btn-dispute-resolved"
                                                         onClick={(e) => handleViewDetails(booking, e)}
                                                     >
-                                                        ✅ View Resolution
+                                                        <CheckCircle size={16} style={{ marginRight: '4px' }} />
+                                                        View Resolution
                                                     </button>
                                                 )}
 
                                                 {canBookAgain(booking) && (
                                                     <button className="btn-book-again" onClick={(e) => { e.stopPropagation(); handleBookAgain(booking); }}>
-                                                        🔄 Book Again
+                                                        <RotateCcw size={16} style={{ marginRight: '4px' }} />
+                                                        Book Again
                                                     </button>
                                                 )}
                                             </div>
@@ -548,16 +643,18 @@ const MyBookings = () => {
                             <div className="modal-container" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
                                     <h3>Delete All Bookings</h3>
-                                    <button className="modal-close" onClick={() => setShowDeleteAllModal(false)}>×</button>
+                                    <button className="modal-close" onClick={() => setShowDeleteAllModal(false)}>
+                                        <X size={20} />
+                                    </button>
                                 </div>
                                 <div className="modal-body">
-                                    <div style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
-                                        {/* ⚠️ <strong>Warning!</strong> This action cannot be undone. */}
-                                    </div>
                                     <p>Are you sure you want to delete <strong>all {bookings.length} booking(s)</strong>?</p>
                                     {hasActiveBookings() && (
                                         <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#fff3e0', borderRadius: '8px' }}>
-                                            <p style={{ margin: 0, color: '#d97706' }}>⚠️ You have <strong>{stats.confirmed}</strong> active/upcoming booking(s).</p>
+                                            <p style={{ margin: 0, color: '#d97706' }}>
+                                                <AlertTriangle size={14} style={{ marginRight: '6px', display: 'inline' }} />
+                                                You have <strong>{stats.confirmed}</strong> active/upcoming booking(s).
+                                            </p>
                                             <label style={{ display: 'flex', alignItems: 'center', marginTop: '12px', cursor: 'pointer' }}>
                                                 <input type="checkbox" checked={forceDelete} onChange={(e) => setForceDelete(e.target.checked)} style={{ marginRight: '8px' }} />
                                                 <span>Automatically cancel and delete active bookings</span>
@@ -578,7 +675,14 @@ const MyBookings = () => {
                                 <div className="modal-footer">
                                     <button className="btn-secondary" onClick={() => { setShowDeleteAllModal(false); setForceDelete(false); }}>Cancel</button>
                                     <button className="btn-danger" onClick={deleteAllBookings} disabled={deleteAllLoading} style={{ backgroundColor: '#dc2626' }}>
-                                        {deleteAllLoading ? 'Deleting...' : 'Yes, Delete All Bookings'}
+                                        {deleteAllLoading ? (
+                                            <>
+                                                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite', marginRight: '6px' }} />
+                                                Deleting...
+                                            </>
+                                        ) : (
+                                            'Yes, Delete All Bookings'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -591,21 +695,38 @@ const MyBookings = () => {
                             <div className="modal-container" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
                                     <h3>Cancel Booking</h3>
-                                    <button className="modal-close" onClick={() => setShowCancelModal(false)}>×</button>
+                                    <button className="modal-close" onClick={() => setShowCancelModal(false)}>
+                                        <X size={20} />
+                                    </button>
                                 </div>
                                 <div className="modal-body">
                                     <p>Are you sure you want to cancel this booking?</p>
                                     <div className="cancel-summary">
-                                        <div className="summary-row"><span>Space:</span><strong>{selectedBooking.unit?.name}</strong></div>
-                                        <div className="summary-row"><span>Date:</span><strong>{formatDate(selectedBooking.start_time)}</strong></div>
-                                        <div className="summary-row"><span>Total:</span><strong>PKR {parseFloat(selectedBooking.total_price).toLocaleString()}</strong></div>
+                                        <div className="summary-row">
+                                            <span>Space:</span>
+                                            <strong>{selectedBooking.unit?.name}</strong>
+                                        </div>
+                                        <div className="summary-row">
+                                            <span>Date:</span>
+                                            <strong>{formatDate(selectedBooking.start_time)}</strong>
+                                        </div>
+                                        <div className="summary-row">
+                                            <span>Total:</span>
+                                            <strong>PKR {parseFloat(selectedBooking.total_price).toLocaleString()}</strong>
+                                        </div>
                                     </div>
-                                    {/* <div className="warning-message">⚠️ This action cannot be undone.</div> */}
                                 </div>
                                 <div className="modal-footer">
                                     <button className="btn-secondary" onClick={() => setShowCancelModal(false)}>Keep Booking</button>
                                     <button className="btn-danger" onClick={() => cancelBooking(selectedBooking.id)} disabled={cancellingId === selectedBooking.id}>
-                                        {cancellingId === selectedBooking.id ? 'Cancelling...' : 'Yes, Cancel'}
+                                        {cancellingId === selectedBooking.id ? (
+                                            <>
+                                                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite', marginRight: '6px' }} />
+                                                Cancelling...
+                                            </>
+                                        ) : (
+                                            'Yes, Cancel'
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -618,7 +739,9 @@ const MyBookings = () => {
                             <div className="modal-container large" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
                                     <h3>Booking Details</h3>
-                                    <button className="modal-close" onClick={() => setSelectedBooking(null)}>×</button>
+                                    <button className="modal-close" onClick={() => setSelectedBooking(null)}>
+                                        <X size={20} />
+                                    </button>
                                 </div>
                                 <div className="modal-body">
                                     <div className="details-section">
@@ -657,7 +780,10 @@ const MyBookings = () => {
                                     {/* Dispute Section in Details */}
                                     {selectedBooking.dispute?.status && (
                                         <div className="details-section dispute-details">
-                                            <h4>⚠️ Dispute Information</h4>
+                                            <h4>
+                                                <AlertTriangle size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                                                Dispute Information
+                                            </h4>
                                             <div className="details-grid">
                                                 <div><strong>Status:</strong> {selectedBooking.dispute.status.charAt(0).toUpperCase() + selectedBooking.dispute.status.slice(1)}</div>
                                                 <div><strong>Reason:</strong> {selectedBooking.dispute.reason}</div>
@@ -671,7 +797,7 @@ const MyBookings = () => {
                                 </div>
                                 <div className="modal-footer">
                                     <div onClick={(e) => e.stopPropagation()}>
-                                        <ChatButton bookingId={selectedBooking.id} label=" Message Owner" variant="primary" />
+                                        <ChatButton bookingId={selectedBooking.id} label="Message Owner" variant="primary" />
                                     </div>
 
                                     {canDispute(selectedBooking) && (
@@ -680,7 +806,8 @@ const MyBookings = () => {
                                             style={{ backgroundColor: '#dc2626' }}
                                             onClick={() => { setShowDisputeModal(true); }}
                                         >
-                                            ⚠️ Raise Dispute
+                                            <AlertTriangle size={16} style={{ marginRight: '6px' }} />
+                                            Raise Dispute
                                         </button>
                                     )}
 
@@ -690,13 +817,15 @@ const MyBookings = () => {
                                             disabled
                                             style={{ opacity: 0.7, cursor: 'not-allowed' }}
                                         >
-                                            ⏳ Dispute Pending
+                                            <Clock size={16} style={{ marginRight: '6px' }} />
+                                            Dispute Pending
                                         </button>
                                     )}
 
                                     {canBookAgain(selectedBooking) && (
                                         <button className="btn-book-again-modal" onClick={() => { setSelectedBooking(null); handleBookAgain(selectedBooking); }}>
-                                            🔄 Book This Space Again
+                                            <RotateCcw size={16} style={{ marginRight: '6px' }} />
+                                            Book This Space Again
                                         </button>
                                     )}
                                     <button className="btn-secondary" onClick={() => setSelectedBooking(null)}>Close</button>

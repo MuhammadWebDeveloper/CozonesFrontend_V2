@@ -1,10 +1,20 @@
 // ProfileSidebar.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign } from 'react-icons/fa';
-import { MdOutlineFavoriteBorder } from 'react-icons/md';
-import { FiLogOut } from 'react-icons/fi';
-import { BsCurrencyDollar } from 'react-icons/bs';
+import { 
+    DollarSign, 
+    Heart, 
+    LogOut, 
+    Loader2,
+    Phone,
+    Mail,
+    User,
+    AlertCircle,
+    RefreshCw,
+    ChevronRight,
+    Calendar,
+    Store
+} from 'lucide-react';
 import '../../componentstyles/authstyls/ProfileSidebar.css';
 import { logout, getCurrentUser, getAuthToken } from '../auth/auth.service.js';
 import BaseUrl from '../../utils/AppConstants.jsx';
@@ -141,9 +151,15 @@ const ProfileSidebar = () => {
                             ) : (
                                 <>
                                     <h2>{getDisplayName()}</h2>
-                                    <p className="ProfileSidebar_email">{getUserEmail()}</p>
+                                    <p className="ProfileSidebar_email">
+                                        <Mail size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                        {getUserEmail()}
+                                    </p>
                                     {userData?.phone && (
-                                        <p className="ProfileSidebar_phone">📞 {getUserPhone()}</p>
+                                        <p className="ProfileSidebar_phone">
+                                            <Phone size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                            {getUserPhone()}
+                                        </p>
                                     )}
                                     <span className="ProfileSidebar_roleBadge">{getRoleBadge()}</span>
                                 </>
@@ -155,15 +171,19 @@ const ProfileSidebar = () => {
                             className="ProfileSidebar_viewProfileLink" 
                             onClick={() => navigate('/profile')}
                         >
-                            View Profile →
+                            View Profile <ChevronRight size={16} style={{ marginLeft: '4px' }} />
                         </span>
                     </div> */}
                 </div>
 
                 {error && !loading && (
                     <div className="ProfileSidebar_error">
-                        <p>⚠️ {error}</p>
+                        <p>
+                            <AlertCircle size={16} style={{ marginRight: '8px', display: 'inline' }} />
+                            {error}
+                        </p>
                         <button onClick={fetchUserProfile} className="ProfileSidebar_retryBtn">
+                            <RefreshCw size={14} style={{ marginRight: '6px' }} />
                             Retry
                         </button>
                     </div>
@@ -171,17 +191,23 @@ const ProfileSidebar = () => {
 
                 <div className="ProfileSidebar_profileMenu">
                     <div className="ProfileSidebar_menuItem" onClick={handleMonetizeClick}>
-                        <span className="ProfileSidebar_menuIcon"><FaDollarSign /></span>
+                        <span className="ProfileSidebar_menuIcon">
+                            <Store size={18} />
+                        </span>
                         <span className="ProfileSidebar_menuText">Monetize Your Space</span>
                     </div>
 
                     <div className="ProfileSidebar_menuItem" onClick={handleMyBookingsClick}>
-                        <span className="ProfileSidebar_menuIcon"><BsCurrencyDollar /></span>
+                        <span className="ProfileSidebar_menuIcon">
+                            <Calendar size={18} />
+                        </span>
                         <span className="ProfileSidebar_menuText">My Bookings</span>
                     </div>
 
                     <div className="ProfileSidebar_menuItem" onClick={handleFavouritesClick}>
-                        <span className="ProfileSidebar_menuIcon"><MdOutlineFavoriteBorder /></span>
+                        <span className="ProfileSidebar_menuIcon">
+                            <Heart size={18} />
+                        </span>
                         <span className="ProfileSidebar_menuText">Favourites</span>
                     </div>
 
@@ -194,7 +220,11 @@ const ProfileSidebar = () => {
                         }}
                     >
                         <span className="ProfileSidebar_menuIcon">
-                            {isLoggingOut ? <div className="btn-loader"></div> : <FiLogOut />}
+                            {isLoggingOut ? (
+                                <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                            ) : (
+                                <LogOut size={18} />
+                            )}
                         </span>
                         <span className="ProfileSidebar_menuText">
                             {isLoggingOut ? 'Logging out...' : 'Logout'}

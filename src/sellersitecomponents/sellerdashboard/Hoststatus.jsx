@@ -3,26 +3,45 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import BaseUrl from '../../utils/AppConstants';
 import '../../componentstyles/sellerdashboardstyles/hostrequeststatus.css';
+import { 
+    AlertTriangle, 
+    RefreshCw, 
+    ArrowLeft, 
+    Clock, 
+    CheckCircle, 
+    XCircle,
+    FileText,
+    Phone,
+    User,
+    Mail,
+    Calendar,
+    Info,
+    List,
+    LayoutDashboard,
+    Send,
+    Loader2,
+    Eye,
+    ChevronRight,
+    Check,
+    X
+} from 'lucide-react';
 
 const RequestStatus = () => {
-    const { requestId } = useParams(); // Get requestId from URL params (can be undefined)
+    const { requestId } = useParams();
     const navigate = useNavigate();
     const [request, setRequest] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [allRequests, setAllRequests] = useState([]); // For list view if needed
+    const [allRequests, setAllRequests] = useState([]);
 
     useEffect(() => {
         if (requestId && requestId !== 'undefined') {
-            // Scenario 1: We have a specific request ID
             fetchSpecificRequest(requestId);
         } else {
-            // Scenario 2: No ID provided - try to get latest request
             fetchLatestRequest();
         }
     }, [requestId]);
 
-    // Fetch a specific request by ID
     const fetchSpecificRequest = async (id) => {
         try {
             setLoading(true);
@@ -52,7 +71,6 @@ const RequestStatus = () => {
         }
     };
 
-    // Fetch the latest request for the user (when no ID provided)
     const fetchLatestRequest = async () => {
         try {
             setLoading(true);
@@ -65,18 +83,14 @@ const RequestStatus = () => {
                 return;
             }
 
-            // First, get all requests to find the latest
             const response = await axios.get(`${BaseUrl}api/host-requests/my-requests`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (response.data.success && response.data.requests.length > 0) {
-                // Get the most recent request
                 const latestRequest = response.data.requests[0];
-                // Now fetch its full details
                 await fetchSpecificRequest(latestRequest.id);
             } else {
-                // No requests found
                 setError('You haven\'t submitted any host requests yet.');
                 setLoading(false);
             }
@@ -87,7 +101,6 @@ const RequestStatus = () => {
         }
     };
 
-    // Handle different error types
     const handleError = (error) => {
         if (error.response?.status === 401) {
             setError('Session expired. Please login again.');
@@ -101,7 +114,6 @@ const RequestStatus = () => {
         }
     };
 
-    // Fetch all user requests (for the list view)
     const fetchAllRequests = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -122,26 +134,28 @@ const RequestStatus = () => {
             pending: {
                 class: 'status-pending',
                 text: 'Pending Review',
-                icon: '⏳',
+                icon: Clock,
                 description: 'Your request is being reviewed by admin'
             },
             approved: {
                 class: 'status-approved',
                 text: 'Approved',
-                icon: '✅',
+                icon: CheckCircle,
                 description: 'Congratulations! Your request has been approved'
             },
             rejected: {
                 class: 'status-rejected',
                 text: 'Rejected',
-                icon: '❌',
+                icon: XCircle,
                 description: 'Your request has been rejected'
             }
         };
         const config = statusConfig[status?.toLowerCase()] || statusConfig.pending;
+        const Icon = config.icon;
         return (
             <span className={`status-badge ${config.class}`}>
-                {config.icon} {config.text}
+                <Icon size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                {config.text}
             </span>
         );
     };
@@ -169,14 +183,13 @@ const RequestStatus = () => {
     };
 
     const goBack = () => {
-        navigate('/My-Profile'); // Go to list page instead of back
+        navigate('/My-Profile');
     };
 
     const viewAllRequests = () => {
         // navigate('/my-host-requests');
     };
 
-    // Loading state
     if (loading) {
         return (
             <div className="status-container">
@@ -188,52 +201,46 @@ const RequestStatus = () => {
         );
     }
 
-    // Error state with action buttons
     if (error) {
         return (
             <div className="status-container">
                 <div className="error-state">
-                    <span className="error-icon">⚠️</span>
+                    <span className="error-icon">
+                        <AlertTriangle size={32} />
+                    </span>
                     <h3>Error Loading Request</h3>
                     <p>{error}</p>
                     <div className="error-actions">
                         <button onClick={refreshRequest} className="retry-btn">
+                            <RefreshCw size={14} style={{ marginRight: '6px' }} />
                             Try Again
                         </button>
-                        {/* <button onClick={viewAllRequests} className="view-all-btn">
-                            View All Requests
-                        </button> */}
-                        {/* <button onClick={() => navigate('/become-host')} className="submit-new-btn">
-                            Submit New Request
-                        </button> */}
                     </div>
                 </div>
             </div>
         );
     }
 
-    // No request found
     if (!request) {
         return (
             <div className="status-container">
                 <div className="error-state">
-                    <span className="empty-icon">📝</span>
+                    <span className="empty-icon">
+                        <FileText size={32} />
+                    </span>
                     <h3>No Host Requests Found</h3>
                     <p>You haven't submitted any host requests yet.</p>
                     <div className="error-actions">
                         <button onClick={() => navigate('/become-host')} className="submit-new-btn">
+                            <Send size={14} style={{ marginRight: '6px' }} />
                             Become a Host
                         </button>
-                        {/* <button onClick={viewAllRequests} className="view-all-btn">
-                            View All Requests
-                        </button> */}
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Main render - request found
     return (
         <div className="status-container">
             <div className="status-card">
@@ -244,13 +251,11 @@ const RequestStatus = () => {
                     </div>
                     <div className="header-actions">
                         <button onClick={refreshRequest} className="refresh-btn" title="Refresh">
-                            🔄
+                            <RefreshCw size={18} />
                         </button>
-                        {/* <button onClick={viewAllRequests} className="list-btn" title="View All Requests">
-                            📋 All Requests
-                        </button> */}
                         <button onClick={goBack} className="back-button" title="Go Back">
-                            ← Back
+                            <ArrowLeft size={18} style={{ marginRight: '4px' }} />
+                            Back
                         </button>
                     </div>
                 </div>
@@ -275,7 +280,10 @@ const RequestStatus = () => {
                 {/* User Information (from JOIN) */}
                 {request.user_name && request.user_email && (
                     <div className="user-info-section">
-                        <h3>Applicant Information</h3>
+                        <h3>
+                            <User size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                            Applicant Information
+                        </h3>
                         <div className="detail-grid">
                             <div className="detail-item">
                                 <strong>Name:</strong>
@@ -291,7 +299,10 @@ const RequestStatus = () => {
 
                 {/* Progress Timeline */}
                 <div className="progress-section">
-                    <h3>Application Progress</h3>
+                    <h3>
+                        <Clock size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                        Application Progress
+                    </h3>
                     <div className="progress-timeline">
                         {getStatusProgress(request.status).steps.map((step, idx) => (
                             <div
@@ -300,8 +311,12 @@ const RequestStatus = () => {
                                     } ${request.status === 'rejected' && idx === 2 ? 'rejected' : ''}`}
                             >
                                 <div className="timeline-dot">
-                                    {idx <= getStatusProgress(request.status).currentStep && idx !== 2 && '✓'}
-                                    {request.status === 'rejected' && idx === 2 && '✗'}
+                                    {idx <= getStatusProgress(request.status).currentStep && idx !== 2 && (
+                                        <Check size={12} />
+                                    )}
+                                    {request.status === 'rejected' && idx === 2 && (
+                                        <X size={12} />
+                                    )}
                                 </div>
                                 <div className="timeline-content">
                                     <div className="timeline-label">{step.name}</div>
@@ -323,23 +338,38 @@ const RequestStatus = () => {
 
                 {/* Request Details */}
                 <div className="request-details-section">
-                    <h3>Request Details</h3>
+                    <h3>
+                        <Info size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                        Request Details
+                    </h3>
                     <div className="detail-grid">
                         <div className="detail-item">
-                            <strong>CNIC Number:</strong>
+                            <strong>
+                                <FileText size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                CNIC Number:
+                            </strong>
                             <span>{request.cnic_number}</span>
                         </div>
                         <div className="detail-item">
-                            <strong>Phone Number:</strong>
+                            <strong>
+                                <Phone size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                Phone Number:
+                            </strong>
                             <span>{request.phone_number}</span>
                         </div>
                         <div className="detail-item">
-                            <strong>Submitted:</strong>
+                            <strong>
+                                <Calendar size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                Submitted:
+                            </strong>
                             <span>{new Date(request.created_at).toLocaleString()}</span>
                         </div>
                         {request.updated_at && request.status !== 'pending' && (
                             <div className="detail-item">
-                                <strong>Last Updated:</strong>
+                                <strong>
+                                    <RefreshCw size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                    Last Updated:
+                                </strong>
                                 <span>{new Date(request.updated_at).toLocaleString()}</span>
                             </div>
                         )}
@@ -347,7 +377,10 @@ const RequestStatus = () => {
 
                     {request.additional_info && (
                         <div className="additional-info">
-                            <strong>Additional Information:</strong>
+                            <strong>
+                                <Info size={14} style={{ marginRight: '4px', display: 'inline' }} />
+                                Additional Information:
+                            </strong>
                             <p>{request.additional_info}</p>
                         </div>
                     )}
@@ -356,7 +389,10 @@ const RequestStatus = () => {
                 {/* Admin Feedback */}
                 {request.admin_comment && (
                     <div className={`admin-feedback ${request.status}`}>
-                        <h3>Admin Feedback</h3>
+                        <h3>
+                            <Info size={18} style={{ marginRight: '8px', display: 'inline' }} />
+                            Admin Feedback
+                        </h3>
                         <div className="feedback-content">
                             <p>{request.admin_comment}</p>
                         </div>
@@ -370,6 +406,7 @@ const RequestStatus = () => {
                             onClick={() => navigate('/become-host')}
                             className="resubmit-btn"
                         >
+                            <Send size={14} style={{ marginRight: '6px' }} />
                             Submit New Request
                         </button>
                     )}
@@ -378,12 +415,10 @@ const RequestStatus = () => {
                             onClick={() => navigate('/seller-dashboard')}
                             className="dashboard-btn"
                         >
+                            <LayoutDashboard size={14} style={{ marginRight: '6px' }} />
                             Go to Dashboard
                         </button>
                     )}
-                    {/* <button onClick={viewAllRequests} className="secondary-btn">
-                        View All Requests
-                    </button> */}
                 </div>
             </div>
         </div>

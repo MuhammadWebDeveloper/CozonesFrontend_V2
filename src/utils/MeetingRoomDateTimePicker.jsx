@@ -13,6 +13,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import '../componentstyles/utilstyle/DateTimePicker.css';
+import { 
+    Calendar, 
+    Clock, 
+    ChevronLeft, 
+    ChevronRight, 
+    Lock, 
+    Check, 
+    X,
+    AlertCircle,
+    CalendarDays,
+    CheckCircle,
+    XCircle
+} from 'lucide-react';
 
 const MeetingRoomDateTimePicker = ({
     value,
@@ -282,18 +295,22 @@ const MeetingRoomDateTimePicker = ({
                     onClick={() => setIsOpen(!isOpen)}
                 />
                 <span className="datetime-picker-icon" onClick={() => setIsOpen(!isOpen)}>
-                    {rateType === 'hourly' ? '🕐' : '📅'}
+                    {rateType === 'hourly' ? <Clock size={20} /> : <Calendar size={20} />}
                 </span>
             </div>
 
             {isOpen && (
                 <div className="datetime-picker-dropdown">
                     <div className="datetime-picker-header">
-                        <button onClick={() => changeMonth(-1)} className="month-nav">←</button>
+                        <button onClick={() => changeMonth(-1)} className="month-nav">
+                            <ChevronLeft size={20} />
+                        </button>
                         <span className="current-month">
                             {currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}
                         </span>
-                        <button onClick={() => changeMonth(1)} className="month-nav">→</button>
+                        <button onClick={() => changeMonth(1)} className="month-nav">
+                            <ChevronRight size={20} />
+                        </button>
                     </div>
 
                     <div className="datetime-picker-calendar">
@@ -324,16 +341,20 @@ const MeetingRoomDateTimePicker = ({
                                             onClick={() => handleDateSelect(date)}
                                             disabled={isDisabled}
                                             title={isBooked ? '📅 Booked' : isDisabled ? 'Not Available' : 'Click to select'}
+                                            style={{
+                                                position: 'relative',
+                                                cursor: isDisabled ? 'not-allowed' : 'pointer'
+                                            }}
                                         >
                                             {date.getDate()}
-                                            {isBooked && (
+                                            {isBooked && rateType !== 'hourly' && (
                                                 <span style={{
                                                     position: 'absolute',
                                                     bottom: '2px',
                                                     right: '2px',
                                                     fontSize: '8px'
                                                 }}>
-                                                    🔒
+                                                    <Lock size={10} />
                                                 </span>
                                             )}
                                         </button>
@@ -351,12 +372,21 @@ const MeetingRoomDateTimePicker = ({
                             borderTop: '1px solid #eee',
                             fontSize: '11px',
                             flexWrap: 'wrap',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            alignItems: 'center'
                         }}>
-                            <span>🔒 Booked</span>
-                            <span>⬜ Available</span>
-                            <span>🔵 Selected</span>
-                            <span>🟦 Today</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Lock size={12} /> Booked
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                ⬜ Available
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                🔵 Selected
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                🟦 Today
+                            </span>
                         </div>
                     )}
 
@@ -377,20 +407,27 @@ const MeetingRoomDateTimePicker = ({
                             }}
                         />
                         {rateType === 'hourly' && (
-                            <small style={{ color: '#6c757d', fontSize: '11px' }}>
-                                ⏰ Whole hours only, same day or a later day allowed
+                            <small style={{ color: '#6c757d', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Clock size={12} /> Whole hours only, same day or a later day allowed
                             </small>
                         )}
                         {type === 'end' && startDate && selectedDate && isSameDay(selectedDate, new Date(startDate)) && (
-                            <small className="time-hint" style={{ display: 'block', color: '#01095A', fontSize: '11px' }}>
-                                ⏰ Min. 1 hour after start time
+                            <small className="time-hint" style={{ display: 'block', color: '#01095A', fontSize: '11px', marginTop: '4px' }}>
+                                <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} />
+                                Min. 1 hour after start time
                             </small>
                         )}
                     </div>
 
                     <div className="datetime-picker-actions">
-                        <button className="cancel-btn" onClick={() => setIsOpen(false)}>Cancel</button>
-                        <button className="confirm-btn" onClick={() => setIsOpen(false)}>Confirm</button>
+                        <button className="cancel-btn" onClick={() => setIsOpen(false)}>
+                            <X size={16} style={{ marginRight: '6px' }} />
+                            Cancel
+                        </button>
+                        <button className="confirm-btn" onClick={() => setIsOpen(false)}>
+                            <Check size={16} style={{ marginRight: '6px' }} />
+                            Confirm
+                        </button>
                     </div>
                 </div>
             )}

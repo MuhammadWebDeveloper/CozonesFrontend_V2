@@ -1,22 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './../../componentstyles/sellerdashboardstyles/createspace.css';
 import BaseUrl from '../../utils/AppConstants';
+import {
+    Wifi,
+    Snowflake,
+    Coffee,
+    Printer,
+    ParkingSquare,
+    ShieldCheck,
+    Zap,
+    ArrowRight,
+} from 'lucide-react';
 
 // Load Google Maps API
 const loadGoogleMapsScript = (callback) => {
-    const existingScript = document.getElementById('googleMapsScript');
-    if (!existingScript) {
-        const script = document.createElement('script');
-        // ⚠️ REPLACE WITH YOUR ACTUAL API KEY
-        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
-        script.id = 'googleMapsScript';
-        document.body.appendChild(script);
-        script.onload = () => {
-            if (callback) callback();
-        };
-    } else if (callback) {
-        callback();
+    // Already fully loaded — safe to use immediately
+    if (window.google && window.google.maps) {
+        if (callback) callback();
+        return;
     }
+
+    const existingScript = document.getElementById('googleMapsScript');
+
+    if (existingScript) {
+        // Script tag exists but may still be loading — wait for it
+        existingScript.addEventListener('load', () => {
+            if (callback) callback();
+        });
+        return;
+    }
+
+    const script = document.createElement('script');
+    // ⚠️ REPLACE WITH YOUR ACTUAL API KEY
+    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+    script.id = 'googleMapsScript';
+    script.onload = () => {
+        if (callback) callback();
+    };
+    document.body.appendChild(script);
 };
 
 function CreateSpace() {
@@ -70,6 +91,11 @@ function CreateSpace() {
     }, [mapLoaded]);
 
     const initMap = () => {
+        if (!window.google || !window.google.maps) {
+            console.error('Google Maps script not loaded yet.');
+            return;
+        }
+
         const defaultLocation = { lat: 40.7128, lng: -74.0060 };
 
         mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
@@ -371,8 +397,14 @@ function CreateSpace() {
                         <div className="CreateSpace_field">
                             <label className="CreateSpace_label">Google Maps Link</label>
                             {formData.google_maps_link ? (
-                                <a href={formData.google_maps_link} target="_blank" rel="noopener noreferrer" className="CreateSpace_mapLink">
-                                    View on Google Maps →
+                                <a
+                                    href={formData.google_maps_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="CreateSpace_mapLink"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                    View on Google Maps <ArrowRight size={14} />
                                 </a>
                             ) : (
                                 <input
@@ -446,7 +478,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>✓ Wi-Fi</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Wifi size={16} /> Wi-Fi
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -457,7 +491,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>❄️ Air Conditioning</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Snowflake size={16} /> Air Conditioning
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -468,7 +504,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>☕ Coffee/Tea</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Coffee size={16} /> Coffee/Tea
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -479,7 +517,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>🖨️ Printer/Scanner</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Printer size={16} /> Printer/Scanner
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -490,7 +530,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>🅿️ Parking</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <ParkingSquare size={16} /> Parking
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -501,7 +543,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>🔒 24/7 Security</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <ShieldCheck size={16} /> 24/7 Security
+                            </span>
                         </label>
 
                         <label className="CreateSpace_amenityLabel">
@@ -512,7 +556,9 @@ function CreateSpace() {
                                 onChange={handleInputChange}
                                 className="CreateSpace_checkbox"
                             />
-                            <span>⚡ Backup Power</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Zap size={16} /> Backup Power
+                            </span>
                         </label>
                     </div>
                 </div>

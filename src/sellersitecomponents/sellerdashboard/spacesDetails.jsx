@@ -2,42 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
-  FaEdit,
-  FaTrashAlt,
-  FaBuilding,
-  FaRegClock,
-  FaUsers,
-  FaMoneyBillWave,
-  FaMapMarkerAlt,
-  FaWifi,
-  FaSnowflake,
-  FaCoffee,
-  FaPrint,
-  FaParking,
-  FaShieldAlt,
-  FaBolt,
-  FaCalendarAlt,
-  FaStar,
-  FaArrowLeft,
-  FaPlus,
-  FaChevronRight,
-  FaHome,
-  FaClock,
-  FaList,
-  FaFileContract,
-  FaRegBuilding,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaToggleOn,
-  FaToggleOff
-} from 'react-icons/fa';
-import {
-  MdLocationOn,
-  MdAccessTime,
-  MdCancel,
-  MdPayment,
-  MdAccessTimeFilled
-} from 'react-icons/md';
+  Pencil,
+  Trash2,
+  Building2,
+  Clock,
+  Users,
+  Banknote,
+  MapPin,
+  Wifi,
+  Snowflake,
+  Coffee,
+  Printer,
+  ParkingSquare,
+  ShieldCheck,
+  Zap,
+  Calendar,
+  Star,
+  ArrowLeft,
+  Plus,
+  ChevronRight,
+  Home,
+  List,
+  FileText,
+  Building,
+  CheckCircle,
+  XCircle,
+  ToggleRight,
+  ToggleLeft,
+  Ban,
+  CreditCard,
+  AlarmClock,
+  AlertTriangle,
+  Sparkles,
+  Landmark,
+  Store,
+  School,
+  Warehouse,
+  Monitor,
+  Armchair,
+  DoorClosed,
+  Presentation,
+  Package,
+  Timer,
+  CalendarDays
+} from 'lucide-react';
 import '../../componentstyles/sellerdashboardstyles/SpaceDetails.css';
 import BaseUrl from '../../utils/AppConstants';
 
@@ -142,23 +150,24 @@ export default function SpaceDetails() {
   };
 
   const getSpaceIcon = () => {
-    const icons = ['🏢', '🏛️', '🏬', '🏫', '🏪'];
+    const icons = [Building2, Landmark, Store, School, Warehouse];
     const index = space?.name?.length % icons.length || 0;
-    return icons[index];
+    const SpaceIcon = icons[index];
+    return <SpaceIcon />;
   };
 
   const getUnitIcon = (unitType) => {
     switch (unitType) {
       case 'open_desk':
-        return '🖥️';
+        return <Monitor />;
       case 'dedicated_desk':
-        return '💺';
+        return <Armchair />;
       case 'private_cabin':
-        return '🚪';
+        return <DoorClosed />;
       case 'meeting_room':
-        return '📊';
+        return <Presentation />;
       default:
-        return '📦';
+        return <Package />;
     }
   };
 
@@ -181,10 +190,10 @@ export default function SpaceDetails() {
   if (error) {
     return (
       <div className="sd__error">
-        <div className="sd__error-icon">⚠️</div>
+        <div className="sd__error-icon"><AlertTriangle /></div>
         <p>{error}</p>
         <button onClick={() => navigate('/seller-dashboard')} className="sd__back-btn">
-          <FaHome /> Back to Dashboard
+          <Home /> Back to Dashboard
         </button>
       </div>
     );
@@ -195,7 +204,7 @@ export default function SpaceDetails() {
       <div className="sd__error">
         <p>Space not found</p>
         <button onClick={() => navigate('/seller-dashboard')} className="sd__back-btn">
-          <FaHome /> Back to Dashboard
+          <Home /> Back to Dashboard
         </button>
       </div>
     );
@@ -206,16 +215,16 @@ export default function SpaceDetails() {
       {/* Header */}
       <div className="sd__header">
         <button onClick={() => navigate('/seller-dashboard')} className="sd__back-button">
-          <FaArrowLeft />
+          <ArrowLeft />
           Back to Dashboard
         </button>
         <div className="sd__header-actions">
           <button onClick={handleEdit} className="sd__edit-button">
-            <FaEdit />
+            <Pencil />
             Edit Space
           </button>
           <button onClick={handleAddUnit} className="sd__add-unit-button">
-            <FaPlus />
+            <Plus />
             Add Unit
           </button>
         </div>
@@ -230,16 +239,16 @@ export default function SpaceDetails() {
             <span className={`sd__badge sd__badge-${space.is_active ? 'active' : 'inactive'}`}>
               {space.is_active ? (
                 <>
-                  <FaCheckCircle /> Active
+                  <CheckCircle /> Active
                 </>
               ) : (
                 <>
-                  <FaTimesCircle /> Inactive
+                  <XCircle /> Inactive
                 </>
               )}
             </span>
             <span className="sd__badge sd__badge-id">
-              <FaRegBuilding /> ID: {space.id?.slice(0, 8)}...
+              <Building /> ID: {space.id?.slice(0, 8)}...
             </span>
           </div>
           <p className="sd__description">{space.description || 'No description provided'}</p>
@@ -249,28 +258,28 @@ export default function SpaceDetails() {
       {/* Stats Cards */}
       <div className="sd__stats-row">
         <div className="sd__stat-card">
-          <div className="sd__stat-icon"><FaCalendarAlt /></div>
+          <div className="sd__stat-icon"><Calendar /></div>
           <div className="sd__stat-info">
             <span className="sd__stat-label">Created</span>
             <span className="sd__stat-number">{formatDate(space.created_at)}</span>
           </div>
         </div>
         <div className="sd__stat-card">
-          <div className="sd__stat-icon"><FaRegClock /></div>
+          <div className="sd__stat-icon"><Clock /></div>
           <div className="sd__stat-info">
             <span className="sd__stat-label">Last Updated</span>
             <span className="sd__stat-number">{formatDate(space.updated_at)}</span>
           </div>
         </div>
         <div className="sd__stat-card">
-          <div className="sd__stat-icon"><FaBuilding /></div>
+          <div className="sd__stat-icon"><Building2 /></div>
           <div className="sd__stat-info">
             <span className="sd__stat-label">Total Units</span>
             <span className="sd__stat-number">{space.units?.length || 0}</span>
           </div>
         </div>
         <div className="sd__stat-card">
-          <div className="sd__stat-icon"><FaStar /></div>
+          <div className="sd__stat-icon"><Star /></div>
           <div className="sd__stat-info">
             <span className="sd__stat-label">Active Units</span>
             <span className="sd__stat-number">{space.units?.filter(u => u.is_active).length || 0}</span>
@@ -284,37 +293,37 @@ export default function SpaceDetails() {
           className={`sd__tab ${activeTab === 'overview' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          <FaList /> Overview
+          <List /> Overview
         </button>
         <button
           className={`sd__tab ${activeTab === 'location' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('location')}
         >
-          <FaMapMarkerAlt /> Location
+          <MapPin /> Location
         </button>
         <button
           className={`sd__tab ${activeTab === 'hours' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('hours')}
         >
-          <FaClock /> Hours
+          <Clock /> Hours
         </button>
         <button
           className={`sd__tab ${activeTab === 'amenities' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('amenities')}
         >
-          ✨ Amenities
+          <Sparkles /> Amenities
         </button>
         <button
           className={`sd__tab ${activeTab === 'units' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('units')}
         >
-          <FaBuilding /> Units ({space.units?.filter(u => u.is_active).length}/{space.units?.length || 0})
+          <Building2 /> Units ({space.units?.filter(u => u.is_active).length}/{space.units?.length || 0})
         </button>
         <button
           className={`sd__tab ${activeTab === 'policies' ? 'sd__tab-active' : ''}`}
           onClick={() => setActiveTab('policies')}
         >
-          <FaFileContract /> Policies
+          <FileText /> Policies
         </button>
       </div>
 
@@ -335,11 +344,11 @@ export default function SpaceDetails() {
                   <div className={`sd__status-badge ${space.is_active ? 'status-active' : 'status-inactive'}`}>
                     {space.is_active ? (
                       <>
-                        <FaCheckCircle /> Active
+                        <CheckCircle /> Active
                       </>
                     ) : (
                       <>
-                        <FaTimesCircle /> Inactive
+                        <XCircle /> Inactive
                       </>
                     )}
                   </div>
@@ -362,7 +371,7 @@ export default function SpaceDetails() {
 
             {/* <button onClick={handleViewUnits} className="sd__view-units-btn">
               View All Units ({space.units?.length || 0})
-              <FaChevronRight />
+              <ChevronRight />
             </button> */}
           </div>
         )}
@@ -371,7 +380,7 @@ export default function SpaceDetails() {
         {activeTab === 'location' && (
           <div className="sd__location">
             <div className="sd__info-card">
-              <h3><FaMapMarkerAlt /> Address Information</h3>
+              <h3><MapPin /> Address Information</h3>
               <div className="sd__info-grid">
                 <div className="sd__info-item">
                   <span className="sd__info-label">Address</span>
@@ -390,7 +399,7 @@ export default function SpaceDetails() {
 
             {(space.latitude && space.longitude) && (
               <div className="sd__info-card">
-                <h3><MdLocationOn /> Coordinates</h3>
+                <h3><MapPin /> Coordinates</h3>
                 <div className="sd__info-grid">
                   <div className="sd__info-item">
                     <span className="sd__info-label">Latitude</span>
@@ -406,8 +415,8 @@ export default function SpaceDetails() {
 
             {space.google_maps_link && (
               <a href={space.google_maps_link} target="_blank" rel="noopener noreferrer" className="sd__map-link">
-                <FaMapMarkerAlt /> Open in Google Maps
-                <FaChevronRight />
+                <MapPin /> Open in Google Maps
+                <ChevronRight />
               </a>
             )}
           </div>
@@ -417,7 +426,7 @@ export default function SpaceDetails() {
         {activeTab === 'hours' && (
           <div className="sd__hours">
             <div className="sd__info-card">
-              <h3><MdAccessTime /> Operating Hours</h3>
+              <h3><Clock /> Operating Hours</h3>
               <div className="sd__info-grid">
                 <div className="sd__info-item">
                   <span className="sd__info-label">Opening Time</span>
@@ -447,28 +456,28 @@ export default function SpaceDetails() {
         {activeTab === 'amenities' && (
           <div className="sd__amenities">
             <div className="sd__info-card">
-              <h3>✨ Amenities & Features</h3>
+              <h3><Sparkles /> Amenities & Features</h3>
               <div className="sd__amenities-grid">
                 <div className={`sd__amenity ${space.has_wifi ? 'active' : 'inactive'}`}>
-                  <FaWifi /> {space.has_wifi ? 'Wi-Fi Available' : 'No Wi-Fi'}
+                  <Wifi /> {space.has_wifi ? 'Wi-Fi Available' : 'No Wi-Fi'}
                 </div>
                 <div className={`sd__amenity ${space.has_ac ? 'active' : 'inactive'}`}>
-                  <FaSnowflake /> {space.has_ac ? 'Air Conditioning' : 'No AC'}
+                  <Snowflake /> {space.has_ac ? 'Air Conditioning' : 'No AC'}
                 </div>
                 <div className={`sd__amenity ${space.has_coffee ? 'active' : 'inactive'}`}>
-                  <FaCoffee /> {space.has_coffee ? 'Coffee/Tea' : 'No Coffee'}
+                  <Coffee /> {space.has_coffee ? 'Coffee/Tea' : 'No Coffee'}
                 </div>
                 <div className={`sd__amenity ${space.has_printer ? 'active' : 'inactive'}`}>
-                  <FaPrint /> {space.has_printer ? 'Printer/Scanner' : 'No Printer'}
+                  <Printer /> {space.has_printer ? 'Printer/Scanner' : 'No Printer'}
                 </div>
                 <div className={`sd__amenity ${space.has_parking ? 'active' : 'inactive'}`}>
-                  <FaParking /> {space.has_parking ? 'Parking Available' : 'No Parking'}
+                  <ParkingSquare /> {space.has_parking ? 'Parking Available' : 'No Parking'}
                 </div>
                 <div className={`sd__amenity ${space.has_security ? 'active' : 'inactive'}`}>
-                  <FaShieldAlt /> {space.has_security ? '24/7 Security' : 'No Security'}
+                  <ShieldCheck /> {space.has_security ? '24/7 Security' : 'No Security'}
                 </div>
                 <div className={`sd__amenity ${space.has_backup_power ? 'active' : 'inactive'}`}>
-                  <FaBolt /> {space.has_backup_power ? 'Backup Power' : 'No Backup Power'}
+                  <Zap /> {space.has_backup_power ? 'Backup Power' : 'No Backup Power'}
                 </div>
               </div>
             </div>
@@ -480,9 +489,9 @@ export default function SpaceDetails() {
           <div className="sd__units">
             <div className="sd__info-card">
               <div className="sd__units-header">
-                <h3><FaBuilding /> Space Units</h3>
+                <h3><Building2 /> Space Units</h3>
                 <button onClick={handleAddUnit} className="sd__add-unit-small">
-                  <FaPlus /> Add New Unit
+                  <Plus /> Add New Unit
                 </button>
               </div>
               {space.units?.length > 0 ? (
@@ -499,11 +508,11 @@ export default function SpaceDetails() {
                             <div className={`sd__unit-status-badge ${unit.is_active ? 'status-active' : 'status-inactive'}`}>
                               {unit.is_active ? (
                                 <>
-                                  <FaCheckCircle /> Active
+                                  <CheckCircle /> Active
                                 </>
                               ) : (
                                 <>
-                                  <FaTimesCircle /> Inactive
+                                  <XCircle /> Inactive
                                 </>
                               )}
                             </div>
@@ -518,9 +527,9 @@ export default function SpaceDetails() {
                               {togglingUnit === unit.id ? (
                                 <div className="sd__small-loader"></div>
                               ) : unit.is_active ? (
-                                <FaToggleOn />
+                                <ToggleRight />
                               ) : (
-                                <FaToggleOff />
+                                <ToggleLeft />
                               )}
                             </button> */}
                             <button
@@ -528,7 +537,7 @@ export default function SpaceDetails() {
                               className="sd__unit-edit-btn"
                               title="Edit Unit"
                             >
-                              <FaEdit />
+                              <Pencil />
                             </button>
                             <button
                               onClick={() => handleDeleteUnit(unit.id, unit.name || unit.unit_type)}
@@ -539,7 +548,7 @@ export default function SpaceDetails() {
                               {deletingUnit === unit.id ? (
                                 <div className="sd__small-loader"></div>
                               ) : (
-                                <FaTrashAlt />
+                                <Trash2 />
                               )}
                             </button>
                           </div>
@@ -550,23 +559,23 @@ export default function SpaceDetails() {
                             <strong>{unit.name || 'Not specified'}</strong>
                           </div>
                           <div className="sd__unit-detail">
-                            <FaUsers /> <span>Capacity:</span>
+                            <Users /> <span>Capacity:</span>
                             <strong>{unit.total_capacity || 0} people</strong>
                           </div>
                           {activePricing && (
                             <div className="sd__unit-detail sd__unit-pricing">
-                              <FaMoneyBillWave /> <span>Active Pricing:</span>
+                              <Banknote /> <span>Active Pricing:</span>
                               <strong className="pricing-badge">
-                                {activePricing.type === 'hourly' && '⏱️ Hourly'}
-                                {activePricing.type === 'daily' && '📅 Daily'}
-                                {activePricing.type === 'monthly' && '📆 Monthly'}
+                                {activePricing.type === 'hourly' && <><Timer size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Hourly</>}
+                                {activePricing.type === 'daily' && <><Calendar size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Daily</>}
+                                {activePricing.type === 'monthly' && <><CalendarDays size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Monthly</>}
                                 : PKR {activePricing.rate}
                               </strong>
                             </div>
                           )}
                           {unit.duration && (
                             <div className="sd__unit-detail">
-                              <FaClock /> <span>Duration:</span>
+                              <Clock /> <span>Duration:</span>
                               <strong>{unit.duration}</strong>
                             </div>
                           )}
@@ -579,7 +588,7 @@ export default function SpaceDetails() {
                 <div className="sd__no-units">
                   <p>No units added yet</p>
                   <button onClick={handleAddUnit} className="sd__add-unit-btn">
-                    <FaPlus /> Add Your First Unit
+                    <Plus /> Add Your First Unit
                   </button>
                 </div>
               )}
@@ -591,15 +600,15 @@ export default function SpaceDetails() {
         {activeTab === 'policies' && (
           <div className="sd__policies">
             <div className="sd__info-card">
-              <h3><MdCancel /> Cancellation Policy</h3>
+              <h3><Ban /> Cancellation Policy</h3>
               <p className="sd__policy-text">{space.cancellation_policy || 'No cancellation policy specified'}</p>
             </div>
             <div className="sd__info-card">
-              <h3><MdPayment /> Refund Policy</h3>
+              <h3><CreditCard /> Refund Policy</h3>
               <p className="sd__policy-text">{space.refund_policy || 'No refund policy specified'}</p>
             </div>
             <div className="sd__info-card">
-              <h3><MdAccessTimeFilled /> Late Arrival Policy</h3>
+              <h3><AlarmClock /> Late Arrival Policy</h3>
               <p className="sd__policy-text">{space.late_arrival_policy || 'No late arrival policy specified'}</p>
             </div>
           </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createOrGetChat } from '../services/chat.service.js';
 import '../styles/ChatButton.css';
+import { MessageCircle, Loader2 } from 'lucide-react';
 
 /**
  * Drop this button anywhere you show a booking.
@@ -39,10 +40,10 @@ const ChatButton = ({ bookingId, label = 'Message', variant = 'primary', classNa
       disabled={loading}
     >
       {loading ? (
-        <span className="chat-btn-spinner" />
+        <Loader2 size={18} className="chat-btn-spinner" style={{ animation: 'spin 1s linear infinite' }} />
       ) : (
         <>
-          <span className="chat-btn-icon">💬</span>
+          <MessageCircle size={18} style={{ marginRight: '6px' }} />
           {label}
         </>
       )}
