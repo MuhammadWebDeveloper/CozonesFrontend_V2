@@ -4,6 +4,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BaseUrl from '../utils/AppConstants.jsx';
 import "../componentstyles/utilstyle/searchResults.css";
+import { 
+    MapPin, 
+    Building2, 
+    Clock, 
+    Star, 
+    Users, 
+    CheckCircle, 
+    AlertCircle,
+    Loader2,
+    RefreshCw,
+    Search,
+    ChevronRight,
+    Computer,
+    Armchair,
+    DoorClosed,
+    Users as UsersIcon,
+    Home
+} from 'lucide-react';
 
 const SearchResults = () => {
     const location = useLocation();
@@ -136,12 +154,12 @@ const SearchResults = () => {
 
     const getSpaceTypeIcon = (type) => {
         const icons = {
-            'open_desk': '🖥️',
-            'dedicated_desk': '💺',
-            'private_cabin': '🚪',
-            'meeting_room': '👥'
+            'open_desk': Computer,
+            'dedicated_desk': Armchair,
+            'private_cabin': DoorClosed,
+            'meeting_room': UsersIcon
         };
-        return icons[type] || '🏢';
+        return icons[type] || Building2;
     };
 
     const handleSpaceClick = (spaceId, unitType) => {
@@ -175,7 +193,7 @@ const SearchResults = () => {
         return (
             <div className="search-results-container">
                 <div className="loading-state">
-                    <div className="loading-spinner"></div>
+                    <Loader2 size={40} style={{ animation: 'spin 1s linear infinite' }} />
                     <p>Searching for spaces...</p>
                 </div>
             </div>
@@ -186,8 +204,11 @@ const SearchResults = () => {
         return (
             <div className="search-results-container">
                 <div className="error-state">
-                    <p>❌ {error}</p>
+                    <p style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertCircle size={20} /> {error}
+                    </p>
                     <button onClick={() => window.location.reload()} className="retry-btn">
+                        <RefreshCw size={16} style={{ marginRight: '6px' }} />
                         Try Again
                     </button>
                 </div>
@@ -198,21 +219,24 @@ const SearchResults = () => {
     return (
         <div className="search-results-container">
             <div className="search-results-header">
-                <h1>Search Results</h1>
+                <h1>
+                    <Search size={24} style={{ marginRight: '10px', display: 'inline' }} />
+                    Search Results
+                </h1>
                 <div className="search-filters-summary">
                     {searchParams.destination && (
-                        <span className="filter-badge">
-                            📍 {searchParams.destination}
+                        <span className="filter-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={14} /> {searchParams.destination}
                         </span>
                     )}
                     {searchParams.type && (
-                        <span className="filter-badge">
-                            🏢 {getSpaceTypeLabel(searchParams.type)}
+                        <span className="filter-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Building2 size={14} /> {getSpaceTypeLabel(searchParams.type)}
                         </span>
                     )}
                     {searchParams.startTime && searchParams.endTime && (
-                        <span className="filter-badge">
-                            ⏰ {searchParams.startTime} - {searchParams.endTime}
+                        <span className="filter-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Clock size={14} /> {searchParams.startTime} - {searchParams.endTime}
                         </span>
                     )}
                 </div>
@@ -224,50 +248,67 @@ const SearchResults = () => {
                         Found {results.length} space{results.length !== 1 ? 's' : ''} in {getLocationDisplay()}
                     </p>
                     <div className="results-grid">
-                        {results.map(space => (
-                            <div
-                                key={space.id}
-                                className="space-card"
-                                onClick={() => handleSpaceClick(space.id, space.unit_type)}
-                            >
-                                <div className="space-image">
-                                    {space.images ? (
-                                        <img 
-                                            src={space.images} 
-                                            alt={space.title}
-                                            onError={(e) => {
-                                                console.log(`Image failed to load for ${space.title}`);
-                                                e.target.style.display = 'none';
-                                                if (e.target.parentElement) {
-                                                    e.target.parentElement.innerHTML = `<div class="image-placeholder">${getSpaceTypeIcon(space.unit_type)}</div>`;
-                                                }
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="image-placeholder">{getSpaceTypeIcon(space.unit_type)}</div>
-                                    )}
-                                    <div className="space-type-badge">{getSpaceTypeLabel(space.unit_type)}</div>
-                                    {space.is_verified && (
-                                        <div className="verified-badge">✓ Verified</div>
-                                    )}
-                                </div>
-                                <div className="space-info">
-                                    <h3>{space.title}</h3>
-                                    {space.space_name && space.space_name !== space.title && (
-                                        <p className="space-venue">📍 {space.space_name}</p>
-                                    )}
-                                    <p className="space-location">📍 {space.location}</p>
-                                    <div className="space-details-row">
-                                        <span className="space-rating">⭐ {space.rating}</span>
-                                        <span className="space-capacity">👥 Up to {space.capacity}</span>
+                        {results.map(space => {
+                            const IconComponent = getSpaceTypeIcon(space.unit_type);
+                            return (
+                                <div
+                                    key={space.id}
+                                    className="space-card"
+                                    onClick={() => handleSpaceClick(space.id, space.unit_type)}
+                                >
+                                    <div className="space-image">
+                                        {space.images ? (
+                                            <img 
+                                                src={space.images} 
+                                                alt={space.title}
+                                                onError={(e) => {
+                                                    console.log(`Image failed to load for ${space.title}`);
+                                                    e.target.style.display = 'none';
+                                                    if (e.target.parentElement) {
+                                                        e.target.parentElement.innerHTML = `<div class="image-placeholder">${getSpaceTypeIcon(space.unit_type)}</div>`;
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="image-placeholder">
+                                                <IconComponent size={48} />
+                                            </div>
+                                        )}
+                                        <div className="space-type-badge">{getSpaceTypeLabel(space.unit_type)}</div>
+                                        {space.is_verified && (
+                                            <div className="verified-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                <CheckCircle size={14} /> Verified
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="space-price-section">
-                                        <p className="space-price">{space.priceDisplay}</p>
-                                        <button className="view-details-btn">View Details →</button>
+                                    <div className="space-info">
+                                        <h3>{space.title}</h3>
+                                        {space.space_name && space.space_name !== space.title && (
+                                            <p className="space-venue" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <MapPin size={14} /> {space.space_name}
+                                            </p>
+                                        )}
+                                        <p className="space-location" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <MapPin size={14} /> {space.location}
+                                        </p>
+                                        <div className="space-details-row">
+                                            <span className="space-rating" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                <Star size={14} /> {space.rating}
+                                            </span>
+                                            <span className="space-capacity" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                <Users size={14} /> Up to {space.capacity}
+                                            </span>
+                                        </div>
+                                        <div className="space-price-section">
+                                            <p className="space-price">{space.priceDisplay}</p>
+                                            <button className="view-details-btn">
+                                                View Details <ChevronRight size={16} style={{ marginLeft: '4px' }} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </>
             ) : (
@@ -275,6 +316,7 @@ const SearchResults = () => {
                     <p>No spaces found matching your criteria.</p>
                     <p className="no-results-hint">Try adjusting your search filters or location.</p>
                     <button onClick={() => navigate('/')} className="search-again-btn">
+                        <Home size={16} style={{ marginRight: '6px' }} />
                         Search Again
                     </button>
                 </div>
