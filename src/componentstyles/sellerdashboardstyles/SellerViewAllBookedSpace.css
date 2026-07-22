@@ -689,3 +689,18 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Completed Badge */
+.badge-completed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Completed Stats Card */
+.stat-card-completed {
+  border-left: 4px solid #16a34a;
+}
+
+.stat-card-completed .stat-value {
+  color: #16a34a;
+}

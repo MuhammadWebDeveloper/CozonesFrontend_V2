@@ -101,7 +101,7 @@ const Private_Cabins = ({ title }) => {
                     location: unit.city || unit.space_city || "Coworking Space",
                     price: getBestRate(unit),
                     nights: 1,
-                    rating: 4.8,
+                    // rating: 4.8,
                     reviews: 0,
                     images: image ? [image] : null,
                     unit_type: unit.unit_type

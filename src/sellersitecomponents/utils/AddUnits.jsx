@@ -19,6 +19,109 @@ import {
     Presentation
 } from 'lucide-react';
 
+// ============================================
+// IMAGE COMPRESSION UTILITIES
+// ============================================
+
+/**
+ * Compress base64 image to reduce size
+ * @param {string} base64String - The base64 image string
+ * @param {number} maxWidth - Maximum width (default: 800)
+ * @param {number} maxHeight - Maximum height (default: 600)
+ * @param {number} quality - Image quality 0-1 (default: 0.7)
+ * @param {string} format - Image format 'jpeg' or 'webp' (default: 'jpeg')
+ * @returns {Promise<string>} - Compressed base64 string
+ */
+const compressBase64Image = (
+    base64String,
+    maxWidth = 800,
+    maxHeight = 600,
+    quality = 0.7,
+    format = 'jpeg'
+) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const img = new Image();
+            img.src = base64String;
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convert to desired format with quality
+                    const compressed = canvas.toDataURL(`image/${format}`, quality);
+                    resolve(compressed);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => {
+                reject(new Error('Failed to load image'));
+            };
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+/**
+ * Compress multiple base64 images
+ */
+const compressMultipleBase64Images = async (
+    base64Strings,
+    maxWidth = 800,
+    maxHeight = 600,
+    quality = 0.7
+) => {
+    const compressedImages = [];
+    for (const image of base64Strings) {
+        if (image && image.startsWith('data:image')) {
+            const compressed = await compressBase64Image(image, maxWidth, maxHeight, quality);
+            compressedImages.push(compressed);
+        } else {
+            compressedImages.push(image);
+        }
+    }
+    return compressedImages;
+};
+
+/**
+ * Get image size in MB
+ */
+const getImageSizeInMB = (base64String) => {
+    if (!base64String) return 0;
+    const sizeInBytes = base64String.length * 0.75;
+    return sizeInBytes / (1024 * 1024);
+};
+
+/**
+ * Check if image needs compression
+ */
+const needsCompression = (base64String, maxSizeMB = 1) => {
+    if (!base64String) return false;
+    return getImageSizeInMB(base64String) > maxSizeMB;
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
 export default function AddUnit() {
     const { spaceId } = useParams();
     const navigate = useNavigate();
@@ -29,7 +132,8 @@ export default function AddUnit() {
     const [activePricing, setActivePricing] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [addedUnitName, setAddedUnitName] = useState('');
-    const [imageUploading, setImageUploading] = useState(false); // New state
+    const [imageUploading, setImageUploading] = useState(false);
+    const [compressingImages, setCompressingImages] = useState(false); // New state
 
     const [formData, setFormData] = useState({
         unit_type: '',
@@ -97,7 +201,8 @@ export default function AddUnit() {
         if (unitType === 'meeting_room') {
             return ['hourly', 'daily'];
         }
-        return ['daily', 'monthly'];
+        return ['daily'];
+        // return ['daily', 'monthly'];
     };
 
     const getPricingLabel = (type) => {
@@ -128,8 +233,9 @@ export default function AddUnit() {
         }));
     }, [formData.unit_type]);
 
-    // Improved image upload with compression and validation
-    // Updated handleImageUpload function with 5 image limit
+    // ============================================
+    // UPDATED: Image Upload with Compression
+    // ============================================
     const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
 
@@ -140,14 +246,14 @@ export default function AddUnit() {
         // Check if already have 5 images
         if (currentImageCount >= 5) {
             setMessage({ type: 'error', text: 'Maximum 5 images allowed. Please remove some images before adding more.' });
-            e.target.value = ''; // Clear the input
+            e.target.value = '';
             return;
         }
 
         // Limit new files to remaining slots
         if (files.length > remainingSlots) {
             setMessage({ type: 'error', text: `You can only add ${remainingSlots} more image(s). Maximum 5 images total.` });
-            e.target.value = ''; // Clear the input
+            e.target.value = '';
             return;
         }
 
@@ -168,13 +274,15 @@ export default function AddUnit() {
         });
 
         if (invalidFiles.length > 0) {
-            e.target.value = ''; // Clear the input
+            e.target.value = '';
             return;
         }
 
         setImageUploading(true);
+        setCompressingImages(true);
 
         try {
+            // Step 1: Convert files to base64
             const imagePromises = files.map(file => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
@@ -184,39 +292,91 @@ export default function AddUnit() {
                 });
             });
 
-            const images = await Promise.all(imagePromises);
+            let images = await Promise.all(imagePromises);
             const validImages = images.filter(img => img !== null);
 
-            if (validImages.length > 0) {
-                // Double-check we won't exceed 5 images
-                const newTotal = formData.images.length + validImages.length;
-                if (newTotal > 5) {
-                    setMessage({ type: 'error', text: 'Cannot exceed maximum of 5 images. Please remove some images first.' });
-                    e.target.value = '';
-                    setImageUploading(false);
-                    return;
-                }
-
-                setFormData(prev => ({
-                    ...prev,
-                    images: [...prev.images, ...validImages]
-                }));
-                setMessage({ type: 'success', text: `${validImages.length} image(s) uploaded successfully! (${newTotal}/5 images)` });
-                setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            if (validImages.length === 0) {
+                setMessage({ type: 'error', text: 'Failed to read images. Please try again.' });
+                e.target.value = '';
+                setImageUploading(false);
+                setCompressingImages(false);
+                return;
             }
+
+            // Step 2: Check sizes and compress if needed
+            console.log('📊 Original images count:', validImages.length);
+
+            const compressedImages = [];
+            let totalOriginalSize = 0;
+            let totalCompressedSize = 0;
+
+            for (const img of validImages) {
+                const originalSize = getImageSizeInMB(img);
+                totalOriginalSize += originalSize;
+
+                let finalImage = img;
+                // Compress if > 1MB
+                if (needsCompression(img, 1)) {
+                    console.log(`🔄 Compressing image (${originalSize.toFixed(2)}MB)...`);
+                    finalImage = await compressBase64Image(img, 800, 600, 0.7);
+                    const newSize = getImageSizeInMB(finalImage);
+                    totalCompressedSize += newSize;
+                    console.log(`✅ Compressed to ${newSize.toFixed(2)}MB (${((1 - newSize / originalSize) * 100).toFixed(0)}% reduction)`);
+                } else {
+                    totalCompressedSize += originalSize;
+                    console.log(`✅ Image already optimized (${originalSize.toFixed(2)}MB)`);
+                }
+                compressedImages.push(finalImage);
+            }
+
+            console.log(`📊 Total: ${totalOriginalSize.toFixed(2)}MB → ${totalCompressedSize.toFixed(2)}MB (${((1 - totalCompressedSize / totalOriginalSize) * 100).toFixed(0)}% reduction)`);
+
+            // Double-check we won't exceed 5 images
+            const newTotal = formData.images.length + compressedImages.length;
+            if (newTotal > 5) {
+                setMessage({ type: 'error', text: 'Cannot exceed maximum of 5 images. Please remove some images first.' });
+                e.target.value = '';
+                setImageUploading(false);
+                setCompressingImages(false);
+                return;
+            }
+
+            // Add compressed images
+            setFormData(prev => ({
+                ...prev,
+                images: [...prev.images, ...compressedImages]
+            }));
+
+            setMessage({
+                type: 'success',
+                text: `${compressedImages.length} image(s) uploaded & optimized! (${newTotal}/5 images, ${totalCompressedSize.toFixed(2)}MB total)`
+            });
+
+            setTimeout(() => setMessage({ type: '', text: '' }), 4000);
+
         } catch (error) {
-            console.error('Image upload error:', error);
-            setMessage({ type: 'error', text: 'Failed to upload images. Please try again.' });
+            console.error('Image upload/compression error:', error);
+            setMessage({ type: 'error', text: 'Failed to process images. Please try again with smaller images.' });
         } finally {
             setImageUploading(false);
-            e.target.value = ''; // Clear the input
+            setCompressingImages(false);
+            e.target.value = '';
         }
     };
+
     const removeImage = (index) => {
         setFormData(prev => {
             const newImages = prev.images.filter((_, i) => i !== index);
             const remainingCount = newImages.length;
-            setMessage({ type: 'info', text: `Image removed. ${remainingCount}/5 images remaining.` });
+            // Calculate total size
+            let totalSize = 0;
+            newImages.forEach(img => {
+                totalSize += getImageSizeInMB(img);
+            });
+            setMessage({
+                type: 'info',
+                text: `Image removed. ${remainingCount}/5 images remaining (${totalSize.toFixed(2)}MB total)`
+            });
             setTimeout(() => setMessage({ type: '', text: '' }), 2000);
             return {
                 ...prev,
@@ -308,6 +468,11 @@ export default function AddUnit() {
                 monthly_rate: activePricing === 'monthly' ? parseFloat(formData.monthly_rate) : null
             };
 
+            console.log('📦 Submitting data with compressed images:', {
+                imageCount: submitData.images.length,
+                totalSize: submitData.images.reduce((acc, img) => acc + getImageSizeInMB(img), 0).toFixed(2) + 'MB'
+            });
+
             const response = await axios.post(
                 `${BaseUrl}api/spaces/${spaceId}/addunits`,
                 submitData,
@@ -325,25 +490,17 @@ export default function AddUnit() {
                 setAddedUnitName(unitDisplayName);
                 setShowSuccessModal(true);
 
-                // Refresh existing units list
                 await fetchExistingUnits();
-
-                // Reset form after successful addition
                 resetForm();
 
                 setMessage({ type: 'success', text: 'Unit added successfully!' });
-
-                // Auto-hide success message after 3 seconds
-                setTimeout(() => {
-                    setMessage({ type: '', text: '' });
-                }, 3000);
+                setTimeout(() => setMessage({ type: '', text: '' }), 3000);
             } else {
                 setMessage({ type: 'error', text: response.data.message || 'Failed to add unit' });
             }
         } catch (error) {
             console.error('Failed to add unit:', error);
 
-            // Better error messages
             let errorMessage = 'Server error. Please try again.';
             if (error.code === 'ECONNABORTED') {
                 errorMessage = 'Request timeout. Please check your internet connection.';
@@ -414,283 +571,6 @@ export default function AddUnit() {
             </div>
         );
     };
-
-    // return (
-    //     <div className="au__container">
-    //         <SuccessModal />
-
-    //         <div className="au__header">
-    //             <button onClick={() => navigate(`/space/${spaceId}`)} className="au__back-button">
-    //                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    //                     <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    //                 </svg>
-    //                 Back to Space
-    //             </button>
-    //             <div className="au__header-title">
-    //                 <h1>Add New Unit</h1>
-    //                 <p>to {spaceName || 'your space'}</p>
-    //             </div>
-    //         </div>
-
-    //         {existingUnits.length > 0 && (
-    //             <div className="au__stats">
-    //                 <div className="au__stat-card">
-    //                     <span className="au__stat-label">Total Units</span>
-    //                     <span className="au__stat-value">{existingUnits.length}</span>
-    //                 </div>
-    //                 {unitTypes.map(type => {
-    //                     const count = getUnitTypeCount(type.value);
-    //                     if (count > 0) {
-    //                         return (
-    //                             <div key={type.value} className="au__stat-card">
-    //                                 <span className="au__stat-label">{type.label}</span>
-    //                                 <span className="au__stat-value">{count}</span>
-    //                             </div>
-    //                         );
-    //                     }
-    //                     return null;
-    //                 })}
-    //             </div>
-    //         )}
-
-    //         <form onSubmit={handleSubmit} className="au__form">
-    //             <div className="au__section">
-    //                 <h2 className="au__section-title">Select Unit Type</h2>
-    //                 <p className="au__section-hint">You can add multiple units of the same type. Each unit will have its own capacity and pricing.</p>
-    //                 <div className="au__unit-types">
-    //                     {unitTypes.map(type => {
-    //                         const existingCount = getUnitTypeCount(type.value);
-    //                         return (
-    //                             <label
-    //                                 key={type.value}
-    //                                 className={`au__unit-card ${formData.unit_type === type.value ? 'au__unit-card-active' : ''}`}
-    //                             >
-    //                                 <input
-    //                                     type="radio"
-    //                                     name="unit_type"
-    //                                     value={type.value}
-    //                                     checked={formData.unit_type === type.value}
-    //                                     onChange={handleInputChange}
-    //                                     className="au__radio"
-    //                                 />
-    //                                 <div className="au__unit-icon">{type.icon}</div>
-    //                                 <div className="au__unit-info">
-    //                                     <h3>{type.label}</h3>
-    //                                     <p>{type.description}</p>
-    //                                     {existingCount > 0 && (
-    //                                         <span className="au__count-badge">{existingCount} already added</span>
-    //                                     )}
-    //                                 </div>
-    //                             </label>
-    //                         );
-    //                     })}
-    //                 </div>
-    //             </div>
-
-
-
-
-
-
-    //             {/* <div className="au__section">
-    //                 <h2 className="au__section-title">Basic Information</h2>
-    //                 <div className="au__form-grid">
-    //                     <div className="au__field">
-    //                         <label className="au__label">Unit Name *</label>
-    //                         <input
-    //                             type="text"
-    //                             name="name"
-    //                             value={formData.name}
-    //                             onChange={handleInputChange}
-    //                             className="au__input"
-    //                             placeholder="e.g., Premium Desk 101, Cabin A, Meeting Room 1"
-    //                             required
-    //                         />
-    //                         <p className="au__field-hint">Give this unit a unique name to identify it easily</p>
-    //                     </div>
-
-    //                     <div className="au__field">
-    //                         <label className="au__label">Total Capacity *</label>
-    //                         <input
-    //                             type="number"
-    //                             name="total_capacity"
-    //                             value={formData.total_capacity}
-    //                             onChange={handleInputChange}
-    //                             className="au__input"
-    //                             placeholder="Number of people"
-    //                             min="1"
-    //                             required
-    //                         />
-    //                     </div>
-    //                 </div>
-    //             </div> */}
-
-
-
-
-
-
-
-
-
-
-
-
-    //             {formData.unit_type && (
-    //                 <div className="au__section">
-    //                     <h2 className="au__section-title">Select Pricing Plan</h2>
-    //                     <p className="au__section-hint">{getPricingMessage()}</p>
-
-    //                     <div className="au__pricing-plans">
-    //                         {getAvailablePricingOptions().map(pricingType => {
-    //                             const pricing = getPricingLabel(pricingType);
-    //                             const isActive = activePricing === pricingType;
-
-    //                             return (
-    //                                 <div
-    //                                     key={pricingType}
-    //                                     className={`au__pricing-card ${isActive ? 'au__pricing-card-active' : ''}`}
-    //                                     onClick={() => handlePricingChange(pricingType)}
-    //                                 >
-    //                                     <div className="au__pricing-radio">
-    //                                         <div className={`au__radio-custom ${isActive ? 'au__radio-custom-active' : ''}`}>
-    //                                             {isActive && <div className="au__radio-dot"></div>}
-    //                                         </div>
-    //                                     </div>
-    //                                     <div className="au__pricing-content">
-    //                                         <h3>{pricing.title}</h3>
-    //                                         <p>{pricing.description}</p>
-    //                                         <div className="au__pricing-input">
-    //                                             <input
-    //                                                 type="number"
-    //                                                 name={`${pricingType}_rate`}
-    //                                                 value={formData[`${pricingType}_rate`]}
-    //                                                 onChange={handleInputChange}
-    //                                                 className="au__input"
-    //                                                 placeholder={`Enter ${pricingType} rate`}
-    //                                                 step="100"
-    //                                                 min="0"
-    //                                                 disabled={!isActive}
-    //                                                 onClick={(e) => e.stopPropagation()}
-    //                                                 required={isActive}
-    //                                             />
-    //                                             <span className="au__per">{pricing.unit}</span>
-    //                                         </div>
-    //                                     </div>
-    //                                 </div>
-    //                             );
-    //                         })}
-    //                     </div>
-    //                 </div>
-    //             )}
-
-    //             <div className="au__section">
-    //                 <h2 className="au__section-title">Images</h2>
-    //                 <div className="au__image-upload">
-    //                     <label className="au__upload-area">
-    //                         <input
-    //                             type="file"
-    //                             accept="image/jpeg,image/jpg,image/png,image/webp"
-    //                             multiple
-    //                             onChange={handleImageUpload}
-    //                             className="au__file-input"
-    //                             disabled={imageUploading}
-    //                         />
-    //                         <div className="au__upload-content">
-    //                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-    //                                 <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
-    //                             </svg>
-    //                             <p>{imageUploading ? 'Uploading...' : 'Click or drag to upload images'}</p>
-    //                             <span>PNG, JPG, WEBP up to 5MB each</span>
-    //                         </div>
-    //                     </label>
-    //                 </div>
-
-    //                 {formData.images.length > 0 && (
-    //                     <div className="au__image-preview">
-    //                         <h3>Uploaded Images ({formData.images.length})</h3>
-    //                         <div className="au__image-grid">
-    //                             {formData.images.map((img, index) => (
-    //                                 <div key={index} className="au__image-item">
-    //                                     <img src={img} alt={`Preview ${index + 1}`} />
-    //                                     <button
-    //                                         type="button"
-    //                                         onClick={() => removeImage(index)}
-    //                                         className="au__remove-image"
-    //                                     >
-    //                                         ×
-    //                                     </button>
-    //                                 </div>
-    //                             ))}
-    //                         </div>
-    //                     </div>
-    //                 )}
-    //             </div>
-
-    //             <div className="au__section">
-    //                 <h2 className="au__section-title">Additional Settings</h2>
-    //                 <div className="au__form-grid">
-    //                     <div className="au__field">
-    //                         <label className="au__label">Duration (Optional)</label>
-    //                         <input
-    //                             type="text"
-    //                             name="duration"
-    //                             value={formData.duration}
-    //                             onChange={handleInputChange}
-    //                             className="au__input"
-    //                             placeholder="e.g., Monthly, Yearly, or specific date"
-    //                         />
-    //                     </div>
-
-    //                     <div className="au__field au__checkbox-field">
-    //                         <label className="au__checkbox-label">
-    //                             <input
-    //                                 type="checkbox"
-    //                                 name="is_active"
-    //                                 checked={formData.is_active}
-    //                                 onChange={handleInputChange}
-    //                                 className="au__checkbox"
-    //                             />
-    //                             <span>Active Status</span>
-    //                         </label>
-    //                         <p className="au__checkbox-hint">Inactive units won't be visible to customers</p>
-    //                     </div>
-    //                 </div>
-    //             </div>
-
-    //             {message.text && (
-    //                 <div className={`au__message au__message-${message.type}`}>
-    //                     {message.type === 'success' ? '✅' : '⚠️'} {message.text}
-    //                 </div>
-    //             )}
-
-    //             <div className="au__actions">
-    //                 <button
-    //                     type="button"
-    //                     onClick={() => navigate(`/space/${spaceId}`)}
-    //                     className="au__btn au__btn-secondary"
-    //                     disabled={loading}
-    //                 >
-    //                     Cancel
-    //                 </button>
-    //                 <button
-    //                     type="submit"
-    //                     disabled={loading || imageUploading}
-    //                     className="au__btn au__btn-primary"
-    //                 >
-    //                     {loading ? 'Adding Unit...' : 'Add Unit'}
-    //                 </button>
-    //             </div>
-    //         </form>
-    //     </div>
-    // );
-
-
-
-
-
-
-
 
     return (
         <div className="au__container">
@@ -763,7 +643,6 @@ export default function AddUnit() {
                     </div>
                 </div>
 
-                {/* Basic Information Section - Uncommented */}
                 <div className="au__section">
                     <h2 className="au__section-title">Basic Information</h2>
                     <div className="au__form-grid">
@@ -852,7 +731,10 @@ export default function AddUnit() {
 
                 <div className="au__section">
                     <h2 className="au__section-title">Images</h2>
-                    <p className="au__section-hint">Upload up to 5 images (Maximum {formData.images.length}/5 uploaded)</p>
+                    <p className="au__section-hint">
+                        Upload up to 5 images (Maximum {formData.images.length}/5 uploaded)
+                        {compressingImages && ' 🔄 Compressing images...'}
+                    </p>
                     <div className="au__image-upload">
                         <label className={`au__upload-area ${formData.images.length >= 5 ? 'au__upload-area-disabled' : ''}`}>
                             <input
@@ -864,16 +746,36 @@ export default function AddUnit() {
                                 disabled={imageUploading || formData.images.length >= 5}
                             />
                             <div className="au__upload-content">
+
                                 <Plus size={40} />
                                 <p>{imageUploading ? 'Uploading...' : formData.images.length >= 5 ? 'Maximum 5 images reached' : 'Click or drag to upload images'}</p>
+
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" />
+                                </svg>
+                                <p>
+                                    {compressingImages ? '🔄 Compressing images...' :
+                                        imageUploading ? 'Uploading...' :
+                                            formData.images.length >= 5 ? 'Maximum 5 images reached' :
+                                                'Click or drag to upload images'}
+                                </p>
+
                                 <span>PNG, JPG, WEBP up to 5MB each (Max 5 images)</span>
+                                {compressingImages && <span style={{ color: '#01095A', fontWeight: 'bold' }}>⚡ Auto-compressing for optimal upload</span>}
                             </div>
                         </label>
                     </div>
 
                     {formData.images.length > 0 && (
                         <div className="au__image-preview">
-                            <h3>Uploaded Images ({formData.images.length}/5)</h3>
+                            <h3>
+                                Uploaded Images ({formData.images.length}/5)
+                                {formData.images.length > 0 && (
+                                    <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>
+                                        (Total: {formData.images.reduce((acc, img) => acc + getImageSizeInMB(img), 0).toFixed(2)}MB)
+                                    </span>
+                                )}
+                            </h3>
                             <div className="au__image-grid">
                                 {formData.images.map((img, index) => (
                                     <div key={index} className="au__image-item">

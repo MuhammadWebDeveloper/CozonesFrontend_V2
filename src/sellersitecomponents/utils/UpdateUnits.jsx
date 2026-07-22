@@ -28,6 +28,76 @@ import {
     EyeOff
 } from 'lucide-react';
 
+// ============================================
+// IMAGE COMPRESSION UTILITIES
+// ============================================
+
+/**
+ * Compress base64 image to reduce size
+ */
+const compressBase64Image = (
+    base64String,
+    maxWidth = 800,
+    maxHeight = 600,
+    quality = 0.7,
+    format = 'jpeg'
+) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const img = new Image();
+            img.src = base64String;
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressed = canvas.toDataURL(`image/${format}`, quality);
+                    resolve(compressed);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => {
+                reject(new Error('Failed to load image'));
+            };
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+/**
+ * Get image size in MB
+ */
+const getImageSizeInMB = (base64String) => {
+    if (!base64String) return 0;
+    const sizeInBytes = base64String.length * 0.75;
+    return sizeInBytes / (1024 * 1024);
+};
+
+/**
+ * Check if image needs compression
+ */
+const needsCompression = (base64String, maxSizeMB = 1) => {
+    if (!base64String) return false;
+    return getImageSizeInMB(base64String) > maxSizeMB;
+};
+
 export default function UpdateUnit() {
     const { spaceId, unitId } = useParams();
     const navigate = useNavigate();
@@ -39,6 +109,7 @@ export default function UpdateUnit() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [spaceName, setSpaceName] = useState('');
+    const [compressingImages, setCompressingImages] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -152,32 +223,94 @@ export default function UpdateUnit() {
         });
     };
 
+
+
+    // ============================================
+    // UPDATED: Handle File Change with Compression
+    // ============================================
+
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
+        setCompressingImages(true);
+
         try {
+            // Step 1: Convert files to base64
             const base64Array = await Promise.all(files.map(fileToBase64));
+            const validImages = base64Array.filter(img => img !== null);
+
+            if (validImages.length === 0) {
+                setError('Failed to read images. Please try again.');
+                fileInputRef.current.value = '';
+                setCompressingImages(false);
+                return;
+            }
+
+            // Step 2: Compress images if needed
+            console.log('📊 Processing images for update...');
+            const compressedImages = [];
+            let totalOriginalSize = 0;
+            let totalCompressedSize = 0;
+
+            for (const img of validImages) {
+                const originalSize = getImageSizeInMB(img);
+                totalOriginalSize += originalSize;
+
+                let finalImage = img;
+                if (needsCompression(img, 1)) {
+                    console.log(`🔄 Compressing image (${originalSize.toFixed(2)}MB)...`);
+                    finalImage = await compressBase64Image(img, 800, 600, 0.7);
+                    const newSize = getImageSizeInMB(finalImage);
+                    totalCompressedSize += newSize;
+                    console.log(`✅ Compressed to ${newSize.toFixed(2)}MB (${((1 - newSize / originalSize) * 100).toFixed(0)}% reduction)`);
+                } else {
+                    totalCompressedSize += originalSize;
+                    console.log(`✅ Image already optimized (${originalSize.toFixed(2)}MB)`);
+                }
+                compressedImages.push(finalImage);
+            }
+
+            console.log(`📊 Total: ${totalOriginalSize.toFixed(2)}MB → ${totalCompressedSize.toFixed(2)}MB (${((1 - totalCompressedSize / totalOriginalSize) * 100).toFixed(0)}% reduction)`);
+
+            // Add compressed images
             setFormData(prev => ({
                 ...prev,
-                images: [...prev.images, ...base64Array]
+                images: [...prev.images, ...compressedImages]
             }));
-        } catch (err) {
-            setError('Failed to process one or more images. Please try again.');
-        }
 
-        fileInputRef.current.value = '';
+            setSuccess(`${compressedImages.length} image(s) uploaded & optimized! (${totalCompressedSize.toFixed(2)}MB total)`);
+            setTimeout(() => setSuccess(null), 3000);
+
+        } catch (err) {
+            console.error('Error processing images:', err);
+            setError('Failed to process images. Please try again with smaller images.');
+        } finally {
+            setCompressingImages(false);
+            fileInputRef.current.value = '';
+        }
     };
 
     const removeImage = (index, imageUrl) => {
         if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/uploads'))) {
             setImagesToDelete(prev => [...prev, imageUrl]);
         }
+
         
+
         setFormData(prev => ({
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
         }));
+
+        // Calculate remaining size
+        const remainingImages = formData.images.filter((_, i) => i !== index);
+        let totalSize = 0;
+        remainingImages.forEach(img => {
+            totalSize += getImageSizeInMB(img);
+        });
+        setSuccess(`Image removed. ${remainingImages.length} images remaining (${totalSize.toFixed(2)}MB total)`);
+        setTimeout(() => setSuccess(null), 2000);
     };
 
     const validateForm = () => {
@@ -230,6 +363,10 @@ export default function UpdateUnit() {
                     console.warn('Failed to delete some images:', err);
                 }
             }
+
+            // Calculate total image size for logging
+            const totalSize = formData.images.reduce((acc, img) => acc + getImageSizeInMB(img), 0);
+            console.log(`📦 Submitting update with ${formData.images.length} images (${totalSize.toFixed(2)}MB total)`);
 
             const submitData = {
                 name: formData.name,
@@ -496,12 +633,14 @@ export default function UpdateUnit() {
                                 </div>
                             </div>
 
-                            {/* Images Section — Base64 file upload with remove buttons */}
+                            {/* Images Section — with compression */}
                             <div className="uu__section">
                                 <h2 className="uu__section-title">Images</h2>
-                                <p className="uu__section-hint">Upload images from your device (JPG, PNG, WebP)</p>
+                                <p className="uu__section-hint">
+                                    Upload images from your device (JPG, PNG, WebP)
+                                    {compressingImages && ' 🔄 Compressing...'}
+                                </p>
 
-                                {/* Hidden file input */}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -511,20 +650,37 @@ export default function UpdateUnit() {
                                     style={{ display: 'none' }}
                                 />
 
-                                {/* Upload button */}
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
                                     className="uu__add-image-btn"
+                                    disabled={compressingImages}
                                 >
+
                                     <Plus size={16} style={{ marginRight: '8px' }} />
                                     {formData.images.length > 0 ? 'Add More Images' : 'Upload Images'}
+
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    </svg>
+                                    {compressingImages ? 'Compressing...' : formData.images.length > 0 ? 'Add More Images' : 'Upload Images'}
+
                                 </button>
 
-                                {/* Image previews with remove button */}
+                                {compressingImages && (
+                                    <div className="uu__compression-status" style={{ marginTop: '8px', color: '#01095A', fontSize: '13px' }}>
+                                        ⚡ Optimizing images for upload...
+                                    </div>
+                                )}
+
                                 {formData.images.length > 0 && (
                                     <div className="uu__preview-section">
-                                        <h3>Images ({formData.images.length})</h3>
+                                        <h3>
+                                            Images ({formData.images.length})
+                                            <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>
+                                                (Total: {formData.images.reduce((acc, img) => acc + getImageSizeInMB(img), 0).toFixed(2)}MB)
+                                            </span>
+                                        </h3>
                                         <div className="uu__preview-grid">
                                             {formData.images.map((img, idx) => (
                                                 <div key={idx} className="uu__preview-item">
@@ -591,7 +747,7 @@ export default function UpdateUnit() {
                         <button
                             type="submit"
                             className="uu__btn uu__btn-primary"
-                            disabled={submitting}
+                            disabled={submitting || compressingImages}
                         >
                             {submitting ? (
                                 <>

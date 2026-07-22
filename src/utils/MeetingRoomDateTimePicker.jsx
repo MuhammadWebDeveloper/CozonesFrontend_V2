@@ -1,25 +1,14 @@
-// MeetingRoomDateTimePicker.jsx - Fixed version
-// Changes in this version:
-// 1. Removed the old "isHourlyOnly" time-only branch that skipped the calendar.
-//    Hourly bookings now use the same calendar UI as daily/monthly, so users
-//    can pick BOTH a date and an hour (same day or a different day).
-// 2. Time input step is 3600 (1 hour) for hourly rate bookings, and any
-//    manually typed/pasted minute value is snapped down to :00 for hourly.
-// 3. isDateDisabled no longer blocks the *same day* as the start date for
-//    hourly bookings (it only blocks earlier days). Daily/monthly bookings
-//    still require a strictly later day, since they're day-based.
-// 4. handleTimeChange no longer silently no-ops when selectedDate is null
-//    (this was the root cause of "the time doesn't select").
+// MeetingRoomDateTimePicker.jsx - COMPLETELY FIXED WITH LOCAL TIME
 
 import React, { useState, useEffect, useRef } from 'react';
 import '../componentstyles/utilstyle/DateTimePicker.css';
-import { 
-    Calendar, 
-    Clock, 
-    ChevronLeft, 
-    ChevronRight, 
-    Lock, 
-    Check, 
+import {
+    Calendar,
+    Clock,
+    ChevronLeft,
+    ChevronRight,
+    Lock,
+    Check,
     X,
     AlertCircle,
     CalendarDays,
@@ -44,6 +33,7 @@ const MeetingRoomDateTimePicker = ({
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState('09:00');
+    const [pickerDate, setPickerDate] = useState(null);
     const pickerRef = useRef(null);
 
     // Sync with value prop
@@ -52,10 +42,12 @@ const MeetingRoomDateTimePicker = ({
             const date = typeof value === 'string' ? new Date(value) : value;
             if (date instanceof Date && !isNaN(date)) {
                 setSelectedDate(date);
+                setPickerDate(date);
                 setSelectedTime(formatTime(date));
             }
         } else {
             setSelectedDate(null);
+            setPickerDate(null);
             setSelectedTime('09:00');
         }
     }, [value]);
@@ -88,7 +80,6 @@ const MeetingRoomDateTimePicker = ({
         return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     };
 
-    // Force whole-hour strings ("HH:00") for hourly rate bookings
     const normalizeTimeForRate = (timeStr) => {
         if (rateType !== 'hourly') return timeStr;
         const [h] = timeStr.split(':').map(Number);
@@ -109,6 +100,23 @@ const MeetingRoomDateTimePicker = ({
         });
     };
 
+    // ============================================================
+    // NEW: Format date as local string WITHOUT timezone conversion
+    // ============================================================
+    const formatLocalDateTime = (date) => {
+        if (!date) return '';
+        const d = typeof date === 'string' ? new Date(date) : date;
+        if (!(d instanceof Date) || isNaN(d)) return '';
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    };
+
     const dayKey = (d) => {
         if (!d) return null;
         const dt = d instanceof Date ? d : new Date(d);
@@ -124,12 +132,10 @@ const MeetingRoomDateTimePicker = ({
 
     const isDateBooked = (date) => {
         if (!date || !bookedDates || bookedDates.length === 0) return false;
-
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
-
         return bookedDates.includes(dateStr);
     };
 
@@ -141,15 +147,12 @@ const MeetingRoomDateTimePicker = ({
         const checkDate = new Date(date);
         checkDate.setHours(0, 0, 0, 0);
 
-        // Block past dates
         if (checkDate < today) return true;
 
-        // Block booked dates (only for daily/monthly)
         if (rateType !== 'hourly' && isDateBooked(date)) {
             return true;
         }
 
-        // For end date, must be same day (hourly only) or after start date
         if (type === 'end' && startDate) {
             const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
             if (!(start instanceof Date) || isNaN(start)) return false;
@@ -158,10 +161,8 @@ const MeetingRoomDateTimePicker = ({
             startDay.setHours(0, 0, 0, 0);
 
             if (rateType === 'hourly') {
-                // Hourly: same day as start is allowed, just not an earlier day
                 if (checkDate < startDay) return true;
             } else {
-                // Daily/monthly: must be a strictly later day than start
                 if (checkDate <= startDay) return true;
             }
         }
@@ -169,6 +170,7 @@ const MeetingRoomDateTimePicker = ({
         return false;
     };
 
+    // ============ FIXED: handleDateSelect - Uses LOCAL TIME ============
     const handleDateSelect = (date) => {
         if (isDateDisabled(date)) {
             if (isDateBooked(date)) {
@@ -177,23 +179,28 @@ const MeetingRoomDateTimePicker = ({
             return;
         }
 
+        setPickerDate(date);
         setSelectedDate(date);
 
-        let timeToUse = normalizeTimeForRate(selectedTime);
-        if (timeToUse !== selectedTime) setSelectedTime(timeToUse);
+        let currentTime = selectedTime;
+
+        if (rateType === 'hourly') {
+            currentTime = normalizeTimeForRate(currentTime);
+            if (currentTime !== selectedTime) {
+                setSelectedTime(currentTime);
+            }
+        }
 
         const newDateTime = new Date(date);
-        const [hours, minutes] = timeToUse.split(':').map(Number);
+        const [hours, minutes] = currentTime.split(':').map(Number);
         newDateTime.setHours(hours, minutes, 0, 0);
 
-        // For end date, ensure minimum 1 hour when it lands on the same day as start
         if (type === 'end' && startDate && isSameDay(date, new Date(startDate))) {
             const startDT = typeof startDate === 'string' ? new Date(startDate) : startDate;
             const diffMs = newDateTime.getTime() - startDT.getTime();
             const diffHours = diffMs / (1000 * 60 * 60);
 
             if (diffHours < 1) {
-                // Auto-set to start time + 1 hour (rounded to the hour for hourly rate)
                 const defaultEnd = new Date(startDT.getTime() + 60 * 60 * 1000);
                 if (rateType === 'hourly') {
                     newDateTime.setHours(defaultEnd.getHours(), 0, 0, 0);
@@ -205,43 +212,54 @@ const MeetingRoomDateTimePicker = ({
             }
         }
 
-        onChange(newDateTime.toISOString());
+        setSelectedDate(newDateTime);
+        setPickerDate(newDateTime);
+
+        // ============================================================
+        // FIX: Use local format instead of toISOString()
+        // ============================================================
+        onChange(formatLocalDateTime(newDateTime));
         setIsOpen(false);
     };
 
+    // ============ FIXED: handleTimeChange - Uses LOCAL TIME ============
     const handleTimeChange = (e) => {
         let newTime = e.target.value;
 
-        // Snap to whole hour for hourly-rate bookings, even if the browser
-        // or a pasted value tries to sneak in minutes.
-        newTime = normalizeTimeForRate(newTime);
+        if (rateType === 'hourly') {
+            newTime = normalizeTimeForRate(newTime);
+        }
+
         setSelectedTime(newTime);
 
-        // FIX: previously this whole block was gated behind `if (selectedDate)`,
-        // which meant the very first time selection (before any date was picked)
-        // never called onChange at all. Fall back to a sensible base date instead.
-        const baseDate = selectedDate
-            ? new Date(selectedDate)
-            : (type === 'end' && startDate ? new Date(startDate) : new Date());
+        let baseDate = pickerDate || selectedDate;
+
+        if (!baseDate) {
+            baseDate = type === 'end' && startDate ? new Date(startDate) : new Date();
+        }
 
         const newDateTime = new Date(baseDate);
         const [hours, minutes] = newTime.split(':').map(Number);
         newDateTime.setHours(hours, minutes, 0, 0);
 
-        // Validate minimum 1 hour for same-day end booking
         if (type === 'end' && startDate && isSameDay(newDateTime, new Date(startDate))) {
             const startDT = typeof startDate === 'string' ? new Date(startDate) : startDate;
             const diffMs = newDateTime.getTime() - startDT.getTime();
             const diffHours = diffMs / (1000 * 60 * 60);
 
             if (diffHours < 1) {
-                onWarning?.('End time must be at least 1 hour after start time');
+                onWarning?.('⏰ End time must be at least 1 hour after start time');
                 return;
             }
         }
 
         setSelectedDate(newDateTime);
-        onChange(newDateTime.toISOString());
+        setPickerDate(newDateTime);
+
+        // ============================================================
+        // FIX: Use local format instead of toISOString()
+        // ============================================================
+        onChange(formatLocalDateTime(newDateTime));
     };
 
     const changeMonth = (inc) => {
@@ -279,9 +297,6 @@ const MeetingRoomDateTimePicker = ({
 
     const timeStep = rateType === 'hourly' ? 3600 : 1800;
 
-    // ============================================================
-    // CALENDAR MODE (used for hourly, daily, and monthly alike)
-    // ============================================================
     return (
         <div className="datetime-picker" ref={pickerRef}>
             <label className="datetime-picker-label">{label}</label>
@@ -391,7 +406,7 @@ const MeetingRoomDateTimePicker = ({
                     )}
 
                     <div className="datetime-picker-time">
-                        <label>{rateType === 'hourly' ? 'Select Hour' : 'Select Time'}</label>
+                        <label>{rateType === 'hourly' ? 'Select Time' : 'Select Time'}</label>
                         <input
                             type="time"
                             className="time-input"
@@ -406,11 +421,31 @@ const MeetingRoomDateTimePicker = ({
                                 borderRadius: '4px'
                             }}
                         />
-                        {rateType === 'hourly' && (
+                        {/* {rateType === 'hourly' && (
+
                             <small style={{ color: '#6c757d', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <Clock size={12} /> Whole hours only, same day or a later day allowed
+</small>
+                            <small style={{ color: '#6c757d', fontSize: '11px', display: 'block' }}>
+                                ⏰ Hourly bookings - whole hours only
+
                             </small>
+                        )} */}
+
+
+
+
+                        {rateType === 'hourly' && (
+                            <>
+                                <small style={{ color: '#6c757d', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Clock size={12} /> Whole hours only, same day or a later day allowed
+                                </small>
+                                <small style={{ color: '#6c757d', fontSize: '11px', display: 'block' }}>
+                                    ⏰ Hourly bookings - whole hours only
+                                </small>
+                            </>
                         )}
+
                         {type === 'end' && startDate && selectedDate && isSameDay(selectedDate, new Date(startDate)) && (
                             <small className="time-hint" style={{ display: 'block', color: '#01095A', fontSize: '11px', marginTop: '4px' }}>
                                 <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} />
@@ -429,6 +464,7 @@ const MeetingRoomDateTimePicker = ({
                             Confirm
                         </button>
                     </div>
+
                 </div>
             )}
         </div>

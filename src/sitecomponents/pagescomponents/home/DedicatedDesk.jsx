@@ -101,7 +101,7 @@ const Dedicated_Desks = ({ title }) => {
                     location: unit.city || unit.space_city || "Coworking Space",
                     price: getBestRate(unit),
                     nights: 1,
-                    rating: 4.5,
+                    // rating: 4.5,
                     reviews: 0,
                     images: image ? [image] : null,
                     unit_type: unit.unit_type

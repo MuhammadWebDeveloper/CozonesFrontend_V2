@@ -117,7 +117,7 @@ const SearchResults = () => {
                         unit_type: unit.unit_type,
                         images: imageUrl,
                         capacity: unit.total_capacity || 1,
-                        rating: 4.5,
+                        // rating: 4.5,
                         space_name: unit.space_name,
                         is_verified: unit.is_verified
                     };

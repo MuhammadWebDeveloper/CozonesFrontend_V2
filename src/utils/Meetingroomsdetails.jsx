@@ -1,4 +1,4 @@
-// MeetingRoomsDetail.jsx - Fixed version with proper onChange handlers
+// MeetingRoomsDetail.jsx - Fixed version with NO timezone conversion
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
@@ -462,7 +462,7 @@ const MeetingRoomsDetail = () => {
     };
 
     // ============================================================
-    // HANDLE BOOKING WITH VALIDATION
+    // HANDLE BOOKING - NO TIMEZONE CONVERSION
     // ============================================================
 
     const handleBooking = async () => {
@@ -520,10 +520,39 @@ const MeetingRoomsDetail = () => {
         setBookingLoading(true);
 
         try {
+            // ============================================================
+            // CRITICAL FIX: Send time EXACTLY as selected - NO CONVERSION
+            // ============================================================
+            const formatExactDateTime = (date) => {
+                const d = new Date(date);
+                // Get each component EXACTLY as it is - no timezone conversion
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const seconds = String(d.getSeconds()).padStart(2, '0');
+
+                // Return in MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
+                // This has NO timezone information at all
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            };
+
+            // Get the exact time as selected - NO CONVERSION AT ALL
+            const startTimeStr = formatExactDateTime(startDateTime);
+            const endTimeStr = formatExactDateTime(endDateTime);
+
+            console.log('📤 Sending EXACT times (no conversion):', {
+                start: startTimeStr,
+                end: endTimeStr,
+                originalStart: new Date(startDateTime).toString(),
+                originalEnd: new Date(endDateTime).toString()
+            });
+
             const bookingData = {
                 space_unit_id: id,
-                start_time: new Date(startDateTime).toISOString(),
-                end_time: new Date(endDateTime).toISOString(),
+                start_time: startTimeStr,
+                end_time: endTimeStr,
                 total_price: totalPrice
             };
 

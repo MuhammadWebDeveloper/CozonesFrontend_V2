@@ -363,25 +363,8 @@ function SellerViewAllBookedSpace() {
 
             const response = await bookingService.getOwnerBookings();
 
-            // 🔍 DEBUG: Log the complete response
-            console.log('========== COMPLETE BACKEND RESPONSE ==========');
-            console.log('Full Response:', JSON.stringify(response, null, 2));
-            console.log('===============================================');
-
             if (response.success && response.bookings) {
                 console.log('📊 Total Bookings:', response.bookings.length);
-                
-                // Log each booking's status
-                response.bookings.forEach((booking, index) => {
-                    console.log(`📋 Booking ${index + 1}:`, {
-                        id: booking.id,
-                        status: booking.status,
-                        isPending: booking.status === 'pending',
-                        start_time: booking.start_time,
-                        isPast: new Date(booking.start_time) < new Date()
-                    });
-                });
-
                 setBookings(response.bookings);
                 setFilteredBookings(response.bookings);
                 if (response.count > 0) toast.success(`Loaded ${response.count} bookings`);
@@ -406,9 +389,9 @@ function SellerViewAllBookedSpace() {
         setActionLoading(bookingId);
         try {
             const response = await bookingService.confirmBooking(bookingId);
-            if (response.success) { 
-                toast.success('✅ Booking confirmed! Email sent to customer.'); 
-                fetchBookings(); 
+            if (response.success) {
+                toast.success('✅ Booking confirmed! Email sent to customer.');
+                fetchBookings();
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to confirm booking');
@@ -420,13 +403,30 @@ function SellerViewAllBookedSpace() {
         setActionLoading(bookingId);
         try {
             const response = await bookingService.rejectBooking(bookingId);
-            if (response.success) { 
-                toast.success('❌ Booking rejected successfully'); 
-                fetchBookings(); 
+            if (response.success) {
+                toast.success('❌ Booking rejected successfully');
+                fetchBookings();
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to reject booking');
         } finally { setActionLoading(null); }
+    };
+
+    // ✅ NEW: Complete Booking Handler
+    const handleCompleteBooking = async (bookingId) => {
+        if (!window.confirm('✅ Mark this booking as completed?\n\nThis will notify the customer that the booking is finished.')) return;
+        setActionLoading(bookingId);
+        try {
+            const response = await bookingService.completeBooking(bookingId);
+            if (response.success) {
+                toast.success('✅ Booking marked as completed!');
+                fetchBookings();
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to complete booking');
+        } finally {
+            setActionLoading(null);
+        }
     };
 
     const handleCancelBooking = async (reason) => {
@@ -502,6 +502,7 @@ function SellerViewAllBookedSpace() {
             case 'confirmed': return { bg: 'badge-confirmed', text: 'Confirmed', icon: CheckCircle };
             case 'rejected': return { bg: 'badge-rejected', text: 'Rejected', icon: XCircle };
             case 'cancelled_by_owner': return { bg: 'badge-cancelled', text: 'Cancelled', icon: XCircle };
+            case 'completed': return { bg: 'badge-completed', text: 'Completed', icon: CheckCircle };
             default: return { bg: 'badge-pending', text: status, icon: Clock };
         }
     };
@@ -514,6 +515,7 @@ function SellerViewAllBookedSpace() {
         confirmed: bookings.filter(b => b.status === 'confirmed').length,
         rejected: bookings.filter(b => b.status === 'rejected').length,
         cancelled: bookings.filter(b => b.status === 'cancelled_by_owner').length,
+        completed: bookings.filter(b => b.status === 'completed').length,
     };
 
     if (loading) {
@@ -533,7 +535,7 @@ function SellerViewAllBookedSpace() {
                     <p className="bookings-subtitle">View and manage all booking requests for your spaces</p>
                 </div>
 
-                {/* Stats */}
+                {/* Stats - Added Completed */}
                 <div className="stats-grid">
                     <div className="stat-card stat-card-total">
                         <div><p className="stat-label">Total Bookings</p><p className="stat-value">{stats.total}</p></div>
@@ -547,6 +549,10 @@ function SellerViewAllBookedSpace() {
                         <div><p className="stat-label">Confirmed</p><p className="stat-value">{stats.confirmed}</p></div>
                         <CheckCircle size={28} />
                     </div>
+                    <div className="stat-card stat-card-completed">
+                        <div><p className="stat-label">Completed</p><p className="stat-value">{stats.completed}</p></div>
+                        <CheckCircle size={28} style={{ color: '#16a34a' }} />
+                    </div>
                     <div className="stat-card stat-card-rejected">
                         <div><p className="stat-label">Rejected</p><p className="stat-value">{stats.rejected}</p></div>
                         <XCircle size={28} />
@@ -557,7 +563,7 @@ function SellerViewAllBookedSpace() {
                     </div>
                 </div>
 
-                {/* Filters */}
+                {/* Filters - Added Completed */}
                 <div className="filters-container">
                     <div className="search-box">
                         <Search size={18} className="search-icon" />
@@ -573,6 +579,7 @@ function SellerViewAllBookedSpace() {
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
                         <option value="rejected">Rejected</option>
                         <option value="cancelled_by_owner">Cancelled</option>
                     </select>
@@ -595,11 +602,11 @@ function SellerViewAllBookedSpace() {
                             const StatusIcon = statusBadge.icon;
                             const isPending = booking.status === 'pending';
                             const isConfirmed = booking.status === 'confirmed';
+                            const isCompleted = booking.status === 'completed';
                             const isPastBooking = new Date(booking.start_time) < new Date();
                             const isLoading = actionLoading === booking.id;
                             const showDelete = canDelete(booking.status);
 
-                            // Check if booking has disputes
                             const hasDisputes = booking.disputes &&
                                 Array.isArray(booking.disputes) &&
                                 booking.disputes.length > 0;
@@ -677,19 +684,19 @@ function SellerViewAllBookedSpace() {
                                     {/* Show Disputes */}
                                     {hasDisputes && <DisputeDisplay disputes={booking.disputes} />}
 
-                                    {/* ✅ FIXED: Pending Actions - Show for ALL pending bookings */}
+                                    {/* Pending Actions */}
                                     {isPending && (
                                         <div className="card-actions">
-                                            <button 
-                                                onClick={() => handleConfirmBooking(booking.id)} 
-                                                disabled={isLoading} 
+                                            <button
+                                                onClick={() => handleConfirmBooking(booking.id)}
+                                                disabled={isLoading}
                                                 className="btn-approve"
                                             >
                                                 {isLoading ? <div className="spinner-small"></div> : <><Check size={16} /> Approve Booking</>}
                                             </button>
-                                            <button 
-                                                onClick={() => handleRejectBooking(booking.id)} 
-                                                disabled={isLoading} 
+                                            <button
+                                                onClick={() => handleRejectBooking(booking.id)}
+                                                disabled={isLoading}
                                                 className="btn-reject"
                                             >
                                                 {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Reject Booking</>}
@@ -697,13 +704,35 @@ function SellerViewAllBookedSpace() {
                                         </div>
                                     )}
 
-                                    {/* Confirmed Actions: Cancel + Dispute */}
+                                    {/* ✅ UPDATED: Confirmed Actions with Complete Button */}
                                     {isConfirmed && (
                                         <div className="card-actions">
                                             {!isPastBooking && (
-                                                <button onClick={() => openCancelModal(booking)} disabled={isLoading} className="btn-cancel">
-                                                    {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Cancel Booking</>}
-                                                </button>
+                                                <>
+                                                    <button
+                                                        onClick={() => handleCompleteBooking(booking.id)}
+                                                        disabled={isLoading}
+                                                        className="btn-complete"
+                                                        style={{
+                                                            background: '#22c55e',
+                                                            borderColor: '#22c55e',
+                                                            color: 'white',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px',
+                                                            padding: '8px 16px',
+                                                            borderRadius: '8px',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            fontWeight: '600'
+                                                        }}
+                                                    >
+                                                        {isLoading ? <div className="spinner-small"></div> : <><CheckCircle size={16} /> Complete Booking</>}
+                                                    </button>
+                                                    <button onClick={() => openCancelModal(booking)} disabled={isLoading} className="btn-cancel">
+                                                        {isLoading ? <div className="spinner-small"></div> : <><X size={16} /> Cancel Booking</>}
+                                                    </button>
+                                                </>
                                             )}
                                             <button
                                                 onClick={() => openDisputeModal(booking)}
@@ -716,8 +745,27 @@ function SellerViewAllBookedSpace() {
                                         </div>
                                     )}
 
+                                    {/* Completed - Show resolved status */}
+                                    {isCompleted && (
+                                        <div className="card-actions">
+                                            <span style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                padding: '8px 16px',
+                                                background: '#dcfce7',
+                                                color: '#16a34a',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                fontSize: '14px'
+                                            }}>
+                                                <CheckCircle size={16} /> Booking Completed
+                                            </span>
+                                        </div>
+                                    )}
+
                                     {/* Delete Button */}
-                                    {showDelete && (
+                                    {showDelete && !isCompleted && (
                                         <div className="card-actions">
                                             <button onClick={() => openDeleteModal(booking)} disabled={isLoading} className="btn-delete">
                                                 {isLoading ? <div className="spinner-small"></div> : <><Trash2 size={16} /> Delete Permanently</>}

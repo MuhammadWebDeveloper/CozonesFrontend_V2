@@ -101,7 +101,7 @@ const Meeting_Rooms = ({ title }) => {
                     location: unit.city || unit.space_city || "Coworking Space",
                     price: getBestRate(unit),
                     days: 1,
-                    rating: 4.6,
+                    // rating: 4.6,
                     reviews: 0,
                     images: image ? [image] : null,
                     unit_type: unit.unit_type,

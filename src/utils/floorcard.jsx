@@ -42,7 +42,7 @@ const FloorCard = ({
     };
     const displayAmenities = parseAmenities(amenities);
 
-    const rating = 4.5;
+    // const rating = 4.5;
 
     return (
         <article className="FloorCard_main" onClick={handleCardClick}>

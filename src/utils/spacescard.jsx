@@ -181,12 +181,12 @@ const SpaceCard = ({
                         {price}
                     </span>
 
-                    <span className="Cozones_Spaces_divider">·</span>
+                    {/* <span className="Cozones_Spaces_divider">·</span> */}
 
-                    <div className="Cozones_Spaces_ratingRow">
+                    {/* <div className="Cozones_Spaces_ratingRow">
                         <FiStar size={12} fill="currentColor" />
                         <span>{rating ? rating.toFixed(1) : "4.5"}</span>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

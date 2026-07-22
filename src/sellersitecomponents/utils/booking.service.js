@@ -41,16 +41,27 @@ export const bookingService = {
         return response.data;
     },
 
-    // ✅ Owner Cancel Booking - NEW
-    ownerCancelBooking: async (bookingId, reason) => {
+    // ✅ Complete Booking (New)
+    completeBooking: async (bookingId) => {
         const response = await axios.patch(
-            `${BaseUrl}api/bookings/${bookingId}/owner-cancel`,
-            { reason },  // Send cancellation reason in body
+            `${BaseUrl}api/bookings/${bookingId}/complete`,
+            {},
             getAuthConfig()
         );
         return response.data;
     },
-    // In booking.service.js
+
+    // ✅ Owner Cancel Booking
+    ownerCancelBooking: async (bookingId, reason) => {
+        const response = await axios.patch(
+            `${BaseUrl}api/bookings/${bookingId}/owner-cancel`,
+            { reason },
+            getAuthConfig()
+        );
+        return response.data;
+    },
+
+    // Delete Booking
     deleteBooking: async (bookingId) => {
         const response = await axios.delete(
             `${BaseUrl}api/bookings/${bookingId}/delete`,
@@ -58,6 +69,8 @@ export const bookingService = {
         );
         return response.data;
     },
+
+    // Create Dispute
     createDispute: async (bookingId, reason, description) => {
         const response = await axios.post(
             `${BaseUrl}api/bookings/${bookingId}/dispute`,
